@@ -8904,8 +8904,9 @@
                             const showPfp = document.getElementById('setting-levelingPfpEnabled')?.checked !== false;
 
                             if (previewBox) {
-                                if (bgImg) {
-                                    previewBox.style.backgroundImage = `linear-gradient(rgba(17, 18, 23, 0.78), rgba(17, 18, 23, 0.88)), url('${bgImg}')`;
+                                const safeBg = sanitizeUrl(bgImg);
+                                if (safeBg && (safeBg.startsWith('http://') || safeBg.startsWith('https://') || safeBg.startsWith('data:image/'))) {
+                                    previewBox.style.backgroundImage = `linear-gradient(rgba(17, 18, 23, 0.78), rgba(17, 18, 23, 0.88)), url('${encodeURI(safeBg)}')`;
                                     previewBox.style.backgroundSize = 'cover';
                                     previewBox.style.backgroundPosition = 'center';
                                 } else {
@@ -15214,10 +15215,13 @@
                         bannerEl.style.backgroundPosition = 'center';
                         bannerEl.style.backgroundColor = 'transparent';
                     } else if (customBgUrl) {
-                        bannerEl.style.backgroundImage = `url("${customBgUrl}")`;
-                        bannerEl.style.backgroundSize = 'cover';
-                        bannerEl.style.backgroundPosition = 'center';
-                        bannerEl.style.backgroundColor = 'transparent';
+                        const safeBg = sanitizeUrl(customBgUrl);
+                        if (safeBg && (safeBg.startsWith('http://') || safeBg.startsWith('https://') || safeBg.startsWith('data:image/'))) {
+                            bannerEl.style.backgroundImage = `url("${safeBg}")`;
+                            bannerEl.style.backgroundSize = 'cover';
+                            bannerEl.style.backgroundPosition = 'center';
+                            bannerEl.style.backgroundColor = 'transparent';
+                        }
                     } else if (window.currentUser.accent_color || window.currentUser.banner_color) {
                         const hex = typeof window.currentUser.accent_color === 'number' 
                             ? '#' + window.currentUser.accent_color.toString(16).padStart(6, '0') 
@@ -15287,8 +15291,9 @@
             if (bioEl) bioEl.style.borderLeftColor = activeAccent;
 
             if (bannerEl && (!window.currentUser || !window.currentUser.banner)) {
-                if (mode === 'image' && customBgUrl) {
-                    bannerEl.style.backgroundImage = `url("${customBgUrl}")`;
+                const safeBannerBg = sanitizeUrl(customBgUrl);
+                if (mode === 'image' && safeBannerBg && (safeBannerBg.startsWith('http://') || safeBannerBg.startsWith('https://') || safeBannerBg.startsWith('data:image/'))) {
+                    bannerEl.style.backgroundImage = `url("${safeBannerBg}")`;
                     bannerEl.style.backgroundSize = 'cover';
                     bannerEl.style.backgroundPosition = 'center';
                     bannerEl.style.backgroundColor = 'transparent';
@@ -15351,7 +15356,7 @@
                         bgLayer.appendChild(bgImg);
                     }
                     const safeCustomBg = sanitizeUrl(customBgUrl);
-                    if (safeCustomBg && bgImg.src !== safeCustomBg) {
+                    if (safeCustomBg && (safeCustomBg.startsWith('http://') || safeCustomBg.startsWith('https://') || safeCustomBg.startsWith('data:image/')) && bgImg.src !== safeCustomBg) {
                         bgImg.src = safeCustomBg;
                     }
 
@@ -15394,7 +15399,11 @@
                     else setTimeout(updateImgFraming, 100);
 
                     // CSS fallback
-                    bgLayer.style.backgroundImage = 'url("' + customBgUrl + '")';
+                    if (safeCustomBg && (safeCustomBg.startsWith('http://') || safeCustomBg.startsWith('https://') || safeCustomBg.startsWith('data:image/'))) {
+                        bgLayer.style.backgroundImage = 'url("' + safeCustomBg + '")';
+                    } else {
+                        bgLayer.style.backgroundImage = 'none';
+                    }
                     bgLayer.style.backgroundPosition = 'center';
                     bgLayer.style.backgroundSize = 'cover';
                 } else {
@@ -21462,22 +21471,62 @@
             }
 
             if (!container) return;
+            container.textContent = '';
             if (window.broadcastEmbedFields.length === 0) {
-                container.innerHTML = `<div style="font-size: 0.78rem; color: var(--muted); text-align: center; padding: 10px;">No custom embed fields added yet. Click "+ Add Field" to create one (up to ${maxFields}${isPrem ? ' with Nora Plus' : ''}).</div>`;
+                const emptyNotice = document.createElement('div');
+                emptyNotice.style.cssText = 'font-size: 0.78rem; color: var(--muted); text-align: center; padding: 10px;';
+                emptyNotice.textContent = `No custom embed fields added yet. Click "+ Add Field" to create one (up to ${maxFields}${isPrem ? ' with Nora Plus' : ''}).`;
+                container.appendChild(emptyNotice);
                 return;
             }
-            container.innerHTML = window.broadcastEmbedFields.map((f, idx) => `
-                <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 10px 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px;">
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <input type="text" placeholder="Field Name (e.g. Server Status)" value="${sanitizeUrl(f.name)}" style="flex: 1; padding: 6px 10px; font-size: 0.8rem; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fff; border-radius: 6px;" oninput="updateBroadcastEmbedField(${idx}, 'name', this.value)">
-                        <label style="display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: var(--muted); cursor: pointer; user-select: none;">
-                            <input type="checkbox" ${f.inline ? 'checked' : ''} onchange="updateBroadcastEmbedField(${idx}, 'inline', this.checked)"> Inline
-                        </label>
-                        <button type="button" class="btn-outline" style="padding: 4px 8px; font-size: 0.75rem; color: #ef4444; border-color: rgba(239,68,68,0.3);" onclick="removeBroadcastEmbedField(${idx})" title="Remove Field"><i class="fas fa-trash"></i></button>
-                    </div>
-                    <textarea placeholder="Field Value (supports markdown)" style="width: 100%; min-height: 45px; padding: 6px 10px; font-size: 0.8rem; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fff; border-radius: 6px;" oninput="updateBroadcastEmbedField(${idx}, 'value', this.value)">${f.value || ''}</textarea>
-                </div>
-            `).join('');
+
+            window.broadcastEmbedFields.forEach((f, idx) => {
+                const fieldCard = document.createElement('div');
+                fieldCard.style.cssText = 'background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); padding: 10px 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 8px;';
+
+                const topRow = document.createElement('div');
+                topRow.style.cssText = 'display: flex; gap: 10px; align-items: center;';
+
+                const nameInput = document.createElement('input');
+                nameInput.type = 'text';
+                nameInput.placeholder = 'Field Name (e.g. Server Status)';
+                nameInput.value = f.name || '';
+                nameInput.style.cssText = 'flex: 1; padding: 6px 10px; font-size: 0.8rem; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fff; border-radius: 6px;';
+                nameInput.oninput = function() { updateBroadcastEmbedField(idx, 'name', this.value); };
+
+                const inlineLabel = document.createElement('label');
+                inlineLabel.style.cssText = 'display: flex; align-items: center; gap: 4px; font-size: 0.75rem; color: var(--muted); cursor: pointer; user-select: none;';
+                const inlineCheckbox = document.createElement('input');
+                inlineCheckbox.type = 'checkbox';
+                inlineCheckbox.checked = !!f.inline;
+                inlineCheckbox.onchange = function() { updateBroadcastEmbedField(idx, 'inline', this.checked); };
+                inlineLabel.appendChild(inlineCheckbox);
+                inlineLabel.appendChild(document.createTextNode(' Inline'));
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn-outline';
+                removeBtn.style.cssText = 'padding: 4px 8px; font-size: 0.75rem; color: #ef4444; border-color: rgba(239,68,68,0.3);';
+                removeBtn.title = 'Remove Field';
+                removeBtn.onclick = function() { removeBroadcastEmbedField(idx); };
+                const trashIcon = document.createElement('i');
+                trashIcon.className = 'fas fa-trash';
+                removeBtn.appendChild(trashIcon);
+
+                topRow.appendChild(nameInput);
+                topRow.appendChild(inlineLabel);
+                topRow.appendChild(removeBtn);
+
+                const valueTextarea = document.createElement('textarea');
+                valueTextarea.placeholder = 'Field Value (supports markdown)';
+                valueTextarea.value = f.value || '';
+                valueTextarea.style.cssText = 'width: 100%; min-height: 45px; padding: 6px 10px; font-size: 0.8rem; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fff; border-radius: 6px;';
+                valueTextarea.oninput = function() { updateBroadcastEmbedField(idx, 'value', this.value); };
+
+                fieldCard.appendChild(topRow);
+                fieldCard.appendChild(valueTextarea);
+                container.appendChild(fieldCard);
+            });
         }
 
         async function handleBroadcastAvatarUpload(input) {
@@ -21596,7 +21645,10 @@
             const textEl = document.getElementById('preview-text');
 
             if (nameEl) nameEl.textContent = name;
-            if (avatarEl) avatarEl.src = sanitizeUrl(avatar) || 'nora.png';
+            if (avatarEl) {
+                const safeAv = sanitizeUrl(avatar);
+                avatarEl.src = (safeAv && (safeAv.startsWith('http://') || safeAv.startsWith('https://') || safeAv.startsWith('data:image/'))) ? safeAv : 'nora.png';
+            }
             if (textEl) {
                 textEl.textContent = content || (embedTitle || embedDesc || embedAuthorName || window.broadcastEmbedFields.length > 0 ? '' : 'Message content will appear here...');
                 textEl.style.display = (content || (!embedTitle && !embedDesc && !embedAuthorName && window.broadcastEmbedFields.length === 0)) ? 'block' : 'none';
@@ -21635,8 +21687,13 @@
                         if (authorName) authorName.textContent = embedAuthorName;
                         if (authorIcon) {
                             if (embedAuthorIcon) {
-                                authorIcon.src = sanitizeUrl(embedAuthorIcon);
-                                authorIcon.style.display = 'block';
+                                const safeAuth = sanitizeUrl(embedAuthorIcon);
+                                if (safeAuth && (safeAuth.startsWith('http://') || safeAuth.startsWith('https://') || safeAuth.startsWith('data:image/'))) {
+                                    authorIcon.src = safeAuth;
+                                    authorIcon.style.display = 'block';
+                                } else {
+                                    authorIcon.style.display = 'none';
+                                }
                             } else {
                                 authorIcon.style.display = 'none';
                             }
@@ -21658,36 +21715,53 @@
                 
                 // Fields
                 if (fieldsEl) {
+                    fieldsEl.textContent = '';
                     if (validFields.length > 0) {
                         fieldsEl.style.display = 'grid';
                         fieldsEl.style.gridTemplateColumns = 'repeat(auto-fit, minmax(130px, 1fr))';
                         fieldsEl.style.gap = '8px';
                         fieldsEl.style.marginTop = '6px';
-                        fieldsEl.innerHTML = validFields.map(f => `
-                            <div style="${f.inline ? '' : 'grid-column: 1 / -1;'}">
-                                <div style="font-weight: 700; font-size: 0.82rem; color: #fff; margin-bottom: 2px;">${sanitizeUrl(f.name) || 'Field'}</div>
-                                <div style="font-size: 0.8rem; color: #dbdee1; white-space: pre-wrap; word-break: break-word;">${f.value || ''}</div>
-                            </div>
-                        `).join('');
+                        validFields.forEach(f => {
+                            const fieldCol = document.createElement('div');
+                            if (!f.inline) fieldCol.style.gridColumn = '1 / -1';
+                            const fTitle = document.createElement('div');
+                            fTitle.style.cssText = 'font-weight: 700; font-size: 0.82rem; color: #fff; margin-bottom: 2px;';
+                            fTitle.textContent = f.name || 'Field';
+                            const fVal = document.createElement('div');
+                            fVal.style.cssText = 'font-size: 0.8rem; color: #dbdee1; white-space: pre-wrap; word-break: break-word;';
+                            fVal.textContent = f.value || '';
+                            fieldCol.appendChild(fTitle);
+                            fieldCol.appendChild(fVal);
+                            fieldsEl.appendChild(fieldCol);
+                        });
                     } else {
                         fieldsEl.style.display = 'none';
-                        fieldsEl.innerHTML = '';
                     }
                 }
 
                 // Thumbnail & Image
                 if (thumbEl) {
                     if (embedThumbnail) {
-                        thumbEl.src = sanitizeUrl(embedThumbnail);
-                        thumbEl.style.display = 'block';
+                        const safeThumb = sanitizeUrl(embedThumbnail);
+                        if (safeThumb && (safeThumb.startsWith('http://') || safeThumb.startsWith('https://') || safeThumb.startsWith('data:image/'))) {
+                            thumbEl.src = safeThumb;
+                            thumbEl.style.display = 'block';
+                        } else {
+                            thumbEl.style.display = 'none';
+                        }
                     } else {
                         thumbEl.style.display = 'none';
                     }
                 }
                 if (imgEl) {
                     if (embedImage) {
-                        imgEl.src = sanitizeUrl(embedImage);
-                        imgEl.style.display = 'block';
+                        const safeImg = sanitizeUrl(embedImage);
+                        if (safeImg && (safeImg.startsWith('http://') || safeImg.startsWith('https://') || safeImg.startsWith('data:image/'))) {
+                            imgEl.src = safeImg;
+                            imgEl.style.display = 'block';
+                        } else {
+                            imgEl.style.display = 'none';
+                        }
                     } else {
                         imgEl.style.display = 'none';
                     }
@@ -21703,8 +21777,13 @@
                         }
                         if (footIcon) {
                             if (embedFooterIcon) {
-                                footIcon.src = sanitizeUrl(embedFooterIcon);
-                                footIcon.style.display = 'inline-block';
+                                const safeFoot = sanitizeUrl(embedFooterIcon);
+                                if (safeFoot && (safeFoot.startsWith('http://') || safeFoot.startsWith('https://') || safeFoot.startsWith('data:image/'))) {
+                                    footIcon.src = safeFoot;
+                                    footIcon.style.display = 'inline-block';
+                                } else {
+                                    footIcon.style.display = 'none';
+                                }
                             } else {
                                 footIcon.style.display = 'none';
                             }
@@ -21843,6 +21922,10 @@
         };
 
         window.renderStarboardRoleRewards = function() {
+            window.renderStarboardRoleRewardsList();
+        };
+
+        window.renderStarboardRoleRewardsList = function() {
             const container = document.getElementById('starboard-role-rewards-list');
             const emptyNotice = document.getElementById('starboard-role-rewards-empty');
             if (!container) return;
@@ -21856,51 +21939,161 @@
 
             if (emptyNotice) emptyNotice.style.display = 'none';
             const roles = window._cachedGuildRoles || [];
+            container.innerHTML = '';
 
-            let html = '';
             rewards.forEach((item, index) => {
                 const cond = item.condition || 'total_stars';
                 const thresh = item.threshold || 10;
                 const roleId = item.roleId || '';
 
-                let roleOptions = '<option value="">Select Role...</option>';
+                const row = document.createElement('div');
+                row.style.background = 'rgba(255,255,255,0.03)';
+                row.style.border = '1px solid rgba(255,255,255,0.08)';
+                row.style.borderRadius = '12px';
+                row.style.padding = '14px 16px';
+                row.style.display = 'grid';
+                row.style.gridTemplateColumns = '1.4fr 1fr 1.6fr auto';
+                row.style.gap = '12px';
+                row.style.alignItems = 'center';
+
+                // Col 1: Condition
+                const colCond = document.createElement('div');
+                const lblCond = document.createElement('label');
+                lblCond.style.fontSize = '0.72rem';
+                lblCond.style.color = 'var(--muted)';
+                lblCond.style.marginBottom = '4px';
+                lblCond.style.display = 'block';
+                lblCond.style.fontWeight = '600';
+                lblCond.textContent = 'Condition';
+
+                const selCond = document.createElement('select');
+                selCond.style.width = '100%';
+                selCond.style.boxSizing = 'border-box';
+                selCond.style.padding = '8px 10px';
+                selCond.style.borderRadius = '8px';
+                selCond.style.background = 'rgba(0,0,0,0.4)';
+                selCond.style.border = '1px solid rgba(255,255,255,0.1)';
+                selCond.style.color = '#fff';
+                selCond.style.fontSize = '0.8rem';
+                selCond.onchange = function() { updateStarboardRewardField(index, 'condition', this.value); };
+
+                const opt1 = document.createElement('option');
+                opt1.value = 'total_stars';
+                opt1.textContent = '⭐ Total Stars Earned';
+                if (cond === 'total_stars') opt1.selected = true;
+
+                const opt2 = document.createElement('option');
+                opt2.value = 'times_starboarded';
+                opt2.textContent = '🏆 Times Starboarded';
+                if (cond === 'times_starboarded') opt2.selected = true;
+
+                const opt3 = document.createElement('option');
+                opt3.value = 'single_message_stars';
+                opt3.textContent = '🌟 Single Post Stars';
+                if (cond === 'single_message_stars') opt3.selected = true;
+
+                selCond.appendChild(opt1);
+                selCond.appendChild(opt2);
+                selCond.appendChild(opt3);
+                colCond.appendChild(lblCond);
+                colCond.appendChild(selCond);
+
+                // Col 2: Threshold
+                const colThresh = document.createElement('div');
+                const lblThresh = document.createElement('label');
+                lblThresh.style.fontSize = '0.72rem';
+                lblThresh.style.color = 'var(--muted)';
+                lblThresh.style.marginBottom = '4px';
+                lblThresh.style.display = 'block';
+                lblThresh.style.fontWeight = '600';
+                lblThresh.textContent = 'Threshold';
+
+                const inputThresh = document.createElement('input');
+                inputThresh.type = 'number';
+                inputThresh.min = '1';
+                inputThresh.max = '10000';
+                inputThresh.value = String(thresh);
+                inputThresh.style.width = '100%';
+                inputThresh.style.boxSizing = 'border-box';
+                inputThresh.style.padding = '8px 10px';
+                inputThresh.style.borderRadius = '8px';
+                inputThresh.style.background = 'rgba(0,0,0,0.4)';
+                inputThresh.style.border = '1px solid rgba(255,255,255,0.1)';
+                inputThresh.style.color = '#fff';
+                inputThresh.style.fontSize = '0.8rem';
+                inputThresh.oninput = function() { updateStarboardRewardField(index, 'threshold', parseInt(this.value, 10) || 1); };
+
+                colThresh.appendChild(lblThresh);
+                colThresh.appendChild(inputThresh);
+
+                // Col 3: Reward Role
+                const colRole = document.createElement('div');
+                const lblRole = document.createElement('label');
+                lblRole.style.fontSize = '0.72rem';
+                lblRole.style.color = 'var(--muted)';
+                lblRole.style.marginBottom = '4px';
+                lblRole.style.display = 'block';
+                lblRole.style.fontWeight = '600';
+                lblRole.textContent = 'Reward Role';
+
+                const selRole = document.createElement('select');
+                selRole.id = `starboard-reward-role-${index}`;
+                selRole.className = 'starboard-reward-role-select';
+                selRole.style.width = '100%';
+                selRole.style.boxSizing = 'border-box';
+                selRole.style.padding = '8px 10px';
+                selRole.style.borderRadius = '8px';
+                selRole.style.background = 'rgba(0,0,0,0.4)';
+                selRole.style.border = '1px solid rgba(255,255,255,0.1)';
+                selRole.style.color = '#fff';
+                selRole.style.fontSize = '0.8rem';
+                selRole.onchange = function() { updateStarboardRewardField(index, 'roleId', this.value); };
+
+                const defOpt = document.createElement('option');
+                defOpt.value = '';
+                defOpt.textContent = 'Select Role...';
+                selRole.appendChild(defOpt);
+
                 roles.forEach(r => {
-                    const isSel = r.id === roleId ? 'selected' : '';
-                    const dis = r.higherThanBot ? 'disabled' : '';
-                    const extra = r.higherThanBot ? ' (Higher than Nora)' : '';
-                    roleOptions += `<option value="${r.id}" ${isSel} ${dis} style="color: ${r.color || '#fff'}">${r.name}${extra}</option>`;
+                    const opt = document.createElement('option');
+                    opt.value = r.id;
+                    opt.textContent = `${r.name || 'Unnamed Role'}${r.higherThanBot ? ' (Higher than Nora)' : ''}`;
+                    if (r.color) opt.style.color = r.color;
+                    if (r.higherThanBot) opt.disabled = true;
+                    if (r.id === roleId) opt.selected = true;
+                    selRole.appendChild(opt);
                 });
 
-                html += `
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px; display: grid; grid-template-columns: 1.4fr 1fr 1.6fr auto; gap: 12px; align-items: center;">
-                    <div>
-                        <label style="font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; display: block; font-weight: 600;">Condition</label>
-                        <select style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.8rem;" onchange="updateStarboardRewardField(${index}, 'condition', this.value)">
-                            <option value="total_stars" ${cond === 'total_stars' ? 'selected' : ''}>⭐ Total Stars Earned</option>
-                            <option value="times_starboarded" ${cond === 'times_starboarded' ? 'selected' : ''}>🏆 Times Starboarded</option>
-                            <option value="single_message_stars" ${cond === 'single_message_stars' ? 'selected' : ''}>🌟 Single Post Stars</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label style="font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; display: block; font-weight: 600;">Threshold</label>
-                        <input type="number" min="1" max="10000" value="${thresh}" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.8rem;" oninput="updateStarboardRewardField(${index}, 'threshold', parseInt(this.value, 10) || 1)">
-                    </div>
-                    <div>
-                        <label style="font-size: 0.72rem; color: var(--muted); margin-bottom: 4px; display: block; font-weight: 600;">Reward Role</label>
-                        <select id="starboard-reward-role-${index}" class="starboard-reward-role-select" style="width: 100%; box-sizing: border-box; padding: 8px 10px; border-radius: 8px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 0.8rem;" onchange="updateStarboardRewardField(${index}, 'roleId', this.value)">
-                            ${roleOptions}
-                        </select>
-                    </div>
-                    <div style="padding-top: 18px;">
-                        <button type="button" onclick="removeStarboardRoleReward(${index})" style="padding: 8px 12px; border-radius: 8px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; cursor: pointer;" title="Delete reward">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                </div>
-                `;
+                colRole.appendChild(lblRole);
+                colRole.appendChild(selRole);
+
+                // Col 4: Action Delete
+                const colDel = document.createElement('div');
+                colDel.style.paddingTop = '18px';
+
+                const delBtn = document.createElement('button');
+                delBtn.type = 'button';
+                delBtn.style.padding = '8px 12px';
+                delBtn.style.borderRadius = '8px';
+                delBtn.style.background = 'rgba(239, 68, 68, 0.15)';
+                delBtn.style.border = '1px solid rgba(239, 68, 68, 0.3)';
+                delBtn.style.color = '#f87171';
+                delBtn.style.cursor = 'pointer';
+                delBtn.title = 'Delete reward';
+                delBtn.onclick = function() { removeStarboardRoleReward(index); };
+
+                const trashIcon = document.createElement('i');
+                trashIcon.className = 'fas fa-trash';
+                delBtn.appendChild(trashIcon);
+                colDel.appendChild(delBtn);
+
+                row.appendChild(colCond);
+                row.appendChild(colThresh);
+                row.appendChild(colRole);
+                row.appendChild(colDel);
+                container.appendChild(row);
             });
 
-            container.innerHTML = html;
             container.querySelectorAll('.starboard-reward-role-select').forEach(sel => {
                 if (typeof initCustomDropdown === 'function') initCustomDropdown(sel);
             });
@@ -22008,7 +22201,10 @@
                 const isWebhook = webhookEnabled ? webhookEnabled.checked : false;
                 if (isWebhook) {
                     if (botnameEl) botnameEl.textContent = (webhookName && webhookName.value) ? webhookName.value : 'Nora Starboard';
-                    if (avatarEl) avatarEl.src = (webhookAvatar && webhookAvatar.value) ? sanitizeUrl(webhookAvatar.value) : 'nora.png';
+                    if (avatarEl) {
+                        const rawAv = (webhookAvatar && webhookAvatar.value) ? sanitizeUrl(webhookAvatar.value) : '';
+                        avatarEl.src = (rawAv && (rawAv.startsWith('http://') || rawAv.startsWith('https://') || rawAv.startsWith('data:image/'))) ? rawAv : 'nora.png';
+                    }
                 } else {
                     if (botnameEl) botnameEl.textContent = 'Nora';
                     if (avatarEl) avatarEl.src = 'nora.png';
@@ -22424,14 +22620,42 @@
             row.className = 'row-inputs';
             row.style.gap = '10px';
             row.style.marginBottom = '5px';
-            row.innerHTML = `
-                <input type="number" value="${lvl}" placeholder="Level" style="flex: 0.3;" oninput="updateRoleRewardsJson()">
-                <select data-no-translate onchange="updateRoleRewardsJson()" style="flex: 1;">
-                    <option value="">Select Role...</option>
-                    ${(window.guildRoles || []).map(r => `<option value="${r.id}" ${r.id === roleId ? 'selected' : ''} ${r.higherThanBot ? 'disabled' : ''}>${r.name}${r.higherThanBot ? ' (Bot role too low)' : ''}</option>`).join('')}
-                </select>
-                <button class="config-btn" style="width: auto; padding: 5px 10px; color: var(--danger); border-color: rgba(255,85,85,0.2);" onclick="this.parentElement.remove(); updateRoleRewardsJson();">X</button>
-            `;
+
+            const lvlInput = document.createElement('input');
+            lvlInput.type = 'number';
+            lvlInput.value = lvl;
+            lvlInput.placeholder = 'Level';
+            lvlInput.style.flex = '0.3';
+            lvlInput.oninput = updateRoleRewardsJson;
+
+            const roleSelect = document.createElement('select');
+            roleSelect.setAttribute('data-no-translate', '');
+            roleSelect.style.flex = '1';
+            roleSelect.onchange = updateRoleRewardsJson;
+
+            const defOpt = document.createElement('option');
+            defOpt.value = '';
+            defOpt.textContent = 'Select Role...';
+            roleSelect.appendChild(defOpt);
+
+            (window.guildRoles || []).forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.id;
+                opt.textContent = `${r.name || 'Unnamed Role'}${r.higherThanBot ? ' (Bot role too low)' : ''}`;
+                if (r.id === roleId) opt.selected = true;
+                if (r.higherThanBot) opt.disabled = true;
+                roleSelect.appendChild(opt);
+            });
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'config-btn';
+            delBtn.style.cssText = 'width: auto; padding: 5px 10px; color: var(--danger); border-color: rgba(255,85,85,0.2);';
+            delBtn.textContent = 'X';
+            delBtn.onclick = function() { row.remove(); updateRoleRewardsJson(); };
+
+            row.appendChild(lvlInput);
+            row.appendChild(roleSelect);
+            row.appendChild(delBtn);
             container.appendChild(row);
         }
 
@@ -22451,15 +22675,49 @@
             row.className = 'row-inputs';
             row.style.gap = '10px';
             row.style.marginBottom = '5px';
-            row.innerHTML = `
-                <input type="text" value="${groupId}" placeholder="Group ID" style="flex: 0.8;" oninput="updateRobloxGroupsJson()">
-                <input type="number" value="${rank}" placeholder="Rank (0-255)" style="flex: 0.4;" oninput="updateRobloxGroupsJson()">
-                <select data-no-translate onchange="updateRobloxGroupsJson()" style="flex: 1;">
-                    <option value="">Select Role...</option>
-                    ${window.guildRoles ? window.guildRoles.map(r => `<option value="${r.id}" ${r.id === roleId ? 'selected' : ''}>${r.name}</option>`).join('') : ''}
-                </select>
-                <button class="config-btn" style="width: auto; padding: 5px 10px; color: var(--danger);" onclick="this.parentElement.remove(); updateRobloxGroupsJson();">X</button>
-            `;
+
+            const gidInput = document.createElement('input');
+            gidInput.type = 'text';
+            gidInput.value = groupId;
+            gidInput.placeholder = 'Group ID';
+            gidInput.style.flex = '0.8';
+            gidInput.oninput = updateRobloxGroupsJson;
+
+            const rankInput = document.createElement('input');
+            rankInput.type = 'number';
+            rankInput.value = rank;
+            rankInput.placeholder = 'Rank (0-255)';
+            rankInput.style.flex = '0.4';
+            rankInput.oninput = updateRobloxGroupsJson;
+
+            const roleSelect = document.createElement('select');
+            roleSelect.setAttribute('data-no-translate', '');
+            roleSelect.style.flex = '1';
+            roleSelect.onchange = updateRobloxGroupsJson;
+
+            const defOpt = document.createElement('option');
+            defOpt.value = '';
+            defOpt.textContent = 'Select Role...';
+            roleSelect.appendChild(defOpt);
+
+            (window.guildRoles || []).forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.id;
+                opt.textContent = r.name || 'Unnamed Role';
+                if (r.id === roleId) opt.selected = true;
+                roleSelect.appendChild(opt);
+            });
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'config-btn';
+            delBtn.style.cssText = 'width: auto; padding: 5px 10px; color: var(--danger);';
+            delBtn.textContent = 'X';
+            delBtn.onclick = function() { row.remove(); updateRobloxGroupsJson(); };
+
+            row.appendChild(gidInput);
+            row.appendChild(rankInput);
+            row.appendChild(roleSelect);
+            row.appendChild(delBtn);
             container.appendChild(row);
         }
 
@@ -22484,18 +22742,57 @@
             row.style.gap = '10px';
             row.style.marginBottom = '5px';
 
-            const rolesHtml = (window.guildRoles || []).map(r => `<option value="${r.id}" ${String(r.id) === String(targetId) ? 'selected' : ''}>Role: @${r.name}</option>`).join('');
-            const channelsHtml = (window.guildChannels || []).map(c => `<option value="${c.id}" ${String(c.id) === String(targetId) ? 'selected' : ''}>Channel: #${c.name}</option>`).join('');
+            const select = document.createElement('select');
+            select.setAttribute('data-no-translate', '');
+            select.style.cssText = 'flex: 1; font-size: 0.82rem;';
+            select.onchange = updateRoleMultipliersJson;
 
-            row.innerHTML = `
-                <select data-no-translate onchange="updateRoleMultipliersJson()" style="flex: 1; font-size: 0.82rem;">
-                    <option value="">Select Role or Channel...</option>
-                    <optgroup label="Server Roles">${rolesHtml}</optgroup>
-                    <optgroup label="Channels">${channelsHtml}</optgroup>
-                </select>
-                <input type="number" step="0.1" min="0.1" max="10" value="${mult || '1.5'}" placeholder="Mult (e.g. 1.5)" style="flex: 0.35; font-size: 0.82rem;" oninput="updateRoleMultipliersJson()">
-                <button class="config-btn" style="width: auto; padding: 5px 10px; color: var(--danger); border-color: rgba(255,85,85,0.2);" onclick="this.parentElement.remove(); updateRoleMultipliersJson();">X</button>
-            `;
+            const defOpt = document.createElement('option');
+            defOpt.value = '';
+            defOpt.textContent = 'Select Role or Channel...';
+            select.appendChild(defOpt);
+
+            const roleGroup = document.createElement('optgroup');
+            roleGroup.label = 'Server Roles';
+            (window.guildRoles || []).forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r.id;
+                opt.textContent = `Role: @${r.name || 'Unnamed Role'}`;
+                if (String(r.id) === String(targetId)) opt.selected = true;
+                roleGroup.appendChild(opt);
+            });
+            select.appendChild(roleGroup);
+
+            const channelGroup = document.createElement('optgroup');
+            channelGroup.label = 'Channels';
+            (window.guildChannels || []).forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = `Channel: #${c.name || 'Unnamed Channel'}`;
+                if (String(c.id) === String(targetId)) opt.selected = true;
+                channelGroup.appendChild(opt);
+            });
+            select.appendChild(channelGroup);
+
+            const multInput = document.createElement('input');
+            multInput.type = 'number';
+            multInput.step = '0.1';
+            multInput.min = '0.1';
+            multInput.max = '10';
+            multInput.value = mult || '1.5';
+            multInput.placeholder = 'Mult (e.g. 1.5)';
+            multInput.style.cssText = 'flex: 0.35; font-size: 0.82rem;';
+            multInput.oninput = updateRoleMultipliersJson;
+
+            const delBtn = document.createElement('button');
+            delBtn.className = 'config-btn';
+            delBtn.style.cssText = 'width: auto; padding: 5px 10px; color: var(--danger); border-color: rgba(255,85,85,0.2);';
+            delBtn.textContent = 'X';
+            delBtn.onclick = function() { row.remove(); updateRoleMultipliersJson(); };
+
+            row.appendChild(select);
+            row.appendChild(multInput);
+            row.appendChild(delBtn);
             container.appendChild(row);
         }
         window.addXpMultiplier = addRoleMultiplier;
@@ -22705,8 +23002,13 @@
 
             const imgEl = document.getElementById('rr-preview-image');
             if (imgVal.trim()) {
-                imgEl.src = sanitizeUrl(imgVal.trim());
-                imgEl.style.display = 'block';
+                const safeImg = sanitizeUrl(imgVal.trim());
+                if (safeImg && (safeImg.startsWith('http://') || safeImg.startsWith('https://') || safeImg.startsWith('data:image/'))) {
+                    imgEl.src = safeImg;
+                    imgEl.style.display = 'block';
+                } else {
+                    imgEl.style.display = 'none';
+                }
             } else {
                 imgEl.style.display = 'none';
             }
@@ -22714,7 +23016,8 @@
             // Sync bot avatar
             const avatarEl = document.getElementById('rr-preview-bot-avatar');
             if (window.currentGuild && window.currentGuild.icon) {
-                avatarEl.src = sanitizeUrl(window.currentGuild.icon);
+                const safeIcon = sanitizeUrl(window.currentGuild.icon);
+                avatarEl.src = (safeIcon && (safeIcon.startsWith('http://') || safeIcon.startsWith('https://') || safeIcon.startsWith('data:image/'))) ? safeIcon : 'https://cdn.discordapp.com/embed/avatars/0.png';
             } else {
                 avatarEl.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
             }
@@ -23331,18 +23634,33 @@
                     details.style = 'display: flex; flex-direction: column; gap: 4px; min-width: 0;';
 
                     const topRow = document.createElement('div');
-                    topRow.style = 'display: flex; align-items: center; gap: 8px; flex-wrap: wrap;';
-                    topRow.innerHTML = `<strong>IP: ${s.ipAddress}</strong> <span style="color: var(--muted); font-size: 0.75rem;">(${s.location})</span>`;
+                    topRow.style.cssText = 'display: flex; align-items: center; gap: 8px; flex-wrap: wrap;';
+
+                    const ipStrong = document.createElement('strong');
+                    ipStrong.textContent = `IP: ${s.ipAddress || 'Unknown'}`;
+                    topRow.appendChild(ipStrong);
+
+                    const locSpan = document.createElement('span');
+                    locSpan.style.cssText = 'color: var(--muted); font-size: 0.75rem;';
+                    locSpan.textContent = `(${s.location || 'Unknown'})`;
+                    topRow.appendChild(locSpan);
+
                     if (s.deviceType) {
-                        topRow.innerHTML += `<span style="font-size: 0.65rem; background: rgba(174, 239, 255, 0.15); color: var(--primary); padding: 1px 5px; border-radius: 4px; font-weight: 600;">${s.deviceType.toUpperCase()}</span>`;
+                        const devSpan = document.createElement('span');
+                        devSpan.style.cssText = 'font-size: 0.65rem; background: rgba(174, 239, 255, 0.15); color: var(--primary); padding: 1px 5px; border-radius: 4px; font-weight: 600;';
+                        devSpan.textContent = s.deviceType.toUpperCase();
+                        topRow.appendChild(devSpan);
                     }
                     if (s.isCurrent) {
-                        topRow.innerHTML += `<span style="font-size: 0.65rem; background: var(--success); color: #fff; padding: 1px 5px; border-radius: 4px; font-weight: 700;">CURRENT</span>`;
+                        const curSpan = document.createElement('span');
+                        curSpan.style.cssText = 'font-size: 0.65rem; background: var(--success); color: #fff; padding: 1px 5px; border-radius: 4px; font-weight: 700;';
+                        curSpan.textContent = 'CURRENT';
+                        topRow.appendChild(curSpan);
                     }
 
                     const timeRow = document.createElement('div');
-                    timeRow.style = 'font-size: 0.7rem; color: var(--muted);';
-                    timeRow.innerHTML = `Created: ${new Date(s.createdAt).toLocaleString()} • Expires: ${new Date(s.expiresAt).toLocaleString()}`;
+                    timeRow.style.cssText = 'font-size: 0.7rem; color: var(--muted);';
+                    timeRow.textContent = `Created: ${new Date(s.createdAt).toLocaleString()} • Expires: ${new Date(s.expiresAt).toLocaleString()}`;
 
                     const uaRow = document.createElement('div');
                     uaRow.style = 'font-size: 0.7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; opacity: 0.8;';
@@ -23518,16 +23836,50 @@
                         row.style.background = 'rgba(255,255,255,0.05)';
                         row.style.padding = '12px 15px';
                         row.style.borderRadius = '10px';
-                        row.innerHTML = `
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <img src="${bot.avatar || 'https://top.gg/images/topgg-logo.png'}" style="width: 30px; height: 30px; border-radius: 50%;">
-                                <div>
-                                    <div style="font-weight: 600; font-size: 0.9rem;">${bot.username}</div>
-                                    <div style="font-size: 0.7rem; color: var(--muted);">${bot.id}</div>
-                                </div>
-                            </div>
-                            <button class="config-btn" style="width: auto; padding: 5px 15px; background: var(--primary); color: #000; font-weight: 600; border: none;" onclick="linkTopggBot('${bot.id}')">Link Bot</button>
-                        `;
+
+                        const infoContainer = document.createElement('div');
+                        infoContainer.style.display = 'flex';
+                        infoContainer.style.alignItems = 'center';
+                        infoContainer.style.gap = '12px';
+
+                        const avatarImg = document.createElement('img');
+                        const safeAv = bot.avatar ? sanitizeUrl(bot.avatar) : '';
+                        avatarImg.src = (safeAv && (safeAv.startsWith('http://') || safeAv.startsWith('https://') || safeAv.startsWith('data:image/'))) ? safeAv : 'https://top.gg/images/topgg-logo.png';
+                        avatarImg.style.width = '30px';
+                        avatarImg.style.height = '30px';
+                        avatarImg.style.borderRadius = '50%';
+                        avatarImg.alt = '';
+
+                        const textContainer = document.createElement('div');
+                        const nameDiv = document.createElement('div');
+                        nameDiv.style.fontWeight = '600';
+                        nameDiv.style.fontSize = '0.9rem';
+                        nameDiv.textContent = bot.username || 'Unknown Bot';
+
+                        const idDiv = document.createElement('div');
+                        idDiv.style.fontSize = '0.7rem';
+                        idDiv.style.color = 'var(--muted)';
+                        idDiv.textContent = bot.id || '';
+
+                        textContainer.appendChild(nameDiv);
+                        textContainer.appendChild(idDiv);
+
+                        infoContainer.appendChild(avatarImg);
+                        infoContainer.appendChild(textContainer);
+
+                        const linkBtn = document.createElement('button');
+                        linkBtn.className = 'config-btn';
+                        linkBtn.style.width = 'auto';
+                        linkBtn.style.padding = '5px 15px';
+                        linkBtn.style.background = 'var(--primary)';
+                        linkBtn.style.color = '#000';
+                        linkBtn.style.fontWeight = '600';
+                        linkBtn.style.border = 'none';
+                        linkBtn.textContent = 'Link Bot';
+                        linkBtn.onclick = () => linkTopggBot(bot.id);
+
+                        row.appendChild(infoContainer);
+                        row.appendChild(linkBtn);
                         list.appendChild(row);
                     });
                 } else {
@@ -23544,23 +23896,63 @@
                         row.style.background = 'rgba(255,255,255,0.05)';
                         row.style.padding = '12px 15px';
                         row.style.borderRadius = '10px';
-                        
-                        // Disable the Link Server button if this server is not the one we are currently configuring
-                        const isCurrentServer = srv.id === currentServerId;
-                        const buttonHtml = isCurrentServer
-                            ? `<button class="config-btn" style="width: auto; padding: 5px 15px; background: var(--primary); color: #000; font-weight: 600; border: none;" onclick="linkTopggServer('${srv.id}')">Link Server</button>`
-                            : `<button class="config-btn" style="width: auto; padding: 5px 15px; opacity: 0.5; background: rgba(255,255,255,0.05); color: var(--muted); border: 1px solid var(--border);" disabled title="To link this server, switch to it in the server list first.">Link Server</button>`;
 
-                        row.innerHTML = `
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <img src="${srv.icon || 'https://top.gg/images/topgg-logo.png'}" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;">
-                                <div>
-                                    <div style="font-weight: 600; font-size: 0.9rem;">${srv.name}</div>
-                                    <div style="font-size: 0.7rem; color: var(--muted);">${srv.id} ${!isCurrentServer ? '(Switch server to link)' : ''}</div>
-                                </div>
-                            </div>
-                            ${buttonHtml}
-                        `;
+                        const infoContainer = document.createElement('div');
+                        infoContainer.style.display = 'flex';
+                        infoContainer.style.alignItems = 'center';
+                        infoContainer.style.gap = '12px';
+
+                        const iconImg = document.createElement('img');
+                        const safeIcon = srv.icon ? sanitizeUrl(srv.icon) : '';
+                        iconImg.src = (safeIcon && (safeIcon.startsWith('http://') || safeIcon.startsWith('https://') || safeIcon.startsWith('data:image/'))) ? safeIcon : 'https://top.gg/images/topgg-logo.png';
+                        iconImg.onerror = () => { iconImg.src = 'https://cdn.discordapp.com/embed/avatars/0.png'; };
+                        iconImg.style.width = '30px';
+                        iconImg.style.height = '30px';
+                        iconImg.style.borderRadius = '50%';
+                        iconImg.style.objectFit = 'cover';
+                        iconImg.alt = '';
+
+                        const textContainer = document.createElement('div');
+                        const nameDiv = document.createElement('div');
+                        nameDiv.style.fontWeight = '600';
+                        nameDiv.style.fontSize = '0.9rem';
+                        nameDiv.textContent = srv.name || 'Unknown Server';
+
+                        const idDiv = document.createElement('div');
+                        idDiv.style.fontSize = '0.7rem';
+                        idDiv.style.color = 'var(--muted)';
+                        const isCurrentServer = srv.id === currentServerId;
+                        idDiv.textContent = `${srv.id || ''} ${!isCurrentServer ? '(Switch server to link)' : ''}`;
+
+                        textContainer.appendChild(nameDiv);
+                        textContainer.appendChild(idDiv);
+
+                        infoContainer.appendChild(iconImg);
+                        infoContainer.appendChild(textContainer);
+
+                        const linkBtn = document.createElement('button');
+                        linkBtn.className = 'config-btn';
+                        linkBtn.style.width = 'auto';
+                        linkBtn.style.padding = '5px 15px';
+                        if (isCurrentServer) {
+                            linkBtn.style.background = 'var(--primary)';
+                            linkBtn.style.color = '#000';
+                            linkBtn.style.fontWeight = '600';
+                            linkBtn.style.border = 'none';
+                            linkBtn.textContent = 'Link Server';
+                            linkBtn.onclick = () => linkTopggServer(srv.id);
+                        } else {
+                            linkBtn.style.opacity = '0.5';
+                            linkBtn.style.background = 'rgba(255,255,255,0.05)';
+                            linkBtn.style.color = 'var(--muted)';
+                            linkBtn.style.border = '1px solid var(--border)';
+                            linkBtn.disabled = true;
+                            linkBtn.title = 'To link this server, switch to it in the server list first.';
+                            linkBtn.textContent = 'Link Server';
+                        }
+
+                        row.appendChild(infoContainer);
+                        row.appendChild(linkBtn);
                         serverList.appendChild(row);
                     });
                 } else {
@@ -25946,32 +26338,101 @@
                 return;
             }
 
-            container.innerHTML = sets.map(app => {
+            container.innerHTML = '';
+            sets.forEach(app => {
                 let questionCount = 0;
                 try { questionCount = JSON.parse(app.questions || '[]').length; } catch (e) {}
 
                 const reviewChannel = window.guildChannels ? window.guildChannels.find(c => c.id === app.reviewChannelId) : null;
                 const chName = reviewChannel ? `#${reviewChannel.name}` : (app.reviewChannelId ? `Channel ID: ${app.reviewChannelId}` : 'Not configured');
 
-                return `
-                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
-                        <div>
-                            <div style="font-weight: 700; font-size: 1rem; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                <span>${escapeHtml(app.name)}</span>
-                                <span class="badge ${app.isActive ? 'stable' : 'dev'}" style="${app.isActive ? 'background: rgba(16, 185, 129, 0.15); color: #10b981;' : 'background: rgba(239, 68, 68, 0.15); color: #ef4444;'}">
-                                    ${app.isActive ? 'Active' : 'Disabled'}
-                                </span>
-                            </div>
-                            <div style="font-size: 0.78rem; color: var(--muted); margin-top: 4px;">Review Channel: ${escapeHtml(chName)} • Questions: ${questionCount}</div>
-                        </div>
-                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.78rem; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); color: #fff;" onclick="sendAppPanel('${app.id}')"><i class="fas fa-paper-plane"></i> Send Panel</button>
-                            <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.78rem; background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); color: #fff;" onclick="showAppSetEditor('${app.id}')"><i class="fas fa-edit"></i> Edit</button>
-                            <button class="config-btn" style="width: auto; padding: 6px 12px; font-size: 0.78rem; background: rgba(239, 68, 68, 0.15); border-color: rgba(239, 68, 68, 0.3); color: #ef4444;" onclick="deleteAppSet('${app.id}')"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
+                const card = document.createElement('div');
+                card.style.background = 'rgba(255,255,255,0.03)';
+                card.style.border = '1px solid rgba(255,255,255,0.08)';
+                card.style.borderRadius = '14px';
+                card.style.padding = '18px';
+                card.style.display = 'flex';
+                card.style.justifyContent = 'space-between';
+                card.style.alignItems = 'center';
+                card.style.flexWrap = 'wrap';
+                card.style.gap = '12px';
+
+                const infoDiv = document.createElement('div');
+                const titleRow = document.createElement('div');
+                titleRow.style.fontWeight = '700';
+                titleRow.style.fontSize = '1rem';
+                titleRow.style.color = '#fff';
+                titleRow.style.display = 'flex';
+                titleRow.style.alignItems = 'center';
+                titleRow.style.gap = '8px';
+
+                const nameSpan = document.createElement('span');
+                nameSpan.textContent = app.name || 'Unnamed Application';
+
+                const badge = document.createElement('span');
+                badge.className = `badge ${app.isActive ? 'stable' : 'dev'}`;
+                badge.style.background = app.isActive ? 'rgba(16, 185, 129, 0.15)' : 'rgba(239, 68, 68, 0.15)';
+                badge.style.color = app.isActive ? '#10b981' : '#ef4444';
+                badge.textContent = app.isActive ? 'Active' : 'Disabled';
+
+                titleRow.appendChild(nameSpan);
+                titleRow.appendChild(badge);
+
+                const subInfo = document.createElement('div');
+                subInfo.style.fontSize = '0.78rem';
+                subInfo.style.color = 'var(--muted)';
+                subInfo.style.marginTop = '4px';
+                subInfo.textContent = `Review Channel: ${chName} • Questions: ${questionCount}`;
+
+                infoDiv.appendChild(titleRow);
+                infoDiv.appendChild(subInfo);
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.style.display = 'flex';
+                actionsDiv.style.gap = '8px';
+                actionsDiv.style.flexWrap = 'wrap';
+
+                const sendBtn = document.createElement('button');
+                sendBtn.className = 'config-btn';
+                sendBtn.style.width = 'auto';
+                sendBtn.style.padding = '6px 12px';
+                sendBtn.style.fontSize = '0.78rem';
+                sendBtn.style.background = 'rgba(255,255,255,0.08)';
+                sendBtn.style.borderColor = 'rgba(255,255,255,0.15)';
+                sendBtn.style.color = '#fff';
+                sendBtn.textContent = 'Send Panel';
+                sendBtn.onclick = () => sendAppPanel(app.id);
+
+                const editBtn = document.createElement('button');
+                editBtn.className = 'config-btn';
+                editBtn.style.width = 'auto';
+                editBtn.style.padding = '6px 12px';
+                editBtn.style.fontSize = '0.78rem';
+                editBtn.style.background = 'rgba(255,255,255,0.08)';
+                editBtn.style.borderColor = 'rgba(255,255,255,0.15)';
+                editBtn.style.color = '#fff';
+                editBtn.textContent = 'Edit';
+                editBtn.onclick = () => showAppSetEditor(app.id);
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'config-btn';
+                delBtn.style.width = 'auto';
+                delBtn.style.padding = '6px 12px';
+                delBtn.style.fontSize = '0.78rem';
+                delBtn.style.background = 'rgba(239, 68, 68, 0.15)';
+                delBtn.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                delBtn.style.color = '#ef4444';
+                delBtn.textContent = 'Delete';
+                delBtn.onclick = () => deleteAppSet(app.id);
+
+                actionsDiv.appendChild(sendBtn);
+                actionsDiv.appendChild(editBtn);
+                actionsDiv.appendChild(delBtn);
+
+                card.appendChild(infoDiv);
+                card.appendChild(actionsDiv);
+                container.appendChild(card);
+            });
         }
 
         window.showAppSetEditor = function(setId) {
@@ -26195,63 +26656,183 @@
         function renderSubmissionsList(submissions) {
             const container = document.getElementById('apps-submissions-container');
             if (!container) return;
+            container.innerHTML = '';
 
             if (!submissions || submissions.length === 0) {
-                container.innerHTML = `
-                    <div style="text-align: center; padding: 40px; color: var(--muted); background: rgba(0,0,0,0.15); border-radius: 14px; border: 1px dashed rgba(255,255,255,0.08);">
-                        <i class="fas fa-check-circle" style="font-size: 2.2rem; color: #10b981; margin-bottom: 12px; display: block;"></i>
-                        No application submissions yet.
-                    </div>
-                `;
+                const emptyDiv = document.createElement('div');
+                emptyDiv.style.textAlign = 'center';
+                emptyDiv.style.padding = '40px';
+                emptyDiv.style.color = 'var(--muted)';
+                emptyDiv.style.background = 'rgba(0,0,0,0.15)';
+                emptyDiv.style.borderRadius = '14px';
+                emptyDiv.style.border = '1px dashed rgba(255,255,255,0.08)';
+
+                const icon = document.createElement('i');
+                icon.className = 'fas fa-check-circle';
+                icon.style.fontSize = '2.2rem';
+                icon.style.color = '#10b981';
+                icon.style.marginBottom = '12px';
+                icon.style.display = 'block';
+
+                emptyDiv.appendChild(icon);
+                emptyDiv.appendChild(document.createTextNode('No application submissions yet.'));
+                container.appendChild(emptyDiv);
                 return;
             }
 
-            container.innerHTML = submissions.map(sub => {
+            submissions.forEach(sub => {
+                const card = document.createElement('div');
+                card.style.background = 'rgba(0,0,0,0.2)';
+                card.style.border = '1px solid rgba(255,255,255,0.08)';
+                card.style.borderRadius = '14px';
+                card.style.padding = '18px';
+                card.style.display = 'flex';
+                card.style.flexDirection = 'column';
+                card.style.gap = '12px';
+
+                const topBar = document.createElement('div');
+                topBar.style.display = 'flex';
+                topBar.style.justifyContent = 'space-between';
+                topBar.style.alignItems = 'center';
+                topBar.style.flexWrap = 'wrap';
+                topBar.style.gap = '10px';
+
+                const userInfo = document.createElement('div');
+                userInfo.style.display = 'flex';
+                userInfo.style.alignItems = 'center';
+                userInfo.style.gap = '12px';
+
+                const avImg = document.createElement('img');
+                avImg.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+                avImg.style.width = '42px';
+                avImg.style.height = '42px';
+                avImg.style.borderRadius = '50%';
+                avImg.alt = '';
+
+                const details = document.createElement('div');
+                const titleRow = document.createElement('div');
+                titleRow.style.fontWeight = '700';
+                titleRow.style.color = '#fff';
+                titleRow.style.fontSize = '0.95rem';
+                titleRow.style.display = 'flex';
+                titleRow.style.alignItems = 'center';
+                titleRow.style.gap = '8px';
+
+                const uSpan = document.createElement('span');
+                uSpan.textContent = sub.username || 'Unknown';
+
+                const idSpan = document.createElement('span');
+                idSpan.style.fontWeight = '400';
+                idSpan.style.fontSize = '0.8rem';
+                idSpan.style.color = 'var(--muted)';
+                idSpan.textContent = `(ID: ${sub.userId || ''})`;
+
+                const badge = document.createElement('span');
+                badge.className = 'badge';
+                if (sub.status === 'APPROVED') {
+                    badge.className = 'badge stable';
+                    badge.style.background = 'rgba(16,185,129,0.15)';
+                    badge.style.color = '#10b981';
+                    badge.textContent = 'Approved';
+                } else if (sub.status === 'REJECTED') {
+                    badge.className = 'badge dev';
+                    badge.style.background = 'rgba(239,68,68,0.15)';
+                    badge.style.color = '#ef4444';
+                    badge.textContent = 'Denied';
+                } else {
+                    badge.style.background = 'rgba(251,191,36,0.15)';
+                    badge.style.color = '#fbbf24';
+                    badge.textContent = 'Pending';
+                }
+
+                titleRow.appendChild(uSpan);
+                titleRow.appendChild(idSpan);
+                titleRow.appendChild(badge);
+
+                const subDate = document.createElement('div');
+                subDate.style.fontSize = '0.75rem';
+                subDate.style.color = 'var(--muted)';
+                subDate.style.marginTop = '2px';
+                const createdStr = sub.createdAt ? new Date(sub.createdAt).toLocaleString() : '';
+                subDate.textContent = `Applied for: ${sub.appName || 'Application'} • ${createdStr}`;
+
+                details.appendChild(titleRow);
+                details.appendChild(subDate);
+
+                userInfo.appendChild(avImg);
+                userInfo.appendChild(details);
+                topBar.appendChild(userInfo);
+
+                if (sub.status === 'PENDING') {
+                    const btnGroup = document.createElement('div');
+                    btnGroup.style.display = 'flex';
+                    btnGroup.style.gap = '8px';
+
+                    const approveBtn = document.createElement('button');
+                    approveBtn.className = 'save-btn';
+                    approveBtn.style.background = '#ffffff';
+                    approveBtn.style.color = '#000000';
+                    approveBtn.style.fontSize = '0.8rem';
+                    approveBtn.style.padding = '6px 16px';
+                    approveBtn.style.fontWeight = '800';
+                    approveBtn.style.borderRadius = '8px';
+                    approveBtn.textContent = 'Approve & Assign Role';
+                    approveBtn.onclick = () => acceptDashboardSubmission(sub.id);
+
+                    const denyBtn = document.createElement('button');
+                    denyBtn.className = 'config-btn';
+                    denyBtn.style.borderColor = 'rgba(255,85,85,0.3)';
+                    denyBtn.style.color = '#ff5555';
+                    denyBtn.style.fontSize = '0.8rem';
+                    denyBtn.style.padding = '6px 14px';
+                    denyBtn.style.borderRadius = '8px';
+                    denyBtn.textContent = 'Deny';
+                    denyBtn.onclick = () => denyDashboardSubmission(sub.id);
+
+                    btnGroup.appendChild(approveBtn);
+                    btnGroup.appendChild(denyBtn);
+                    topBar.appendChild(btnGroup);
+                }
+
+                const answersBox = document.createElement('div');
+                answersBox.style.background = 'rgba(255,255,255,0.02)';
+                answersBox.style.padding = '12px 16px';
+                answersBox.style.borderRadius = '10px';
+                answersBox.style.border = '1px solid rgba(255,255,255,0.04)';
+                answersBox.style.fontSize = '0.85rem';
+                answersBox.style.lineHeight = '1.5';
+
                 let answers = {};
                 try { answers = JSON.parse(sub.answers || '{}'); } catch(e) {}
+                const entries = Object.entries(answers);
+                if (entries.length === 0) {
+                    answersBox.textContent = 'No answers provided.';
+                } else {
+                    entries.forEach(([q, a]) => {
+                        const qRow = document.createElement('div');
+                        qRow.style.marginBottom = '8px';
 
-                const answersHtml = Object.entries(answers).map(([q, a]) => `
-                    <div style="margin-bottom: 8px;">
-                        <strong style="color: #b5bac1;">Q: ${escapeHtml(q)}</strong><br>
-                        <span style="color: #dbdee1;">${escapeHtml(a || 'No answer')}</span>
-                    </div>
-                `).join('');
+                        const qStrong = document.createElement('strong');
+                        qStrong.style.color = '#b5bac1';
+                        qStrong.textContent = `Q: ${q}`;
 
-                const statusBadge = sub.status === 'APPROVED' 
-                    ? '<span class="badge stable" style="background: rgba(16,185,129,0.15); color: #10b981;">Approved</span>'
-                    : sub.status === 'REJECTED'
-                    ? '<span class="badge dev" style="background: rgba(239,68,68,0.15); color: #ef4444;">Denied</span>'
-                    : '<span class="badge" style="background: rgba(251,191,36,0.15); color: #fbbf24;">Pending</span>';
+                        const br = document.createElement('br');
 
-                const isPending = sub.status === 'PENDING';
+                        const aSpan = document.createElement('span');
+                        aSpan.style.color = '#dbdee1';
+                        aSpan.textContent = a || 'No answer';
 
-                return `
-                    <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
-                            <div style="display: flex; align-items: center; gap: 12px;">
-                                <img src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 42px; height: 42px; border-radius: 50%;">
-                                <div>
-                                    <div style="font-weight: 700; color: #fff; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
-                                        <span>${escapeHtml(sub.username)}</span>
-                                        <span style="font-weight: 400; font-size: 0.8rem; color: var(--muted);">(ID: ${escapeHtml(sub.userId)})</span>
-                                        ${statusBadge}
-                                    </div>
-                                    <div style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">Applied for: <strong>${escapeHtml(sub.appName)}</strong> • ${new Date(sub.createdAt).toLocaleString()}</div>
-                                </div>
-                            </div>
-                            ${isPending ? `
-                            <div style="display: flex; gap: 8px;">
-                                <button class="save-btn" style="background: #ffffff !important; color: #000000 !important; font-size: 0.8rem; padding: 6px 16px; font-weight: 800; border-radius: 8px;" onclick="acceptDashboardSubmission('${sub.id}')"><i class="fas fa-check"></i> Approve & Assign Role</button>
-                                <button class="config-btn" style="border-color: rgba(255,85,85,0.3); color: #ff5555; font-size: 0.8rem; padding: 6px 14px; border-radius: 8px;" onclick="denyDashboardSubmission('${sub.id}')"><i class="fas fa-times"></i> Deny</button>
-                            </div>
-                            ` : ''}
-                        </div>
-                        <div style="background: rgba(255,255,255,0.02); padding: 12px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.04); font-size: 0.85rem; line-height: 1.5;">
-                            ${answersHtml || 'No answers provided.'}
-                        </div>
-                    </div>
-                `;
-            }).join('');
+                        qRow.appendChild(qStrong);
+                        qRow.appendChild(br);
+                        qRow.appendChild(aSpan);
+                        answersBox.appendChild(qRow);
+                    });
+                }
+
+                card.appendChild(topBar);
+                card.appendChild(answersBox);
+                container.appendChild(card);
+            });
         }
 
         window.acceptDashboardSubmission = async function(subId) {
@@ -26457,17 +27038,32 @@
             
             const activeGuilds = managed.filter(g => g.hasNora);
             
-            listContainer.innerHTML = activeGuilds.map(g => `
-                <div class="sidebar-dropdown-item" onclick="selectServerFromSidebar('${g.id}')" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
-                    ${(() => {
-                        const iconSrc = (g.icon && typeof g.icon === 'string' && g.icon.startsWith('http')) 
-                            ? g.icon 
-                            : (g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png');
-                        return `<img src="${iconSrc}" style="width: 24px; height: 24px; border-radius: 4px; object-fit: cover;" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';">`;
-                    })()}
-                    <span style="font-size: 0.8rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;">${g.name}</span>
-                </div>
-            `).join('');
+            listContainer.innerHTML = '';
+            activeGuilds.forEach(g => {
+                const item = document.createElement('div');
+                item.className = 'sidebar-dropdown-item';
+                item.style.cssText = 'display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; cursor: pointer; transition: background 0.2s;';
+                item.onmouseover = () => { item.style.background = 'rgba(255,255,255,0.05)'; };
+                item.onmouseout = () => { item.style.background = 'transparent'; };
+                item.onclick = () => selectServerFromSidebar(g.id);
+
+                const iconSrc = (g.icon && typeof g.icon === 'string' && g.icon.startsWith('http'))
+                    ? g.icon
+                    : (g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=64` : 'https://cdn.discordapp.com/embed/avatars/0.png');
+
+                const img = document.createElement('img');
+                img.src = iconSrc;
+                img.style.cssText = 'width: 24px; height: 24px; border-radius: 4px; object-fit: cover;';
+                img.onerror = () => { img.onerror = null; img.src = 'https://cdn.discordapp.com/embed/avatars/0.png'; };
+
+                const nameSpan = document.createElement('span');
+                nameSpan.style.cssText = 'font-size: 0.8rem; font-weight: 600; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1;';
+                nameSpan.textContent = g.name || 'Server';
+
+                item.appendChild(img);
+                item.appendChild(nameSpan);
+                listContainer.appendChild(item);
+            });
             
             const backItem = document.createElement('div');
             backItem.style.borderTop = '1px solid var(--border)';
@@ -29211,19 +29807,44 @@ try {
                         resetCropState();
                     }
                 };
+                let validatedSrc = '';
+                if (typeof srcToUse === 'string') {
+                    const trimmed = srcToUse.trim();
+                    if (/^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(trimmed)) {
+                        validatedSrc = trimmed;
+                    } else {
+                        try {
+                            const parsed = new URL(trimmed);
+                            if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+                                validatedSrc = parsed.href;
+                            }
+                        } catch (_) {}
+                    }
+                }
+
                 img.onerror = function() {
-                    const safeClean = sanitizeUrl(srcToUse);
-                    if (safeClean && (safeClean.startsWith('http://') || safeClean.startsWith('https://'))) {
+                    if (validatedSrc && (validatedSrc.startsWith('http://') || validatedSrc.startsWith('https://'))) {
                         const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
                         img.onerror = function() {
                             if (typeof showToast === 'function') showToast('Failed to load image preview into crop modal.', 'error');
                         };
-                        img.src = `${apiBase}/api/proxy-image?url=${encodeURIComponent(safeClean)}`;
+                        try {
+                            const proxyUrl = new URL('/api/proxy-image', apiBase || window.location.origin);
+                            proxyUrl.searchParams.set('url', validatedSrc);
+                            img.src = proxyUrl.href;
+                        } catch (_) {
+                            if (typeof showToast === 'function') showToast('Failed to load image preview into crop modal.', 'error');
+                        }
                     } else {
                         if (typeof showToast === 'function') showToast('Failed to load image preview into crop modal.', 'error');
                     }
                 };
-                img.src = sanitizeUrl(srcToUse) || '';
+
+                if (validatedSrc) {
+                    img.src = validatedSrc;
+                } else {
+                    img.src = '';
+                }
             }
         };
 

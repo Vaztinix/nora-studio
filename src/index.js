@@ -2666,13 +2666,30 @@ app.get('/api/proxy-image', async (req, res) => {
 
         // Whitelist trusted image CDN hosts to prevent Server-Side Request Forgery (SSRF)
         const host = parsed.hostname.toLowerCase();
-        if (!ALLOWED_IMAGE_HOSTS.has(host)) {
+        let safeHost = null;
+        for (const allowed of ALLOWED_IMAGE_HOSTS) {
+            if (allowed === host) {
+                safeHost = allowed;
+                break;
+            }
+        }
+        if (!safeHost) {
             return res.status(403).send('Target host is not permitted by image proxy policy');
         }
 
+        // Reconstruct target URL strictly from matched safeHost and validated path to eliminate SSRF risk
+        if (!/^\/[a-zA-Z0-9_\-./%]*$/.test(parsed.pathname)) {
+            return res.status(400).send('Invalid path format');
+        }
+        if (parsed.search && !/^\?[a-zA-Z0-9_\-&=%.]*$/.test(parsed.search)) {
+            return res.status(400).send('Invalid query parameters');
+        }
+
+        const safeTargetUrl = `https://${safeHost}${parsed.pathname}${parsed.search || ''}`;
+
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 6000);
-        const fetchRes = await fetch(parsed.toString(), {
+        const fetchRes = await fetch(safeTargetUrl, {
             signal: controller.signal,
             redirect: 'error',
             headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }

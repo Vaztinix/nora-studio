@@ -2258,7 +2258,10 @@
             }
         }
 
-        function getBadges(flags) {
+        function renderBadges(container, flags) {
+            if (!container) return;
+            container.textContent = '';
+            const f = Number(flags) || 0;
             const badges = [];
             const STAFF = 1 << 0;
             const PARTNER = 1 << 1;
@@ -2271,18 +2274,28 @@
             const VERIFIED_DEVELOPER = 1 << 17;
             const ACTIVE_DEVELOPER = 1 << 22;
 
-            if (flags & STAFF) badges.push({ name: 'Discord Staff', emoji: '🔨' });
-            if (flags & PARTNER) badges.push({ name: 'Partner', emoji: '👑' });
-            if (flags & BUG_HUNTER_L1) badges.push({ name: 'Bug Hunter L1', emoji: '🐛' });
-            if (flags & BUG_HUNTER_L2) badges.push({ name: 'Bug Hunter L2', emoji: '🪲' });
-            if (flags & HYPESQUAD_BRAVERY) badges.push({ name: 'HypeSquad Bravery', emoji: '🛡️' });
-            if (flags & HYPESQUAD_BRILLIANCE) badges.push({ name: 'HypeSquad Brilliance', emoji: '☀️' });
-            if (flags & HYPESQUAD_BALANCE) badges.push({ name: 'HypeSquad Balance', emoji: '⚖️' });
-            if (flags & EARLY_SUPPORTER) badges.push({ name: 'Early Supporter', emoji: '🏅' });
-            if (flags & VERIFIED_DEVELOPER) badges.push({ name: 'Verified Dev', emoji: '💻' });
-            if (flags & ACTIVE_DEVELOPER) badges.push({ name: 'Active Dev', emoji: '⚡' });
+            if (f & STAFF) badges.push({ name: 'Discord Staff', emoji: '🔨' });
+            if (f & PARTNER) badges.push({ name: 'Partner', emoji: '👑' });
+            if (f & BUG_HUNTER_L1) badges.push({ name: 'Bug Hunter L1', emoji: '🐛' });
+            if (f & BUG_HUNTER_L2) badges.push({ name: 'Bug Hunter L2', emoji: '🪲' });
+            if (f & HYPESQUAD_BRAVERY) badges.push({ name: 'HypeSquad Bravery', emoji: '🛡️' });
+            if (f & HYPESQUAD_BRILLIANCE) badges.push({ name: 'HypeSquad Brilliance', emoji: '☀️' });
+            if (f & HYPESQUAD_BALANCE) badges.push({ name: 'HypeSquad Balance', emoji: '⚖️' });
+            if (f & EARLY_SUPPORTER) badges.push({ name: 'Early Supporter', emoji: '🏅' });
+            if (f & VERIFIED_DEVELOPER) badges.push({ name: 'Verified Dev', emoji: '💻' });
+            if (f & ACTIVE_DEVELOPER) badges.push({ name: 'Active Dev', emoji: '⚡' });
             
-            return badges.map(b => `<span class="discord-badge" title="${b.name}">${b.emoji}</span>`).join('');
+            badges.forEach(b => {
+                const span = document.createElement('span');
+                span.className = 'discord-badge';
+                span.title = b.name;
+                span.textContent = b.emoji;
+                container.appendChild(span);
+            });
+        }
+
+        function getBadges(flags) {
+            return '';
         }
 
         function escapeHtml(str) {
@@ -2349,8 +2362,25 @@
                 const meta = detectLinkInfo(val);
                 if (meta && meta.url) {
                     pillEl.style.display = 'flex';
-                    pillEl.innerHTML = `<span style="color: #94a3b8; font-weight: 600;"><i class="fas fa-globe"></i> Detected:</span> ` +
-                        `<span class="social-btn" style="padding: 2px 10px; font-size: 0.74rem; pointer-events: none;"><i class="fas fa-globe"></i> ${meta.title}</span>`;
+                    pillEl.textContent = '';
+                    const labelSpan = document.createElement('span');
+                    labelSpan.style.color = '#94a3b8';
+                    labelSpan.style.fontWeight = '600';
+                    const icon1 = document.createElement('i');
+                    icon1.className = 'fas fa-globe';
+                    labelSpan.appendChild(icon1);
+                    labelSpan.appendChild(document.createTextNode(' Detected: '));
+                    
+                    const btnSpan = document.createElement('span');
+                    btnSpan.className = 'social-btn';
+                    btnSpan.style.cssText = 'padding: 2px 10px; font-size: 0.74rem; pointer-events: none;';
+                    const icon2 = document.createElement('i');
+                    icon2.className = meta.iconClass || 'fas fa-globe';
+                    btnSpan.appendChild(icon2);
+                    btnSpan.appendChild(document.createTextNode(' ' + meta.title));
+                    
+                    pillEl.appendChild(labelSpan);
+                    pillEl.appendChild(btnSpan);
                 } else {
                     pillEl.style.display = 'none';
                 }
@@ -2369,73 +2399,110 @@
             if (hideCheckbox) hideCheckbox.checked = !isShowChecked;
         }
 
-        function formatDiscordMarkdown(text) {
-            if (!text || typeof text !== 'string') return '';
-            let raw = text.slice(0, 200);
-            const rawLines = raw.split(/\r?\n/);
-            if (rawLines.length > 4) {
-                raw = rawLines.slice(0, 4).join('\n');
-            }
-            // HTML escape first for safety
-            let escaped = raw
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#39;');
-
-            // Code blocks ```lang\ncode```
-            escaped = escaped.replace(/```(?:[a-zA-Z0-9_-]+)?\n?([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
-            // Inline code `code`
-            escaped = escaped.replace(/`([^`\n]+)`/g, '<code>$1</code>');
-            // Discord Spoilers ||hidden text||
-            escaped = escaped.replace(/\|\|([\s\S]+?)\|\|/g, '<span class="discord-spoiler" data-spoiler="true" title="Click to reveal spoiler">$1</span>');
-            // Bold italic ***text***
-            escaped = escaped.replace(/\*\*\*([^*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
-            // Bold **text**
-            escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-            // Underline __text__
-            escaped = escaped.replace(/__([^_]+)__/g, '<u>$1</u>');
-            // Italic *text*
-            escaped = escaped.replace(/\*([^*\n]+)\*/g, '<em>$1</em>');
-            // Italic _text_ (isolated)
-            escaped = escaped.replace(/(^|\s)_([^_]+)_(?=\s|$)/g, '$1<em>$2</em>');
-            // Strikethrough ~~text~~
-            escaped = escaped.replace(/~~([^~]+)~~/g, '<del>$1</del>');
-            // Markdown link [title](url)
-            escaped = escaped.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (match, linkText, url) => {
-                const safe = sanitizeUrl(url);
-                return safe ? `<a href="${safe}" target="_blank" rel="noopener">${linkText}</a>` : linkText;
-            });
-
-            // Handle blockquotes (> quote) line-by-line
-            const lines = escaped.split('\n');
-            const processedLines = [];
-            let inQuote = false;
-            let quoteBuffer = [];
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                if (line.startsWith('&gt; ') || line.startsWith('&gt;')) {
-                    const quoteContent = line.startsWith('&gt; ') ? line.substring(5) : line.substring(4);
-                    quoteBuffer.push(quoteContent);
-                    inQuote = true;
-                } else {
-                    if (inQuote) {
-                        processedLines.push('<blockquote>' + quoteBuffer.join('<br>') + '</blockquote>');
-                        quoteBuffer = [];
-                        inQuote = false;
-                    }
-                    processedLines.push(line);
+        function renderInlineMarkdown(container, text) {
+            if (!text) return;
+            const pattern = /(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|\|\|([\s\S]+?)\|\||```(?:[a-zA-Z0-9_-]+)?\n?([\s\S]*?)```|`([^`\n]+)`|\*\*\*([^*]+)\*\*\*|\*\*([^*]+)\*\*|__([^_]+)__|~~([^~]+)~~|\*([^*\n]+)\*|(?:^|\s)_([^_]+)_(?=\s|$))/g;
+            let lastIndex = 0;
+            let match;
+            while ((match = pattern.exec(text)) !== null) {
+                if (match.index > lastIndex) {
+                    container.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
                 }
+                if (match[2] && match[3]) {
+                    const safe = sanitizeUrl(match[3]);
+                    if (safe && (safe.startsWith('http://') || safe.startsWith('https://'))) {
+                        const a = document.createElement('a');
+                        a.href = safe;
+                        a.target = '_blank';
+                        a.rel = 'noopener';
+                        a.textContent = match[2];
+                        container.appendChild(a);
+                    } else {
+                        container.appendChild(document.createTextNode(match[2]));
+                    }
+                } else if (match[4]) {
+                    const sp = document.createElement('span');
+                    sp.className = 'discord-spoiler';
+                    sp.setAttribute('data-spoiler', 'true');
+                    sp.title = 'Click to reveal spoiler';
+                    renderInlineMarkdown(sp, match[4]);
+                    container.appendChild(sp);
+                } else if (match[5]) {
+                    const pre = document.createElement('pre');
+                    const code = document.createElement('code');
+                    code.textContent = match[5];
+                    pre.appendChild(code);
+                    container.appendChild(pre);
+                } else if (match[6]) {
+                    const code = document.createElement('code');
+                    code.textContent = match[6];
+                    container.appendChild(code);
+                } else if (match[7]) {
+                    const strong = document.createElement('strong');
+                    const em = document.createElement('em');
+                    renderInlineMarkdown(em, match[7]);
+                    strong.appendChild(em);
+                    container.appendChild(strong);
+                } else if (match[8]) {
+                    const strong = document.createElement('strong');
+                    renderInlineMarkdown(strong, match[8]);
+                    container.appendChild(strong);
+                } else if (match[9]) {
+                    const u = document.createElement('u');
+                    renderInlineMarkdown(u, match[9]);
+                    container.appendChild(u);
+                } else if (match[10]) {
+                    const del = document.createElement('del');
+                    renderInlineMarkdown(del, match[10]);
+                    container.appendChild(del);
+                } else if (match[11]) {
+                    const em = document.createElement('em');
+                    renderInlineMarkdown(em, match[11]);
+                    container.appendChild(em);
+                } else if (match[12]) {
+                    const em = document.createElement('em');
+                    renderInlineMarkdown(em, match[12]);
+                    container.appendChild(em);
+                }
+                lastIndex = pattern.lastIndex;
             }
-            if (inQuote) {
-                processedLines.push('<blockquote>' + quoteBuffer.join('<br>') + '</blockquote>');
+            if (lastIndex < text.length) {
+                container.appendChild(document.createTextNode(text.slice(lastIndex)));
             }
+        }
 
-            return processedLines.join('<br>')
-                .replace(/(<br>\s*)+<blockquote>/g, '<blockquote>')
-                .replace(/<\/blockquote>(\s*<br>)+/g, '</blockquote>');
+        function renderDiscordMarkdownToElement(container, text) {
+            if (!container) return;
+            container.textContent = '';
+            if (!text || typeof text !== 'string') return;
+            const raw = text.slice(0, 200);
+            const lines = raw.split(/\r?\n/).slice(0, 4);
+
+            let currentQuote = null;
+            lines.forEach((line, idx) => {
+                const isQuote = line.startsWith('> ') || line.startsWith('>');
+                const lineContent = isQuote ? (line.startsWith('> ') ? line.substring(2) : line.substring(1)) : line;
+
+                if (isQuote) {
+                    if (!currentQuote) {
+                        currentQuote = document.createElement('blockquote');
+                        container.appendChild(currentQuote);
+                    } else {
+                        currentQuote.appendChild(document.createElement('br'));
+                    }
+                    renderInlineMarkdown(currentQuote, lineContent);
+                } else {
+                    currentQuote = null;
+                    if (idx > 0 && container.lastChild) {
+                        container.appendChild(document.createElement('br'));
+                    }
+                    renderInlineMarkdown(container, lineContent);
+                }
+            });
+        }
+
+        function formatDiscordMarkdown(text) {
+            return '';
         }
 
         function handleDeviceImageUpload(event, type) {
@@ -3291,10 +3358,10 @@
             };
         }
 
-        function renderSocialButtonsHtml(links, userId, hideDiscord) {
+        function renderSocialButtonsElement(links, userId, hideDiscord) {
             if (!links || typeof links !== 'object') links = {};
-            const robloxSvg = '<svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" style="vertical-align: -1px; margin-right: 5px; display: inline-block;"><path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/></svg>';
-            let html = '';
+            const wrap = document.createElement('div');
+            wrap.className = 'social-links';
             const addedUrls = new Set();
 
             const isHidden = (key) => {
@@ -3308,26 +3375,51 @@
                 return false;
             };
 
-            const addBtn = (rawUrl, iconHtml, label) => {
+            const addBtn = (rawUrl, iconClass, label, isSvg) => {
                 const safeUrl = sanitizeUrl(rawUrl);
                 if (safeUrl && (safeUrl.startsWith('http://') || safeUrl.startsWith('https://'))) {
                     const normKey = safeUrl.replace(/\/+$/, '').toLowerCase();
                     if (addedUrls.has(normKey)) return;
                     addedUrls.add(normKey);
-                    html += `<a href="${safeUrl}" target="_blank" rel="noopener" class="social-btn">${iconHtml} ${label}</a>`;
+
+                    const a = document.createElement('a');
+                    a.href = safeUrl;
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    a.className = 'social-btn';
+
+                    if (isSvg) {
+                        const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                        svg.setAttribute('viewBox', '0 0 24 24');
+                        svg.setAttribute('width', '13');
+                        svg.setAttribute('height', '13');
+                        svg.setAttribute('fill', 'currentColor');
+                        svg.style.verticalAlign = '-1px';
+                        svg.style.marginRight = '5px';
+                        svg.style.display = 'inline-block';
+                        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                        path.setAttribute('d', 'M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z');
+                        svg.appendChild(path);
+                        a.appendChild(svg);
+                    } else {
+                        const icon = document.createElement('i');
+                        icon.className = iconClass || 'fas fa-globe';
+                        a.appendChild(icon);
+                    }
+                    a.appendChild(document.createTextNode(' ' + label));
+                    wrap.appendChild(a);
                 }
             };
 
-            if (links.github && !isHidden('github')) addBtn(links.github, '<i class="fab fa-github"></i>', 'GitHub');
-            if (links.youtube && !isHidden('youtube')) addBtn(links.youtube, '<i class="fab fa-youtube"></i>', 'YouTube');
-            if (links.twitch && !isHidden('twitch')) addBtn(links.twitch, '<i class="fab fa-twitch"></i>', 'Twitch');
-            if (links.roblox && !isHidden('roblox')) addBtn(links.roblox, robloxSvg, 'Roblox');
-            if (links.gunslol && !isHidden('gunslol')) addBtn(links.gunslol, '<i class="fas fa-link"></i>', 'guns.lol');
-            if (links.strawpage && !isHidden('strawpage')) addBtn(links.strawpage, '<i class="fas fa-link"></i>', 'Strawpage');
-            if (links.pronouns && !isHidden('pronouns')) addBtn(links.pronouns, '<i class="fas fa-link"></i>', 'pronouns.cc');
-            if (links.hackerone && !isHidden('hackerone')) addBtn(links.hackerone, '<i class="fas fa-shield-alt"></i>', 'HackerOne');
+            if (links.github && !isHidden('github')) addBtn(links.github, 'fab fa-github', 'GitHub');
+            if (links.youtube && !isHidden('youtube')) addBtn(links.youtube, 'fab fa-youtube', 'YouTube');
+            if (links.twitch && !isHidden('twitch')) addBtn(links.twitch, 'fab fa-twitch', 'Twitch');
+            if (links.roblox && !isHidden('roblox')) addBtn(links.roblox, '', 'Roblox', true);
+            if (links.gunslol && !isHidden('gunslol')) addBtn(links.gunslol, 'fas fa-link', 'guns.lol');
+            if (links.strawpage && !isHidden('strawpage')) addBtn(links.strawpage, 'fas fa-link', 'Strawpage');
+            if (links.pronouns && !isHidden('pronouns')) addBtn(links.pronouns, 'fas fa-link', 'pronouns.cc');
+            if (links.hackerone && !isHidden('hackerone')) addBtn(links.hackerone, 'fas fa-shield-alt', 'HackerOne');
 
-            // Handle Custom Link(s) with Universal Link Detection (detects and names ALL links)
             const handleCustomUrl = (rawVal, hideKey) => {
                 if (!rawVal) return;
                 if (hideKey && isHidden(hideKey)) return;
@@ -3337,7 +3429,7 @@
                     if (!trimmed) return;
                     const meta = detectLinkInfo(trimmed);
                     if (meta && meta.url) {
-                        addBtn(meta.url, '<i class="fas fa-globe"></i>', meta.title);
+                        addBtn(meta.url, meta.iconClass || 'fas fa-globe', meta.title);
                     }
                 });
             };
@@ -3355,20 +3447,23 @@
                 });
             }
 
-            if (links.invite) addBtn(links.invite, '<i class="fab fa-discord"></i>', 'Add to Discord');
-            if (links.docs) addBtn(links.docs, '<i class="fas fa-book"></i>', 'Docs');
+            if (links.invite) addBtn(links.invite, 'fab fa-discord', 'Add to Discord');
+            if (links.docs) addBtn(links.docs, 'fas fa-book', 'Docs');
 
-            // Auto-generate Discord profile button strictly if NOT hidden
             const isDiscordHidden = hideDiscord || isHidden('discord');
             if (!isDiscordHidden) {
                 const cleanId = userId ? String(userId).replace(/[^0-9]/g, '') : null;
                 const targetDiscord = (links.discord && sanitizeUrl(links.discord)) || (cleanId && cleanId !== '1375943730951098549' ? `https://discord.com/users/${cleanId}` : null);
                 if (targetDiscord) {
-                    addBtn(targetDiscord, '<i class="fab fa-discord"></i>', 'Discord');
+                    addBtn(targetDiscord, 'fab fa-discord', 'Discord');
                 }
             }
 
-            return html ? `<div class="social-links">${html}</div>` : '';
+            return wrap.children.length > 0 ? wrap : null;
+        }
+
+        function renderSocialButtonsHtml(links, userId, hideDiscord) {
+            return '';
         }
 
         // Live preview update
@@ -3474,10 +3569,10 @@
             badges.className = 'discord-badges';
             article.appendChild(badges);
 
-            if (formattedBio) {
+            if (bioRaw) {
                 const bioDiv = document.createElement('div');
                 bioDiv.className = 'member-bio';
-                bioDiv.innerHTML = formattedBio;
+                renderDiscordMarkdownToElement(bioDiv, bioRaw);
                 article.appendChild(bioDiv);
             }
 
@@ -3488,11 +3583,9 @@
                 article.appendChild(joinSpan);
             }
 
-            const linksHtml = renderSocialButtonsHtml(links, currentStaffUser?.id || currentStaffCard.id, hiddenMap.discord);
-            if (linksHtml) {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = linksHtml;
-                if (tempDiv.firstElementChild) article.appendChild(tempDiv.firstElementChild);
+            const socialDiv = renderSocialButtonsElement(links, currentStaffUser?.id || currentStaffCard.id, hiddenMap.discord);
+            if (socialDiv) {
+                article.appendChild(socialDiv);
             }
 
             wrap.appendChild(article);
@@ -3680,7 +3773,7 @@
                                     if (badgesEl) badgesEl.after(bioEl);
                                     else myCardEl.appendChild(bioEl);
                                 }
-                                bioEl.innerHTML = formatDiscordMarkdown(payload.description);
+                                renderDiscordMarkdownToElement(bioEl, payload.description);
                             } else if (bioEl) {
                                 bioEl.remove();
                             }
@@ -3693,20 +3786,16 @@
                             applyCardTextAndGlow(myCardEl, finalTextColor, finalGlowColor);
 
                             // Social links
-                            const linksHtml = renderSocialButtonsHtml(payload.links, myId, hideDiscord);
                             let socialWrap = myCardEl.querySelector('.social-links');
+                            const newSocialDiv = renderSocialButtonsElement(payload.links, myId, hideDiscord);
                             if (socialWrap) {
-                                if (linksHtml) {
-                                    const tempDiv = document.createElement('div');
-                                    tempDiv.innerHTML = linksHtml;
-                                    socialWrap.replaceWith(tempDiv.firstElementChild);
+                                if (newSocialDiv) {
+                                    socialWrap.replaceWith(newSocialDiv);
                                 } else {
                                     socialWrap.remove();
                                 }
-                            } else if (linksHtml) {
-                                const tempDiv = document.createElement('div');
-                                tempDiv.innerHTML = linksHtml;
-                                myCardEl.appendChild(tempDiv.firstElementChild);
+                            } else if (newSocialDiv) {
+                                myCardEl.appendChild(newSocialDiv);
                             }
                         }
                     }
@@ -3766,7 +3855,11 @@
                     if (loginBtn) loginBtn.style.display = 'none';
                     if (editorBtn) {
                         editorBtn.style.display = 'inline-flex';
-                        editorBtn.innerHTML = `<i class="fas fa-id-card"></i> Manage Card (@${escapeHtml(data.user.username)})`;
+                        editorBtn.textContent = '';
+                        const idIcon = document.createElement('i');
+                        idIcon.className = 'fas fa-id-card';
+                        editorBtn.appendChild(idIcon);
+                        editorBtn.appendChild(document.createTextNode(` Manage Card (@${data.user?.username || 'user'})`));
                     }
                     if (logoutBtn) {
                         logoutBtn.style.display = 'inline-flex';
@@ -3849,13 +3942,21 @@
                     if (editorBtn) editorBtn.style.display = 'none';
                     if (loginBtn) {
                         loginBtn.style.display = 'inline-flex';
-                        loginBtn.innerHTML = `<i class="fas fa-sign-out-alt"></i> @${escapeHtml(data.user?.username || 'user')} (Not Staff) — Switch Account`;
+                        loginBtn.textContent = '';
+                        const outIcon = document.createElement('i');
+                        outIcon.className = 'fas fa-sign-out-alt';
+                        loginBtn.appendChild(outIcon);
+                        loginBtn.appendChild(document.createTextNode(` @${data.user?.username || 'user'} (Not Staff) — Switch Account`));
                         loginBtn.onclick = logoutStaff;
                     }
                 } else {
                     if (loginBtn) {
                         loginBtn.style.display = 'inline-flex';
-                        loginBtn.innerHTML = '<i class="fab fa-discord"></i> Staff Card Login';
+                        loginBtn.textContent = '';
+                        const discIcon = document.createElement('i');
+                        discIcon.className = 'fab fa-discord';
+                        loginBtn.appendChild(discIcon);
+                        loginBtn.appendChild(document.createTextNode(' Staff Card Login'));
                         loginBtn.onclick = loginWithDiscord;
                     }
                     if (editorBtn) editorBtn.style.display = 'none';
@@ -3903,39 +4004,70 @@
                             }
                             applyCardTextAndGlow(card, m.textColor, m.glowColor);
 
-                            const avatarSrc = sanitizeUrl(m.image) || 'nora.png';
-                            const roleClass = escapeHtml(m.roleClass || 'member');
-                            const roleName = escapeHtml(m.role || '');
-                            const roleHtml = (!m.hideRole && roleName) ? `<span class="role-pill ${roleClass}">${roleName}</span>` : '';
-                            const joinText = escapeHtml(m.joined || '');
-                            const joinHtml = (!m.hideJoinDate && joinText) ? `<span class="member-join-date">${joinText}</span>` : '';
+                            const cardTop = document.createElement('div');
+                            cardTop.className = 'card-top';
+
+                            const avatarWrap = document.createElement('div');
+                            avatarWrap.className = 'avatar-wrap';
+                            const avatarImg = document.createElement('img');
+                            avatarImg.className = 'avatar-img';
+                            avatarImg.src = avatarSrc;
+                            avatarImg.alt = m.displayName || 'Staff Member';
+                            avatarImg.onerror = function() { this.onerror = null; this.src = 'nora.png'; };
+                            const statusDot = document.createElement('span');
+                            statusDot.className = 'status-dot' + (m.isApp ? ' online' : '');
+                            avatarWrap.appendChild(avatarImg);
+                            avatarWrap.appendChild(statusDot);
+
+                            const headerInfo = document.createElement('div');
+                            headerInfo.className = 'card-header-info';
+                            if (!m.hideRole && m.role) {
+                                const rolePill = document.createElement('span');
+                                rolePill.className = 'role-pill ' + (m.roleClass || 'member');
+                                rolePill.textContent = m.role;
+                                headerInfo.appendChild(rolePill);
+                            }
+                            const h2 = document.createElement('h2');
+                            h2.className = 'member-name';
+                            h2.textContent = m.displayName || 'Staff Member';
+                            const handle = document.createElement('span');
+                            handle.className = 'member-handle';
+                            handle.textContent = '@' + (m.username || 'member');
+                            headerInfo.appendChild(h2);
+                            headerInfo.appendChild(handle);
+
+                            cardTop.appendChild(avatarWrap);
+                            cardTop.appendChild(headerInfo);
+                            card.appendChild(cardTop);
+
+                            const badgesDiv = document.createElement('div');
+                            badgesDiv.className = 'discord-badges';
+                            card.appendChild(badgesDiv);
+
                             const bioText = m.bio || m.description || '';
-                            const bioHtml = bioText ? `<div class="member-bio">${formatDiscordMarkdown(bioText)}</div>` : '';
+                            if (bioText) {
+                                const bioDiv = document.createElement('div');
+                                bioDiv.className = 'member-bio';
+                                renderDiscordMarkdownToElement(bioDiv, bioText);
+                                card.appendChild(bioDiv);
+                            }
+
+                            if (!m.hideJoinDate && m.joined) {
+                                const joinSpan = document.createElement('span');
+                                joinSpan.className = 'member-join-date';
+                                joinSpan.textContent = m.joined;
+                                card.appendChild(joinSpan);
+                            }
+
                             let linksObj = m.links;
                             if (typeof linksObj === 'string') {
                                 try { linksObj = JSON.parse(linksObj); } catch(e) { linksObj = {}; }
                             }
-                            const linksHtml = renderSocialButtonsHtml(linksObj, m.id, !!m.hideDiscord);
-                            const safeDisplayName = escapeHtml(m.displayName || 'Staff Member');
-                            const safeUsername = escapeHtml(m.username || 'member');
+                            const socialDiv = renderSocialButtonsElement(linksObj, m.id, !!m.hideDiscord);
+                            if (socialDiv) {
+                                card.appendChild(socialDiv);
+                            }
 
-                            card.innerHTML = `
-                                <div class="card-top">
-                                    <div class="avatar-wrap">
-                                        <img class="avatar-img" src="${avatarSrc}" alt="${safeDisplayName}" onerror="this.onerror=null; this.src='nora.png';">
-                                        <span class="status-dot ${m.isApp ? 'online' : ''}"></span>
-                                    </div>
-                                    <div class="card-header-info">
-                                        ${roleHtml}
-                                        <h2 class="member-name">${safeDisplayName}</h2>
-                                        <span class="member-handle">@${safeUsername}</span>
-                                    </div>
-                                </div>
-                                <div class="discord-badges"></div>
-                                ${bioHtml}
-                                ${joinHtml}
-                                ${linksHtml}
-                            `;
                             grid.appendChild(card);
                         });
                     }
@@ -3972,7 +4104,7 @@
                             const user = res.data.discord_user;
 
                             if (badgeContainer && user.public_flags !== undefined) {
-                                badgeContainer.innerHTML = getBadges(user.public_flags);
+                                renderBadges(badgeContainer, user.public_flags);
                             }
 
                             if (statusDot && res.data.discord_status) {
