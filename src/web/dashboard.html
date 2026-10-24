@@ -7476,9 +7476,8 @@
                                 <i class="fas fa-hashtag" style="color: #60a5fa;"></i> Monitored Channels (Leave blank for ALL channels)
                             </label>
                             <p style="font-size: 0.75rem; color: var(--muted); margin: 0 0 12px;">Choose specific channels where slowmode should scale. If empty, all channels are protected.</p>
-                            <div id="multiselect-container-setting-adaptiveSlowmodeChannels">
-                                <input type="hidden" id="setting-adaptiveSlowmodeChannels" value="">
-                            </div>
+                            <input type="hidden" id="setting-adaptiveSlowmodeChannels" value="">
+                            <div id="setting-adaptiveSlowmodeChannels-container" class="multiselect-container"></div>
                         </div>
 
                         <div class="panel" style="margin: 0; background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 22px;">
@@ -7486,9 +7485,8 @@
                                 <i class="fas fa-user-shield" style="color: #34d399;"></i> Exempt / Whitelisted Roles
                             </label>
                             <p style="font-size: 0.75rem; color: var(--muted); margin: 0 0 12px;">Members with these roles bypass slowmode and message speed calculations.</p>
-                            <div id="multiselect-container-setting-adaptiveSlowmodeIgnoredRoles">
-                                <input type="hidden" id="setting-adaptiveSlowmodeIgnoredRoles" value="">
-                            </div>
+                            <input type="hidden" id="setting-adaptiveSlowmodeIgnoredRoles" value="">
+                            <div id="setting-adaptiveSlowmodeIgnoredRoles-container" class="multiselect-container"></div>
                         </div>
                     </div>
 
@@ -7805,12 +7803,12 @@
 
                                 <div class="input-group" style="margin-bottom: 0;">
                                     <label style="font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 6px; display: block;">Announcement Channel</label>
-                                    <select id="setting-welcomeChannelId" style="width: 100%; box-sizing: border-box;"><option value="">Select channel...</option></select>
+                                    <select id="setting-welcomeChannelId" style="width: 100%; box-sizing: border-box;" onchange="updateWelcomerLivePreview()"><option value="">Select channel...</option></select>
                                 </div>
 
                                 <div class="input-group" style="margin-bottom: 0;">
                                     <label style="font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 6px; display: block;">Delivery Format</label>
-                                    <select id="setting-welcomeType" style="width: 100%; box-sizing: border-box;">
+                                    <select id="setting-welcomeType" style="width: 100%; box-sizing: border-box;" onchange="updateWelcomerLivePreview()">
                                         <option value="image">🖼️ Welcome Card (Rank Engine Canvas)</option>
                                         <option value="embed">📑 Rich Discord Embed</option>
                                         <option value="text">💬 Normal Text Message</option>
@@ -7823,16 +7821,25 @@
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                         <div>
                                             <label style="font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; display: block;">Custom Accent (Optional)</label>
-                                            <input type="text" id="setting-welcomeCardAccentColor" placeholder="Auto-Detect (#6366f1)" style="width: 100%; box-sizing: border-box; font-size: 0.8rem;">
+                                            <input type="text" id="setting-welcomeCardAccentColor" placeholder="Auto-Detect (#6366f1)" style="width: 100%; box-sizing: border-box; font-size: 0.8rem;" oninput="updateWelcomerLivePreview()">
                                         </div>
                                         <div>
-                                            <label style="font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; display: block;">Background Image URL (Static / GIF)</label>
-                                            <input type="text" id="setting-welcomeCardBgUrl" placeholder="https://... (Optional)" style="width: 100%; box-sizing: border-box; font-size: 0.8rem;">
+                                            <label style="font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; display: block;">Background Image (URL or Upload)</label>
+                                            <input type="text" id="setting-welcomeCardBgUrl" placeholder="https://... (Optional)" style="width: 100%; box-sizing: border-box; font-size: 0.8rem;" oninput="updateWelcomerLivePreview()">
+                                            <div style="display: flex; gap: 6px; margin-top: 6px; align-items: center; flex-wrap: wrap;">
+                                                <input type="file" id="upload-welcome-card-bg-file" accept="image/*" style="display: none;" onchange="handleGreetingCardBgUpload(event, 'welcome')">
+                                                <button type="button" class="btn-outline" style="font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" onclick="document.getElementById('upload-welcome-card-bg-file').click()">
+                                                    <i class="fas fa-upload"></i> Upload from Device
+                                                </button>
+                                                <button type="button" class="btn-outline" id="clear-welcome-card-bg-btn" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; display: none; color: #ef4444; border-color: rgba(239,68,68,0.3); cursor: pointer;" onclick="clearGreetingCardBg('welcome')">
+                                                    <i class="fas fa-trash"></i> Clear
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div>
                                         <label style="font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; display: block;">Server Card Shape Preset</label>
-                                        <select id="setting-serverCardShape" style="width: 100%; box-sizing: border-box; font-size: 0.8rem;">
+                                        <select id="setting-serverCardShape" style="width: 100%; box-sizing: border-box; font-size: 0.8rem;" onchange="updateWelcomerLivePreview(); updateGoodbyeLivePreview()">
                                             <option value="rounded-rect">Rounded Rectangle (Default)</option>
                                             <option value="capsule">Capsule Pill</option>
                                             <option value="hexagon">Hexagon Cyber</option>
@@ -7856,11 +7863,25 @@
                                     <input type="text" id="setting-logJoinMessage_welcomer" class="custom-msg-input" placeholder="Welcome {user} to {guild}! You are our {membercount}th member 🎉" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;" oninput="updateWelcomerLivePreview()">
                                 </div>
 
-                                <!-- Live Chat Preview Frame -->
-                                <div style="background: #313338; border-radius: 8px; padding: 12px; font-family: 'gg sans', 'Noto Sans', sans-serif;">
-                                    <div style="font-size: 0.7rem; color: #949ba4; text-transform: uppercase; font-weight: 700; margin-bottom: 6px;">Live Discord Chat Preview</div>
-                                    <div id="welcomer-live-preview-text" style="font-size: 0.85rem; color: #dbdee1; border-left: 3px solid #10b981; padding-left: 10px; line-height: 1.4;">
-                                        Welcome <strong style="color: #60a5fa;">@NewMember</strong> to <strong>This Server</strong>! You are our <strong>#142</strong> member 🎉
+                                <!-- Live Discord Chat Preview Frame -->
+                                <div style="background: #313338; border-radius: 10px; padding: 14px; font-family: 'gg sans', 'Noto Sans', sans-serif; border: 1px solid rgba(255,255,255,0.06);">
+                                    <div style="font-size: 0.7rem; color: #949ba4; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                                        <span><i class="fab fa-discord" style="color: #5865F2; margin-right: 6px;"></i> Live Discord Chat Preview</span>
+                                        <span id="welcomer-preview-channel-pill" style="font-size: 0.68rem; color: #949ba4; text-transform: none; font-weight: 500;">#welcome</span>
+                                    </div>
+                                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                        <img src="nora.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;" alt="Nora">
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                                <span style="font-weight: 700; color: #ffffff; font-size: 0.92rem;">Nora</span>
+                                                <span style="background: #5865F2; color: #ffffff; font-size: 0.62rem; font-weight: 800; padding: 1px 4px; border-radius: 3px; letter-spacing: 0.05em;">APP</span>
+                                                <span style="color: #949ba4; font-size: 0.72rem; margin-left: 2px;">Today at 4:30 PM</span>
+                                            </div>
+                                            <div id="welcomer-live-preview-text" style="font-size: 0.88rem; color: #dbdee1; line-height: 1.4; word-break: break-word;">
+                                                Welcome <strong style="color: #60a5fa;">@NewMember</strong> to <strong>This Server</strong>! You are our <strong>#142</strong> member 🎉
+                                            </div>
+                                            <div id="welcomer-card-preview-container" style="margin-top: 10px;"></div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -7900,12 +7921,12 @@
 
                                 <div class="input-group" style="margin-bottom: 0;">
                                     <label style="font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 6px; display: block;">Announcement Channel</label>
-                                    <select id="setting-goodbyeChannelId" style="width: 100%; box-sizing: border-box;"><option value="">Select channel...</option></select>
+                                    <select id="setting-goodbyeChannelId" style="width: 100%; box-sizing: border-box;" onchange="updateGoodbyeLivePreview()"><option value="">Select channel...</option></select>
                                 </div>
 
                                 <div class="input-group" style="margin-bottom: 0;">
                                     <label style="font-size: 0.8rem; font-weight: 600; color: rgba(255,255,255,0.85); margin-bottom: 6px; display: block;">Delivery Format</label>
-                                    <select id="setting-goodbyeType" style="width: 100%; box-sizing: border-box;">
+                                    <select id="setting-goodbyeType" style="width: 100%; box-sizing: border-box;" onchange="updateGoodbyeLivePreview()">
                                         <option value="image">🖼️ Departure Card (Rank Engine Canvas)</option>
                                         <option value="embed">📑 Rich Discord Embed</option>
                                         <option value="text">💬 Normal Text Message</option>
@@ -7918,11 +7939,20 @@
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                                         <div>
                                             <label style="font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; display: block;">Custom Accent (Optional)</label>
-                                            <input type="text" id="setting-goodbyeCardAccentColor" placeholder="Auto-Detect (#f43f5e)" style="width: 100%; box-sizing: border-box; font-size: 0.8rem;">
+                                            <input type="text" id="setting-goodbyeCardAccentColor" placeholder="Auto-Detect (#f43f5e)" style="width: 100%; box-sizing: border-box; font-size: 0.8rem;" oninput="updateGoodbyeLivePreview()">
                                         </div>
                                         <div>
-                                            <label style="font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; display: block;">Background Image URL (Static / GIF)</label>
-                                            <input type="text" id="setting-goodbyeCardBgUrl" placeholder="https://... (Optional)" style="width: 100%; box-sizing: border-box; font-size: 0.8rem;">
+                                            <label style="font-size: 0.75rem; color: var(--muted); margin-bottom: 4px; display: block;">Background Image (URL or Upload)</label>
+                                            <input type="text" id="setting-goodbyeCardBgUrl" placeholder="https://... (Optional)" style="width: 100%; box-sizing: border-box; font-size: 0.8rem;" oninput="updateGoodbyeLivePreview()">
+                                            <div style="display: flex; gap: 6px; margin-top: 6px; align-items: center; flex-wrap: wrap;">
+                                                <input type="file" id="upload-goodbye-card-bg-file" accept="image/*" style="display: none;" onchange="handleGreetingCardBgUpload(event, 'goodbye')">
+                                                <button type="button" class="btn-outline" style="font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" onclick="document.getElementById('upload-goodbye-card-bg-file').click()">
+                                                    <i class="fas fa-upload"></i> Upload from Device
+                                                </button>
+                                                <button type="button" class="btn-outline" id="clear-goodbye-card-bg-btn" style="font-size: 0.72rem; padding: 4px 8px; border-radius: 6px; display: none; color: #ef4444; border-color: rgba(239,68,68,0.3); cursor: pointer;" onclick="clearGreetingCardBg('goodbye')">
+                                                    <i class="fas fa-trash"></i> Clear
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -7940,11 +7970,25 @@
                                     <input type="text" id="setting-goodbyeMessage" class="custom-msg-input" placeholder="{username} has left the server. We now have {membercount} members." style="width: 100%; box-sizing: border-box; font-size: 0.85rem;" oninput="updateGoodbyeLivePreview()">
                                 </div>
 
-                                <!-- Live Chat Preview Frame -->
-                                <div style="background: #313338; border-radius: 8px; padding: 12px; font-family: 'gg sans', 'Noto Sans', sans-serif;">
-                                    <div style="font-size: 0.7rem; color: #949ba4; text-transform: uppercase; font-weight: 700; margin-bottom: 6px;">Live Discord Chat Preview</div>
-                                    <div id="goodbye-live-preview-text" style="font-size: 0.85rem; color: #dbdee1; border-left: 3px solid #c084fc; padding-left: 10px; line-height: 1.4;">
-                                        <strong>DepartedUser</strong> has left the server. We now have <strong>141</strong> members.
+                                <!-- Live Discord Chat Preview Frame -->
+                                <div style="background: #313338; border-radius: 10px; padding: 14px; font-family: 'gg sans', 'Noto Sans', sans-serif; border: 1px solid rgba(255,255,255,0.06);">
+                                    <div style="font-size: 0.7rem; color: #949ba4; text-transform: uppercase; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+                                        <span><i class="fab fa-discord" style="color: #5865F2; margin-right: 6px;"></i> Live Discord Chat Preview</span>
+                                        <span id="goodbye-preview-channel-pill" style="font-size: 0.68rem; color: #949ba4; text-transform: none; font-weight: 500;">#goodbye</span>
+                                    </div>
+                                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                        <img src="nora.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;" alt="Nora">
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+                                                <span style="font-weight: 700; color: #ffffff; font-size: 0.92rem;">Nora</span>
+                                                <span style="background: #5865F2; color: #ffffff; font-size: 0.62rem; font-weight: 800; padding: 1px 4px; border-radius: 3px; letter-spacing: 0.05em;">APP</span>
+                                                <span style="color: #949ba4; font-size: 0.72rem; margin-left: 2px;">Today at 4:30 PM</span>
+                                            </div>
+                                            <div id="goodbye-live-preview-text" style="font-size: 0.88rem; color: #dbdee1; line-height: 1.4; word-break: break-word;">
+                                                <strong>DepartedUser</strong> has left the server. We now have <strong>141</strong> members.
+                                            </div>
+                                            <div id="goodbye-card-preview-container" style="margin-top: 10px;"></div>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -18800,6 +18844,71 @@
         };
 
         let simBurstInterval = null;
+        window.updateLiveAdaptiveSlowmode = function(statusData) {
+            if (!statusData) return;
+            const velEl = document.getElementById('sim-velocity-value');
+            const tierEl = document.getElementById('sim-active-tier');
+            const dotEl = document.getElementById('velocity-status-dot');
+
+            const velocity = typeof statusData.overallVelocityPerSec === 'number' ? statusData.overallVelocityPerSec : 0.0;
+            const maxSlowmode = typeof statusData.maxSlowmode === 'number' ? statusData.maxSlowmode : 0;
+            const isEnabled = Boolean(statusData.enabled);
+
+            if (velEl) {
+                if (velocity >= 10) {
+                    velEl.innerHTML = `<span style="color: #ef4444; font-weight: 800;">${velocity.toFixed(1)} msg/s</span> <span style="font-size: 0.72rem; color: #ef4444; font-weight: 700;">(SPIKE!)</span>`;
+                } else if (velocity >= 4) {
+                    velEl.innerHTML = `<span style="color: #f59e0b; font-weight: 800;">${velocity.toFixed(1)} msg/s</span> <span style="font-size: 0.72rem; color: #f59e0b; font-weight: 700;">(Elevated)</span>`;
+                } else {
+                    velEl.innerHTML = `<span style="color: #fff; font-weight: 800;">${velocity.toFixed(1)} msg/s</span> <span style="font-size: 0.72rem; color: #34d399; font-weight: 400;">(Normal)</span>`;
+                }
+            }
+
+            if (tierEl) {
+                if (!isEnabled) {
+                    tierEl.innerHTML = `<span style="color: var(--muted); font-weight: 700;">Disabled</span>`;
+                } else if (maxSlowmode > 0) {
+                    tierEl.innerHTML = `<span style="color: #60a5fa; font-weight: 800;">Active (${maxSlowmode}s Slowmode)</span>`;
+                } else {
+                    tierEl.innerHTML = `<span style="color: #34d399; font-weight: 700;">Inactive (0s)</span>`;
+                }
+            }
+
+            if (dotEl) {
+                if (!isEnabled) {
+                    dotEl.style.background = '#6b7280';
+                    dotEl.style.boxShadow = 'none';
+                } else if (velocity >= 10) {
+                    dotEl.style.background = '#ef4444';
+                    dotEl.style.boxShadow = '0 0 10px rgba(239, 68, 68, 0.6)';
+                } else if (maxSlowmode > 0) {
+                    dotEl.style.background = '#3b82f6';
+                    dotEl.style.boxShadow = '0 0 10px rgba(59, 130, 246, 0.6)';
+                } else {
+                    dotEl.style.background = '#10b981';
+                    dotEl.style.boxShadow = '0 0 10px rgba(16, 185, 129, 0.5)';
+                }
+            }
+        };
+
+        window.pollAdaptiveSlowmodeStatus = async function() {
+            const guildId = window.currentServerId || window.currentGuildId;
+            if (!guildId) return;
+            const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`${apiBase}/api/guilds/${guildId}/adaptive-slowmode/status`, {
+                    headers: t ? { 'Authorization': `Bearer ${t}` } : {}
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.status) {
+                        window.updateLiveAdaptiveSlowmode(data.status);
+                    }
+                }
+            } catch (_) {}
+        };
+
         window.simulateVelocityRaidBurst = function() {
             if (simBurstInterval) clearInterval(simBurstInterval);
 
@@ -18844,12 +18953,209 @@
             }, 1800);
         };
 
+        function handleGreetingCardBgUpload(event, type) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            if (file.size > 8 * 1024 * 1024) {
+                if (typeof showToast === 'function') showToast('File too large! Maximum image size is 8MB.', 'error');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dataUrl = e.target.result;
+                const inputId = type === 'welcome' ? 'setting-welcomeCardBgUrl' : 'setting-goodbyeCardBgUrl';
+                const inputEl = document.getElementById(inputId);
+                if (inputEl) {
+                    inputEl.value = dataUrl;
+                    if (typeof window.showUnsavedChangesBar === 'function') window.showUnsavedChangesBar();
+                    else if (typeof window.markFormDirty === 'function') window.markFormDirty();
+                }
+                const clearBtn = document.getElementById(`clear-${type}-card-bg-btn`);
+                if (clearBtn) clearBtn.style.display = 'inline-flex';
+
+                if (type === 'welcome') updateWelcomerLivePreview();
+                else updateGoodbyeLivePreview();
+                if (typeof showToast === 'function') showToast('Background image loaded from device!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+        window.handleGreetingCardBgUpload = handleGreetingCardBgUpload;
+
+        function clearGreetingCardBg(type) {
+            const inputId = type === 'welcome' ? 'setting-welcomeCardBgUrl' : 'setting-goodbyeCardBgUrl';
+            const inputEl = document.getElementById(inputId);
+            if (inputEl) {
+                inputEl.value = '';
+                if (typeof window.showUnsavedChangesBar === 'function') window.showUnsavedChangesBar();
+                else if (typeof window.markFormDirty === 'function') window.markFormDirty();
+            }
+            const fileInput = document.getElementById(`upload-${type}-card-bg-file`);
+            if (fileInput) fileInput.value = '';
+            const clearBtn = document.getElementById(`clear-${type}-card-bg-btn`);
+            if (clearBtn) clearBtn.style.display = 'none';
+
+            if (type === 'welcome') updateWelcomerLivePreview();
+            else updateGoodbyeLivePreview();
+            if (typeof showToast === 'function') showToast('Background image cleared.', 'info');
+        }
+        window.clearGreetingCardBg = clearGreetingCardBg;
+
+        function escapeXml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function generateGreetingCardSvg({ isExit, customMessage, customAccent, customBgUrl, serverShape, guildName, memberCount }) {
+            const width = 860;
+            const height = 340;
+            const centerX = 430;
+            const shape = serverShape || 'rounded-rect';
+            const accent = customAccent || (isExit ? '#f43f5e' : '#6366f1');
+            const totalMembers = memberCount || (isExit ? 141 : 142);
+            const safeGuild = String(guildName || "This Server").toUpperCase();
+            const statusText = isExit ? 'DEPARTURE' : 'NEW MEMBER';
+            const bannerTitle = isExit 
+                ? `FAREWELL FROM ${escapeXml(safeGuild)} • ${totalMembers} MEMBERS`
+                : `WELCOME TO ${escapeXml(safeGuild)} • MEMBER #${totalMembers}`;
+            const displayName = isExit ? 'DepartedUser' : 'NewMember';
+            const username = isExit ? 'departeduser' : 'newmember';
+            const defaultSubtext = isExit ? 'We will miss you! Safe travels.' : 'We are delighted to have you in our community!';
+            const rawSubtext = customMessage ? customMessage.substring(0, 65) : defaultSubtext;
+            const safeSubtext = escapeXml(rawSubtext);
+
+            let maskSvg = `<rect width="${width}" height="${height}" rx="24" fill="#fff" />`;
+            let borderSvg = `<rect x="1.5" y="1.5" width="${width - 3}" height="${height - 3}" rx="23" fill="none" stroke="url(#borderGrad_${isExit ? 'exit' : 'join'})" stroke-width="2" />`;
+
+            if (shape === 'capsule') {
+                maskSvg = `<rect width="${width}" height="${height}" rx="54" fill="#fff" />`;
+                borderSvg = `<rect x="1.5" y="1.5" width="${width - 3}" height="${height - 3}" rx="53" fill="none" stroke="url(#borderGrad_${isExit ? 'exit' : 'join'})" stroke-width="2" />`;
+            } else if (shape === 'hexagon') {
+                maskSvg = `<polygon points="50,0 ${width - 50},0 ${width},170 ${width - 50},${height} 50,${height} 0,170" fill="#fff" />`;
+                borderSvg = `<polygon points="50,1.5 ${width - 50},1.5 ${width - 1.5},170 ${width - 50},${height - 1.5} 50,${height - 1.5} 1.5,170" fill="none" stroke="url(#borderGrad_${isExit ? 'exit' : 'join'})" stroke-width="2" />`;
+            } else if (shape === 'classic') {
+                maskSvg = `<rect width="${width}" height="${height}" rx="8" fill="#fff" />`;
+                borderSvg = `<rect x="1.5" y="1.5" width="${width - 3}" height="${height - 3}" rx="7" fill="none" stroke="url(#borderGrad_${isExit ? 'exit' : 'join'})" stroke-width="2" />`;
+            } else if (shape === 'diamond') {
+                maskSvg = `<rect width="${width}" height="${height}" rx="32" fill="#fff" />`;
+                borderSvg = `<rect x="1.5" y="1.5" width="${width - 3}" height="${height - 3}" rx="31" fill="none" stroke="url(#borderGrad_${isExit ? 'exit' : 'join'})" stroke-width="2.2" />`;
+            }
+
+            const gradId = isExit ? 'exit' : 'join';
+            const bgImageTag = customBgUrl ? `
+                <image href="${escapeXml(customBgUrl)}" x="0" y="0" width="${width}" height="${height}" preserveAspectRatio="xMidYMid slice" opacity="0.65" />
+                <rect width="${width}" height="${height}" fill="rgba(6, 8, 14, 0.45)" />
+            ` : '';
+
+            return `
+            <svg viewBox="0 0 ${width} ${height}" style="width: 100%; max-width: 580px; height: auto; display: block; border-radius: 12px; filter: drop-shadow(0 6px 20px rgba(0,0,0,0.5));" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="bgGrad_${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#080a12" />
+                        <stop offset="50%" stop-color="#0c101c" />
+                        <stop offset="100%" stop-color="#05070c" />
+                    </linearGradient>
+                    <radialGradient id="avatarGlow_${gradId}" cx="50%" cy="50%" r="50%">
+                        <stop offset="0%" stop-color="${accent}" stop-opacity="0.65" />
+                        <stop offset="65%" stop-color="${accent}" stop-opacity="0.18" />
+                        <stop offset="100%" stop-color="${accent}" stop-opacity="0" />
+                    </radialGradient>
+                    <linearGradient id="borderGrad_${gradId}" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="${accent}" stop-opacity="0.9" />
+                        <stop offset="50%" stop-color="#ffffff" stop-opacity="0.35" />
+                        <stop offset="100%" stop-color="${accent}" stop-opacity="0.75" />
+                    </linearGradient>
+                    <linearGradient id="pillGrad_${gradId}" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="${accent}" stop-opacity="0.32" />
+                        <stop offset="100%" stop-color="${accent}" stop-opacity="0.14" />
+                    </linearGradient>
+                    <pattern id="grid_${gradId}" width="40" height="40" patternUnits="userSpaceOnUse">
+                        <line x1="0" y1="0" x2="40" y2="0" stroke="rgba(255, 255, 255, 0.03)" stroke-width="1"/>
+                        <line x1="0" y1="0" x2="0" y2="40" stroke="rgba(255, 255, 255, 0.03)" stroke-width="1"/>
+                    </pattern>
+                    <clipPath id="cardClip_${gradId}">${maskSvg}</clipPath>
+                    <clipPath id="avatarClip_${gradId}"><circle cx="${centerX}" cy="116" r="54" /></clipPath>
+                </defs>
+
+                <g clip-path="url(#cardClip_${gradId})">
+                    <!-- Background base -->
+                    <rect width="${width}" height="${height}" fill="url(#bgGrad_${gradId})" />
+                    ${bgImageTag}
+                    <rect width="${width}" height="${height}" fill="url(#grid_${gradId})" />
+
+                    <!-- Status Pill -->
+                    <rect x="360" y="20" width="140" height="24" rx="12" fill="rgba(255, 255, 255, 0.08)" stroke="${accent}" stroke-width="1" />
+                    <text x="${centerX}" y="36" text-anchor="middle" font-family="'Segoe UI', -apple-system, sans-serif" font-size="11" font-weight="700" fill="${accent}" letter-spacing="1.5">${statusText}</text>
+
+                    <!-- Centered Circular Avatar & Specular Rings -->
+                    <circle cx="${centerX}" cy="116" r="88" fill="url(#avatarGlow_${gradId})" />
+                    <circle cx="${centerX}" cy="116" r="62" fill="none" stroke="${accent}" stroke-width="2.5" />
+                    <circle cx="${centerX}" cy="116" r="58" fill="none" stroke="rgba(255, 255, 255, 0.3)" stroke-width="1" />
+
+                    <!-- PFP Placeholder/Image -->
+                    <circle cx="${centerX}" cy="116" r="54" fill="#1e2438" />
+                    <image href="https://cdn.discordapp.com/embed/avatars/0.png" x="${centerX - 54}" y="62" width="108" height="108" clip-path="url(#avatarClip_${gradId})" />
+
+                    <!-- Banner Pill -->
+                    <rect x="180" y="196" width="500" height="32" rx="16" fill="url(#pillGrad_${gradId})" stroke="${accent}" stroke-width="1" stroke-opacity="0.6" />
+                    <text x="${centerX}" y="217" text-anchor="middle" font-family="'Segoe UI', -apple-system, sans-serif" font-size="12" font-weight="700" fill="#ffffff" letter-spacing="0.8">${escapeXml(bannerTitle)}</text>
+
+                    <!-- Display Name & Handle -->
+                    <text x="${centerX}" y="260" text-anchor="middle" font-family="'Segoe UI', -apple-system, sans-serif" font-size="24" font-weight="800" fill="#ffffff">${displayName}</text>
+                    <text x="${centerX}" y="278" text-anchor="middle" font-family="'Segoe UI', -apple-system, sans-serif" font-size="13" font-weight="500" fill="#94a3b8">@${username}</text>
+
+                    <!-- Custom Subtext -->
+                    <text x="${centerX}" y="306" text-anchor="middle" font-family="'Segoe UI', -apple-system, sans-serif" font-size="13" font-weight="400" fill="#cbd5e1" font-style="italic">"${safeSubtext}"</text>
+
+                    <!-- Shape Border -->
+                    ${borderSvg}
+                </g>
+            </svg>
+            `;
+        }
+
+        function generateGreetingEmbedHtml({ isExit, customMessage, customAccent, guildName, memberCount }) {
+            const accent = customAccent || (isExit ? '#f43f5e' : '#5865F2');
+            const totalMembers = memberCount || (isExit ? 141 : 142);
+            const title = isExit ? `Goodbye from ${escapeHtml(guildName || 'This Server')}!` : `Welcome to ${escapeHtml(guildName || 'This Server')}!`;
+            const defaultDesc = isExit 
+                ? `**DepartedUser** has left the server. We will miss you!`
+                : `Welcome to the community, <strong style="color: #60a5fa;">@NewMember</strong>! Please make yourself at home.`;
+            const desc = customMessage || defaultDesc;
+
+            return `
+            <div style="max-width: 500px; background: #2b2d31; border-left: 4px solid ${accent}; border-radius: 4px; padding: 12px 16px; margin-top: 8px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 700; color: #ffffff; font-size: 0.95rem; margin-bottom: 6px;">${title}</div>
+                        <div style="font-size: 0.85rem; color: #dbdee1; line-height: 1.4;">${desc}</div>
+                    </div>
+                    <img src="https://cdn.discordapp.com/embed/avatars/0.png" style="width: 56px; height: 56px; border-radius: 50%; flex-shrink: 0;" alt="">
+                </div>
+                <div style="font-size: 0.72rem; color: #949ba4; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px; display: flex; align-items: center; gap: 6px;">
+                    <img src="nora.png" onerror="this.src='https://cdn.discordapp.com/embed/avatars/0.png'" style="width: 16px; height: 16px; border-radius: 50%;" alt="">
+                    <span>Member #${totalMembers} • Today at 4:30 PM</span>
+                </div>
+            </div>
+            `;
+        }
+
         function updateWelcomerLivePreview() {
             const welcomerEnabled = document.getElementById('setting-welcomerEnabled')?.checked;
             const inputEl = document.getElementById('setting-logJoinMessage_welcomer');
             const previewEl = document.getElementById('welcomer-live-preview-text');
-            if (!previewEl) return;
+            const cardContainer = document.getElementById('welcomer-card-preview-container');
+            const channelSelect = document.getElementById('setting-welcomeChannelId');
+            const channelPill = document.getElementById('welcomer-preview-channel-pill');
             
+            if (channelPill && channelSelect) {
+                const selectedText = channelSelect.options[channelSelect.selectedIndex]?.text;
+                channelPill.textContent = (selectedText && !selectedText.includes('Select channel')) ? selectedText : '#welcome';
+            }
+
             const rawTemplate = (inputEl && inputEl.value.trim()) ? inputEl.value : 'Welcome {user} to {guild}! You are our {membercount}th member 🎉';
             const guildName = currentServerName || 'Nora Community';
             
@@ -18864,12 +19170,47 @@
                 .replace(/\{invites_count\}/g, '<strong>12</strong>')
                 .replace(/\{created_ago\}/g, '<em>3 days ago</em>');
 
+            if (previewEl) {
+                if (welcomerEnabled === false) {
+                    previewEl.innerHTML = `<span style="opacity: 0.6; font-style: italic;">Welcomer is currently disabled. Toggle the switch above to activate greeting announcements.</span>`;
+                } else {
+                    previewEl.innerHTML = formatted;
+                }
+            }
+
+            const bgUrl = document.getElementById('setting-welcomeCardBgUrl')?.value.trim() || '';
+            const clearBtn = document.getElementById('clear-welcome-card-bg-btn');
+            if (clearBtn) {
+                clearBtn.style.display = bgUrl ? 'inline-flex' : 'none';
+            }
+
+            if (!cardContainer) return;
+            const format = document.getElementById('setting-welcomeType')?.value || 'image';
+            const accent = document.getElementById('setting-welcomeCardAccentColor')?.value.trim() || '#6366f1';
+            const shape = document.getElementById('setting-serverCardShape')?.value || 'rounded-rect';
+
             if (welcomerEnabled === false) {
-                previewEl.innerHTML = `<span style="opacity: 0.6; font-style: italic;">Welcomer is currently disabled. Toggle the switch above to activate greeting announcements.</span>`;
-                previewEl.style.borderLeftColor = '#64748b';
+                cardContainer.innerHTML = '';
+            } else if (format === 'image') {
+                cardContainer.innerHTML = generateGreetingCardSvg({
+                    isExit: false,
+                    customMessage: rawTemplate.replace(/\{[^{}]+\}/g, '').trim(),
+                    customAccent: accent,
+                    customBgUrl: bgUrl,
+                    serverShape: shape,
+                    guildName: guildName,
+                    memberCount: 142
+                });
+            } else if (format === 'embed') {
+                cardContainer.innerHTML = generateGreetingEmbedHtml({
+                    isExit: false,
+                    customMessage: formatted,
+                    customAccent: accent,
+                    guildName: guildName,
+                    memberCount: 142
+                });
             } else {
-                previewEl.innerHTML = formatted;
-                previewEl.style.borderLeftColor = '#10b981';
+                cardContainer.innerHTML = '';
             }
         }
         window.updateWelcomerLivePreview = updateWelcomerLivePreview;
@@ -18878,8 +19219,15 @@
             const goodbyeEnabled = document.getElementById('setting-goodbyeEnabled')?.checked;
             const inputEl = document.getElementById('setting-goodbyeMessage');
             const previewEl = document.getElementById('goodbye-live-preview-text');
-            if (!previewEl) return;
+            const cardContainer = document.getElementById('goodbye-card-preview-container');
+            const channelSelect = document.getElementById('setting-goodbyeChannelId');
+            const channelPill = document.getElementById('goodbye-preview-channel-pill');
             
+            if (channelPill && channelSelect) {
+                const selectedText = channelSelect.options[channelSelect.selectedIndex]?.text;
+                channelPill.textContent = (selectedText && !selectedText.includes('Select channel')) ? selectedText : '#goodbye';
+            }
+
             const rawTemplate = (inputEl && inputEl.value.trim()) ? inputEl.value : '{username} has left the server. We now have {membercount} members.';
             const guildName = currentServerName || 'Nora Community';
             
@@ -18890,12 +19238,47 @@
                 .replace(/\{guild\}/g, `<strong>${escapeHtml(guildName)}</strong>`)
                 .replace(/\{membercount\}/g, '<strong>141</strong>');
 
+            if (previewEl) {
+                if (goodbyeEnabled === false) {
+                    previewEl.innerHTML = `<span style="opacity: 0.6; font-style: italic;">Goodbye notices are currently disabled. Toggle the switch above to activate departure announcements.</span>`;
+                } else {
+                    previewEl.innerHTML = formatted;
+                }
+            }
+
+            const bgUrl = document.getElementById('setting-goodbyeCardBgUrl')?.value.trim() || '';
+            const clearBtn = document.getElementById('clear-goodbye-card-bg-btn');
+            if (clearBtn) {
+                clearBtn.style.display = bgUrl ? 'inline-flex' : 'none';
+            }
+
+            if (!cardContainer) return;
+            const format = document.getElementById('setting-goodbyeType')?.value || 'image';
+            const accent = document.getElementById('setting-goodbyeCardAccentColor')?.value.trim() || '#f43f5e';
+            const shape = document.getElementById('setting-serverCardShape')?.value || 'rounded-rect';
+
             if (goodbyeEnabled === false) {
-                previewEl.innerHTML = `<span style="opacity: 0.6; font-style: italic;">Goodbye notices are currently disabled. Toggle the switch above to activate departure announcements.</span>`;
-                previewEl.style.borderLeftColor = '#64748b';
+                cardContainer.innerHTML = '';
+            } else if (format === 'image') {
+                cardContainer.innerHTML = generateGreetingCardSvg({
+                    isExit: true,
+                    customMessage: rawTemplate.replace(/\{[^{}]+\}/g, '').trim(),
+                    customAccent: accent,
+                    customBgUrl: bgUrl,
+                    serverShape: shape,
+                    guildName: guildName,
+                    memberCount: 141
+                });
+            } else if (format === 'embed') {
+                cardContainer.innerHTML = generateGreetingEmbedHtml({
+                    isExit: true,
+                    customMessage: formatted,
+                    customAccent: accent,
+                    guildName: guildName,
+                    memberCount: 141
+                });
             } else {
-                previewEl.innerHTML = formatted;
-                previewEl.style.borderLeftColor = '#c084fc';
+                cardContainer.innerHTML = '';
             }
         }
         window.updateGoodbyeLivePreview = updateGoodbyeLivePreview;
@@ -24599,12 +24982,12 @@
                 const checkedBoxes = optionsList.querySelectorAll('input[type="checkbox"]:checked');
                 const vals = Array.from(checkedBoxes).map(cb => cb.parentNode.getAttribute('data-value'));
                 
-                if (hiddenInputId === 'setting-automodImmuneRoles' || hiddenInputId === 'setting-automodImmuneChannels' || hiddenInputId === 'setting-countingWhitelistedRoles' || hiddenInputId === 'setting-countingBlacklistedRoles' || hiddenInputId === 'setting-starboardIgnoredChannels' || hiddenInputId === 'setting-levelingIgnoredRoles' || hiddenInputId === 'setting-levelingIgnoredChannels') {
+                if (hiddenInputId === 'setting-automodImmuneRoles' || hiddenInputId === 'setting-automodImmuneChannels' || hiddenInputId === 'setting-countingWhitelistedRoles' || hiddenInputId === 'setting-countingBlacklistedRoles' || hiddenInputId === 'setting-starboardIgnoredChannels' || hiddenInputId === 'setting-levelingIgnoredRoles' || hiddenInputId === 'setting-levelingIgnoredChannels' || hiddenInputId === 'setting-adaptiveSlowmodeChannels' || hiddenInputId === 'setting-adaptiveSlowmodeIgnoredRoles') {
                     input.value = JSON.stringify(vals);
                 } else {
                     input.value = vals.join(',');
                 }
-                
+                if (typeof showUnsavedChangesBar === 'function') showUnsavedChangesBar();
                 updateTrigger();
             }
 
@@ -25138,10 +25521,15 @@
             const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
 
             try {
-                const [chRes, rlRes] = await Promise.all([
+                const [chRes, rlRes, slowRes] = await Promise.all([
                     fetch(`${apiBase}/api/guilds/${guildId}/channels`, { headers }).then(r => r.ok ? r.json() : []).catch(() => []),
-                    fetch(`${apiBase}/api/guilds/${guildId}/roles`, { headers }).then(r => r.ok ? r.json() : []).catch(() => [])
+                    fetch(`${apiBase}/api/guilds/${guildId}/roles`, { headers }).then(r => r.ok ? r.json() : []).catch(() => []),
+                    fetch(`${apiBase}/api/guilds/${guildId}/adaptive-slowmode/status`, { headers }).then(r => r.ok ? r.json() : null).catch(() => null)
                 ]);
+
+                if (slowRes && slowRes.status && typeof window.updateLiveAdaptiveSlowmode === 'function') {
+                    window.updateLiveAdaptiveSlowmode(slowRes.status);
+                }
 
                 window.guildChannels = chRes;
                 window.guildRoles = rlRes;
@@ -25581,6 +25969,8 @@
                 if (typeof updateTicketPreview === 'function') updateTicketPreview();
                 if (typeof toggleStarboardWebhookFields === 'function') toggleStarboardWebhookFields();
                 if (typeof updateStarboardPreview === 'function') updateStarboardPreview();
+                if (typeof updateWelcomerLivePreview === 'function') updateWelcomerLivePreview();
+                if (typeof updateGoodbyeLivePreview === 'function') updateGoodbyeLivePreview();
                 if (typeof initializeAllDropdowns === 'function') initializeAllDropdowns();
             } catch (e) {
                 console.error('[Load Error]:', e);

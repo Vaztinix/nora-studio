@@ -113,6 +113,11 @@ module.exports = function(client) {
             limit: 10
         }).catch(() => []);
 
+        const allIncidents = await StatusFlag.findAll({
+            order: [['createdAt', 'DESC']],
+            limit: 30
+        }).catch(() => []);
+
         const hasMaintenance = flags.some(f => f.severity === 'maintenance');
         const hasOutageFlag = flags.some(f => f.severity === 'outage');
         const hasDegradedFlag = flags.some(f => f.severity === 'degraded');
@@ -189,7 +194,8 @@ module.exports = function(client) {
                 }
             },
             wsPing,
-            activeFlags: flags
+            activeFlags: flags,
+            allIncidents: allIncidents
         };
     }
 
@@ -577,8 +583,8 @@ module.exports = function(client) {
                 },
                 shards,
                 latencyHistory: [...latencyHistory],
-                incidents: evaluation.activeFlags,
-                activeCount: evaluation.activeFlags.length,
+                incidents: (evaluation.allIncidents && evaluation.allIncidents.length > 0) ? evaluation.allIncidents : evaluation.activeFlags,
+                activeCount: (evaluation.activeFlags || []).length,
                 updatedAt: new Date().toISOString()
             };
             lastCacheTimestamp = now;

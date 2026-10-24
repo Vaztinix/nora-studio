@@ -4,6 +4,26 @@ This comprehensive guide walks you through installing, configuring, deploying, a
 
 ---
 
+## 📜 Self-Hosting & Cloning Rules (Allowed vs. Prohibited)
+
+Nora Studio is open-source software created by **Vaztinix** and maintained by the **Nora Studio Team**. We welcome developers and community administrators who wish to self-host their own instance for full data custody. However, anyone cloning, forking, or hosting Nora must strictly comply with our community rules:
+
+### ✅ What is ALLOWED:
+- **Private & Personal Hosting**: You may deploy Nora on your own server or machine for your own private Discord communities, friends, or organizations.
+- **100% Data Custody**: You own your database entirely. No telemetry, user chat messages, or server configurations are sent back to our central infrastructure.
+- **Customization & Local Tuning**: You may modify local prefixes, channel mappings, theme colors, and internal parameters to fit your server's needs.
+- **Auditing & Security Research**: You are encouraged to inspect every line of code to verify our Zero-Access RAM architecture and security guarantees.
+- **Contributing Back**: You are warmly invited to submit bug reports, pull requests, and security improvements to the official upstream repository: [github.com/Vaztinix/nora-studio](https://github.com/Vaztinix/nora-studio).
+
+### ❌ What is STRICTLY PROHIBITED:
+- **Removing Developer Attribution**: You **MUST NOT** strip, alter, or obscure credits, author names, or links referencing **Vaztinix** (<@1214048435632603137>, [https://vaztinix.dev](https://vaztinix.dev)) or the **Nora Studio Team** in the source files, UI dashboards, command responses, or documentation.
+- **Commercialization & Reselling**: You may **NOT** charge subscription fees, sell premium access, or offer commercial paid hosting using Nora's codebase, brand name, or artwork without express written permission from Vaztinix.
+- **Impersonating the Official Bot**: Your self-hosted bot must not claim to be the official verified Nora Bot, nor misrepresent that your instance is officially partnered with or endorsed by Nora Studio.
+- **Malicious Forks & Exploitation**: You may not distribute backdoored, spyware-infused, token-stealing, or malicious forks of this codebase.
+- **Violation of Discord Terms**: Self-hosted instances must comply with Discord's Developer Terms of Service and Community Guidelines at all times.
+
+---
+
 ## 📋 System Requirements
 
 | Specification | Minimum Requirement | Recommended Production |

@@ -1,4 +1,5 @@
 const geminiKeyManager = require('./geminiKeyManager');
+const { ensureCleanSentenceEnding } = require('./sentenceSanitizer');
 
 /**
  * AI Feature Enhancer powered strictly by Google Gemini models.
@@ -9,57 +10,73 @@ class AIFeatureEnhancer {
      * Executes a fast Google Gemini completion with multi-key rotation and safety fallback.
      */
     static async generateGeminiSnippet(prompt, maxTokens = 60) {
-        try {
-            const keys = geminiKeyManager.getRotatedAvailableKeys();
-            if (!keys || keys.length === 0) return null;
+        const fetchPromise = (async () => {
+            try {
+                const keys = geminiKeyManager.getRotatedAvailableKeys();
+                if (!keys || keys.length === 0) return null;
 
-            const models = [
-                'gemini-flash-latest',
-                'gemini-3.8-flash',
-                'gemini-3.7-flash',
-                'gemini-3.5-flash',
-                'gemini-flash-lite-latest',
-                'gemini-3.5-flash-lite'
-            ];
+                // Prioritize ultra-lightweight, high-throughput models for background enhancements
+                const models = [
+                    'gemini-flash-lite-latest',
+                    'gemini-3.5-flash-lite',
+                    'gemini-flash-latest',
+                    'gemini-3.5-flash'
+                ];
 
-            // Iterate across all available keys for high availability & quota endurance
-            for (const apiKey of keys) {
-                for (const model of models) {
-                    try {
-                        const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-                        const res = await fetch(url, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                contents: [{ role: 'user', parts: [{ text: prompt }] }],
-                                generationConfig: {
-                                    maxOutputTokens: Math.max(maxTokens, 300),
-                                    temperature: 0.85,
-                                    thinkingConfig: { thinkingBudget: 0 }
-                                }
-                            })
-                        });
-
-                        if (res.ok) {
-                            const data = await res.json();
-                            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-                            if (text && text.trim()) {
-                                geminiKeyManager.reportSuccess(apiKey, text);
-                                return text.trim().replace(/^["']|["']$/g, '');
+                for (const apiKey of keys) {
+                    for (const model of models) {
+                        try {
+                            const controller = new AbortController();
+                            const timer = setTimeout(() => controller.abort(), 4000); // 4s max per attempt
+                            const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                            const isThinkingModel = model.includes('2.5') || model.includes('3.') || model.includes('3-');
+                            const generationConfig = {
+                                maxOutputTokens: Math.min(Math.max(maxTokens, 60), 160),
+                                temperature: 0.85
+                            };
+                            if (isThinkingModel) {
+                                generationConfig.thinkingConfig = { thinkingBudget: 0 };
                             }
-                        } else if (res.status === 429) {
-                            geminiKeyManager.reportQuotaLimit(apiKey, new Error(`HTTP 429 on ${model}`));
-                            break; // cascade to next available key
+
+                            const res = await fetch(url, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                signal: controller.signal,
+                                body: JSON.stringify({
+                                    contents: [{ role: 'user', parts: [{ text: `${prompt} Must be a fully completed sentence with proper terminal punctuation. Never cut off mid-sentence.` }] }],
+                                    generationConfig
+                                })
+                            });
+                            clearTimeout(timer);
+
+                            if (res.ok) {
+                                const data = await res.json();
+                                const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+                                if (text && text.trim()) {
+                                    geminiKeyManager.reportSuccess(apiKey, text);
+                                    const cleaned = text.trim().replace(/^["']|["']$/g, '');
+                                    return ensureCleanSentenceEnding(cleaned);
+                                }
+                            } else if (res.status === 429) {
+                                geminiKeyManager.reportQuotaLimit(apiKey, new Error(`HTTP 429 on ${model}`));
+                                break; // cascade to next available key
+                            }
+                        } catch (e) {
+                            continue;
                         }
-                    } catch (e) {
-                        continue;
                     }
                 }
+                return null;
+            } catch (err) {
+                return null;
             }
-            return null;
-        } catch (err) {
-            return null;
-        }
+        })();
+
+        // Hard 8-second ceiling to guarantee execution falls back cleanly
+        return Promise.race([
+            fetchPromise,
+            new Promise(resolve => setTimeout(() => resolve(null), 8000))
+        ]);
     }
 
     /**

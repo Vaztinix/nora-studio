@@ -114,12 +114,16 @@ async function buildStarboardPayload(message, count, settings, triggerEmoji, exi
         } else if ((message.content && message.content.trim().length > 3) || message.attachments?.size > 0) {
             try {
                 const AIFeatureEnhancer = require('../../utils/aiFeatureEnhancer');
-                const aiTake = await AIFeatureEnhancer.getStarboardCommentary(
+                const aiPromise = AIFeatureEnhancer.getStarboardCommentary(
                     message.author.username || message.author.tag,
                     message.content || (message.attachments?.size > 0 ? '*Media/Image post*' : ''),
                     count,
                     replyContext
                 );
+                const aiTake = await Promise.race([
+                    aiPromise,
+                    new Promise(resolve => setTimeout(() => resolve(null), 10000))
+                ]);
                 if (aiTake) {
                     aiSpotlightText = aiTake;
                     embed.addFields({

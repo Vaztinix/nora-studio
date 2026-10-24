@@ -103,7 +103,12 @@ router.get('/full-dashboard-data', async (req, res) => {
                 const canView = c.permissionsFor(me)?.has('ViewChannel') || false;
                 const canSend = c.permissionsFor(me)?.has('SendMessages') || false;
                 if (canView) {
-                    channels.push({ id: c.id, name: c.name, canSend });
+                    channels.push({ 
+                        id: c.id, 
+                        name: c.name, 
+                        canSend,
+                        rateLimitPerUser: c.rateLimitPerUser || 0
+                    });
                 }
             }
         });
@@ -125,15 +130,17 @@ router.get('/full-dashboard-data', async (req, res) => {
             url: e.imageURL()
         }));
 
-        // 4. Database Models in Parallel
+        // 4. Database Models & Adaptive Slowmode in Parallel
         const GuildSettings = require('../../database/models/GuildSettings');
         const ContentFeed = require('../../database/models/ContentFeed');
         const Autoresponder = require('../../database/models/Autoresponder');
+        const adaptiveSlowmodeManager = require('../../utils/adaptiveSlowmodeManager');
 
-        const [settings, contentFeeds, autoresponders] = await Promise.all([
+        const [settings, contentFeeds, autoresponders, adaptiveSlowmodeStatus] = await Promise.all([
             settingsCache.get(guildId).then(s => s || GuildSettings.findOrCreate({ where: { guildId } }).then(([res]) => res)),
             ContentFeed.findAll({ where: { guildId } }).catch(() => []),
-            Autoresponder.findAll({ where: { guildId } }).catch(() => [])
+            Autoresponder.findAll({ where: { guildId } }).catch(() => []),
+            adaptiveSlowmodeManager.getGuildStatus(guild).catch(() => null)
         ]);
 
         // 5. Analytics summary
@@ -151,6 +158,7 @@ router.get('/full-dashboard-data', async (req, res) => {
             settings: settings ? (typeof settings.toJSON === 'function' ? settings.toJSON() : settings) : {},
             contentFeeds,
             autoresponders,
+            adaptiveSlowmodeStatus,
             applications: [],
             analytics
         };
@@ -177,6 +185,25 @@ router.get('/full-dashboard-data', async (req, res) => {
  * Returns text channels where the bot has permission to send messages.
 
  */
+
+/**
+ * GET /api/guilds/:guildId/adaptive-slowmode/status
+ * Returns real-time velocity, active channel slowmodes, and adaptive tier state.
+ */
+router.get('/adaptive-slowmode/status', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
+
+        const adaptiveSlowmodeManager = require('../../utils/adaptiveSlowmodeManager');
+        const status = await adaptiveSlowmodeManager.getGuildStatus(guild);
+        res.json({ success: true, status });
+    } catch (err) {
+        console.error('Error fetching adaptive slowmode status:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
 
 router.get('/channels', async (req, res) => {
 
@@ -205,13 +232,10 @@ router.get('/channels', async (req, res) => {
                 if (canView) {
 
                     channels.push({
-
                         id: c.id,
-
                         name: c.name,
-
-                        canSend: canSend
-
+                        canSend: canSend,
+                        rateLimitPerUser: c.rateLimitPerUser || 0
                     });
 
                 }

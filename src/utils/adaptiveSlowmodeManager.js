@@ -58,11 +58,41 @@ class AdaptiveSlowmodeManager {
         let allowedChannels = [];
         if (settings.adaptiveSlowmodeChannels) {
             try {
-                allowedChannels = JSON.parse(settings.adaptiveSlowmodeChannels);
+                if (typeof settings.adaptiveSlowmodeChannels === 'string') {
+                    if (settings.adaptiveSlowmodeChannels.startsWith('[')) {
+                        allowedChannels = JSON.parse(settings.adaptiveSlowmodeChannels);
+                    } else {
+                        allowedChannels = settings.adaptiveSlowmodeChannels.split(',').map(s => s.trim()).filter(Boolean);
+                    }
+                } else if (Array.isArray(settings.adaptiveSlowmodeChannels)) {
+                    allowedChannels = settings.adaptiveSlowmodeChannels;
+                }
             } catch (_) {}
         }
         if (Array.isArray(allowedChannels) && allowedChannels.length > 0 && !allowedChannels.includes(channelId)) {
             return; // Channel is not in the monitored list
+        }
+
+        // Check exempt / whitelisted roles (bypass slowmode and velocity calculation)
+        let ignoredRoles = [];
+        if (settings.adaptiveSlowmodeIgnoredRoles) {
+            try {
+                if (typeof settings.adaptiveSlowmodeIgnoredRoles === 'string') {
+                    if (settings.adaptiveSlowmodeIgnoredRoles.startsWith('[')) {
+                        ignoredRoles = JSON.parse(settings.adaptiveSlowmodeIgnoredRoles);
+                    } else {
+                        ignoredRoles = settings.adaptiveSlowmodeIgnoredRoles.split(',').map(s => s.trim()).filter(Boolean);
+                    }
+                } else if (Array.isArray(settings.adaptiveSlowmodeIgnoredRoles)) {
+                    ignoredRoles = settings.adaptiveSlowmodeIgnoredRoles;
+                }
+            } catch (_) {}
+        }
+        if (Array.isArray(ignoredRoles) && ignoredRoles.length > 0 && message.member) {
+            const isExempt = message.member.roles.cache.some(r => ignoredRoles.includes(r.id));
+            if (isExempt) {
+                return; // Member has an exempt/whitelisted role; bypass velocity calculations
+            }
         }
 
         // Add message to sliding window (All messages count toward channel velocity even if staff are active)
@@ -290,14 +320,26 @@ class AdaptiveSlowmodeManager {
         let monitoredChannels = [];
         if (settings?.adaptiveSlowmodeChannels) {
             try {
-                monitoredChannels = JSON.parse(settings.adaptiveSlowmodeChannels);
+                if (typeof settings.adaptiveSlowmodeChannels === 'string') {
+                    monitoredChannels = settings.adaptiveSlowmodeChannels.startsWith('[')
+                        ? JSON.parse(settings.adaptiveSlowmodeChannels)
+                        : settings.adaptiveSlowmodeChannels.split(',').map(s => s.trim()).filter(Boolean);
+                } else if (Array.isArray(settings.adaptiveSlowmodeChannels)) {
+                    monitoredChannels = settings.adaptiveSlowmodeChannels;
+                }
             } catch (_) {}
         }
 
         let ignoredRoles = [];
         if (settings?.adaptiveSlowmodeIgnoredRoles) {
             try {
-                ignoredRoles = JSON.parse(settings.adaptiveSlowmodeIgnoredRoles);
+                if (typeof settings.adaptiveSlowmodeIgnoredRoles === 'string') {
+                    ignoredRoles = settings.adaptiveSlowmodeIgnoredRoles.startsWith('[')
+                        ? JSON.parse(settings.adaptiveSlowmodeIgnoredRoles)
+                        : settings.adaptiveSlowmodeIgnoredRoles.split(',').map(s => s.trim()).filter(Boolean);
+                } else if (Array.isArray(settings.adaptiveSlowmodeIgnoredRoles)) {
+                    ignoredRoles = settings.adaptiveSlowmodeIgnoredRoles;
+                }
             } catch (_) {}
         }
 
@@ -319,6 +361,83 @@ class AdaptiveSlowmodeManager {
             monitoredChannelCount: monitoredChannels.length,
             isChannelMonitored: monitoredChannels.length === 0 || monitoredChannels.includes(channelId),
             ignoredRoleCount: ignoredRoles.length
+        };
+    }
+
+    /**
+     * Get aggregate live status across all channels for dashboard
+     * @param {import('discord.js').Guild} guild 
+     */
+    async getGuildStatus(guild) {
+        if (!guild) return null;
+        const settings = await settingsCache.get(guild.id);
+        const now = Date.now();
+
+        let monitoredChannels = [];
+        if (settings?.adaptiveSlowmodeChannels) {
+            try {
+                if (typeof settings.adaptiveSlowmodeChannels === 'string') {
+                    monitoredChannels = settings.adaptiveSlowmodeChannels.startsWith('[')
+                        ? JSON.parse(settings.adaptiveSlowmodeChannels)
+                        : settings.adaptiveSlowmodeChannels.split(',').map(s => s.trim()).filter(Boolean);
+                } else if (Array.isArray(settings.adaptiveSlowmodeChannels)) {
+                    monitoredChannels = settings.adaptiveSlowmodeChannels;
+                }
+            } catch (_) {}
+        }
+
+        let ignoredRoles = [];
+        if (settings?.adaptiveSlowmodeIgnoredRoles) {
+            try {
+                if (typeof settings.adaptiveSlowmodeIgnoredRoles === 'string') {
+                    ignoredRoles = settings.adaptiveSlowmodeIgnoredRoles.startsWith('[')
+                        ? JSON.parse(settings.adaptiveSlowmodeIgnoredRoles)
+                        : settings.adaptiveSlowmodeIgnoredRoles.split(',').map(s => s.trim()).filter(Boolean);
+                } else if (Array.isArray(settings.adaptiveSlowmodeIgnoredRoles)) {
+                    ignoredRoles = settings.adaptiveSlowmodeIgnoredRoles;
+                }
+            } catch (_) {}
+        }
+
+        let maxSlowmode = 0;
+        let totalRecentMsgs = 0;
+        const channelList = [];
+
+        guild.channels.cache.forEach(c => {
+            if (c.type === 0 || c.isTextBased()) {
+                const currentRate = c.rateLimitPerUser || 0;
+                const buffer = this.channelBuffers.get(c.id);
+                const activeMsgs = buffer ? buffer.messages.filter(m => now - m.timestamp <= 10000) : [];
+                const velocityPerSec = Number((activeMsgs.length / 10).toFixed(1));
+                const isMonitored = monitoredChannels.length === 0 || monitoredChannels.includes(c.id);
+
+                if (isMonitored) {
+                    if (currentRate > maxSlowmode) maxSlowmode = currentRate;
+                    totalRecentMsgs += activeMsgs.length;
+                }
+
+                channelList.push({
+                    id: c.id,
+                    name: c.name,
+                    rateLimitPerUser: currentRate,
+                    recentMessages10s: activeMsgs.length,
+                    msgVelocityPerSec: velocityPerSec,
+                    isMonitored,
+                    tier: buffer?.currentTier || (currentRate > 0 ? 'ACTIVE' : 'INACTIVE')
+                });
+            }
+        });
+
+        const overallVelocityPerSec = Number((totalRecentMsgs / 10).toFixed(1));
+
+        return {
+            enabled: settings?.adaptiveSlowmodeEnabled || false,
+            maxSlowmode,
+            overallVelocityPerSec,
+            recentMessages10s: totalRecentMsgs,
+            monitoredChannelCount: monitoredChannels.length,
+            ignoredRoleCount: ignoredRoles.length,
+            channels: channelList
         };
     }
 

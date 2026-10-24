@@ -3,6 +3,7 @@ const OpenAI = require('openai');
 const settingsCache = require('../utils/settingsCache');
 const { getPrivacyResponse } = require('../utils/privateBrain');
 const { getBuiltInResponse } = require('../utils/builtInBrain');
+const { ensureCleanSentenceEnding } = require('../utils/sentenceSanitizer');
 const { fetchMonthlyHistory } = require('../utils/aiTools');
 const { checkRateLimit } = require('../utils/aiRateLimiter');
 const { isUserPremium } = require('../utils/premiumManager');
@@ -97,10 +98,11 @@ async function processMessageInternal(message, client) {
         
         if (!isMentioned && !isReply && !isAutoChannel) return;
 
-        // In auto-channel mode without explicit mention/reply, ignore bot command triggers
+        // Ignore bot prefix commands (n!<cmd>, n?<cmd>, !<cmd>, /<cmd>, etc.) so commands never trigger chat AI
+        const rawContent = (message.content || '').trim();
+        if (/^(n[!/?]|[!/?.#$-])\w+/i.test(rawContent)) return;
         if (isAutoChannel && !isMentioned && !isReply) {
-            const trimmed = (message.content || '').trim();
-            if (/^[!/?.#$-]\w+/i.test(trimmed)) return;
+            if (/^(n[!/?]|[!/?.#$-])\w+/i.test(rawContent)) return;
         }
 
         // Memory toggle: Asynchronously update user memory & interests only if memory is enabled
@@ -150,6 +152,12 @@ async function processMessageInternal(message, client) {
             } else {
                 plainContent = `${plainContent}\n${stickerTag}`;
             }
+        }
+
+        // Reasonable text input limit to prevent quota burnout & spam abuse (Max 1500 chars)
+        const MAX_AI_PROMPT_LENGTH = 1500;
+        if (plainContent.length > MAX_AI_PROMPT_LENGTH) {
+            plainContent = plainContent.slice(0, MAX_AI_PROMPT_LENGTH) + '... [text truncated for quota safety]';
         }
 
         // Empty ping handling (Bypassed if user sent text, image attachments, OR stickers)
@@ -419,6 +427,33 @@ async function processMessageInternal(message, client) {
             }
         }
 
+        // 11c. Replied Message Image Vision: If replying to a post containing images, feed them to vision
+        if (replyTargetMsg && replyTargetMsg.attachments && replyTargetMsg.attachments.size > 0) {
+            const replyImgAttachments = replyTargetMsg.attachments.filter(a => a.contentType?.startsWith('image/'));
+            for (const [id, att] of replyImgAttachments) {
+                if (!(visionAttachments instanceof Map)) visionAttachments = new Map();
+                if (!visionAttachments.has(id)) {
+                    visionAttachments.set(id, att);
+                }
+            }
+        }
+
+        // 11d. Direct Image URL Vision: Check for linked image URLs in message
+        const imageUrlMatches = (plainContent || '').match(/https?:\/\/[^\s<>]+\.(?:png|jpe?g|webp|gif)(?:\?[^\s<>]*)?/gi);
+        if (imageUrlMatches && imageUrlMatches.length > 0) {
+            imageUrlMatches.slice(0, 2).forEach((imgUrl, idx) => {
+                if (!(visionAttachments instanceof Map)) visionAttachments = new Map();
+                const key = `url_image_${idx}`;
+                if (!visionAttachments.has(key)) {
+                    visionAttachments.set(key, {
+                        url: imgUrl,
+                        name: `image_${idx}.png`,
+                        contentType: 'image/png'
+                    });
+                }
+            });
+        }
+
         // 12. User Permission Profile & Live Roles Context
         const BOT_DEVELOPER_ID = '1214048435632603137';
         const isDev = message.author.id === BOT_DEVELOPER_ID;
@@ -456,7 +491,8 @@ async function processMessageInternal(message, client) {
 
         const deviceSpecsContext = getSanitizedSpecsSummary();
 
-        const selectedModel = (settings?.aiModel && settings.aiModel !== 'gemini-2.5-flash' && settings.aiModel !== 'gemini-2.0-flash' && settings.aiModel !== 'gemini-1.5-flash' && settings.aiModel !== 'gemini-1.5-pro') ? settings.aiModel : 'gemini-3.8-flash';
+        // Default to high-throughput, quota-efficient production flash
+        const selectedModel = (settings?.aiModel && settings.aiModel !== 'gemini-2.5-flash' && settings.aiModel !== 'gemini-2.0-flash' && settings.aiModel !== 'gemini-1.5-flash' && settings.aiModel !== 'gemini-1.5-pro') ? settings.aiModel : 'gemini-flash-latest';
         let customPrompt = settings?.aiSystemPrompt || '';
         if (!customPrompt.trim() && settings?.aiPromptTemplate && AI_PERSONA_TEMPLATES[settings.aiPromptTemplate]) {
             customPrompt = AI_PERSONA_TEMPLATES[settings.aiPromptTemplate];
@@ -519,6 +555,11 @@ You were created and developed by Vaztinix (Discord ID: 1214048435632603137, men
 - Joking & Playful: Radiate witty, sarcastic, authentic Discord humor and playful banter.
 - Deeply Supportive: When someone vents, is stressed, or sad, drop sarcasm and provide genuine warmth and empathy.
 - Context Focus: Focus solely on ${authorDisplayName}'s message. Do NOT bring up or confuse other chats or unrelated conversations.
+
+### ✍️ SENTENCE COMPLETION & MESSAGE CONCISENESS RULES:
+- Always Complete Thoughts: Every response MUST conclude as a complete, coherent sentence ending with terminal punctuation (., !, ?, or appropriate Discord emoji).
+- Never Cut Off Mid-Sentence: Absolutely NEVER stop generating mid-sentence, leave dangling conjunctions or prepositions ("and", "or", "because", "but", "are", "with", "in", "to"), or trail off. If you begin a thought, you MUST finish it completely.
+- No Large Essay Paragraphs: Keep replies punchy, natural, and conversational (1 to 3 well-formed sentences or a compact short paragraph). Finish exactly what you are saying with zero ambiguity or confusion.
 
 ### 🛡️ STRICT ANTI-BULLYING, HARASSMENT & CONTENT FILTERS:
 - Zero tolerance for malicious bullying, cruelty, harassment, hate speech, slurs, doxxing, or dogpiling.
@@ -649,9 +690,13 @@ ${deviceSpecsContext}
             response = `I'm here! What's on your mind?`;
         }
 
+        // Guarantee response ends on a complete sentence without trailing cutoffs or dangling conjunctions
+        response = ensureCleanSentenceEnding(response);
+
         // Ensure message fits Discord's 2000 character limit
         if (response.length > 1950) {
-            response = response.substring(0, 1947) + '...';
+            response = response.substring(0, 1947);
+            response = ensureCleanSentenceEnding(response);
         }
 
         // Record Nora's reply into shared conversation hub across all cluster units

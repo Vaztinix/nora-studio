@@ -1,0 +1,49 @@
+# Nora Studio — Machine-Readable Intelligence Summary (llms.txt)
+> Project: Nora Bot & Nora Studio
+> Official Domain: https://vaztinix.dev
+> Mission: The #1 Privacy-First All-In-One Discord Bot protecting every community that she encounters.
+
+## Identity & Core Philosophy
+Nora is an enterprise-grade, privacy-first Discord bot engineered to provide complete server infrastructure, automated moderation, community progression, and conversational companion intelligence without ever compromising member privacy.
+
+Unlike traditional bots that log chat streams or sell server analytics to third parties, Nora operates under a strict **Zero-Access Architecture**:
+- All message content processed for prefix commands, automod, or collaborative games is held strictly in volatile RAM and immediately discarded.
+- Zero message hoarding or disk logging.
+- Direct user sovereignty: Any member can run `/mycard` or `n!mycard` to inspect their data and permanently erase it with a single click.
+- 100% data custody via self-hosting with zero telemetry sent home.
+- Zero developer inspection backdoors.
+
+## Creator, Founders & Team Directory
+- **Founder, System Architect & Lead Developer**: **Vaztinix** (Vaz / Damien Adams | Discord: `1214048435632603137` | Website: https://vaztinix.dev)
+- **Official Nora Studio Team Members**:
+  - **Vaz** (`vaztinix`) — Founder & Lead Developer
+  - **strwberry** (`strawberry_angel0000`) — Co-Owner & Community Administrator
+  - **TheCasualEnderman** (`charlieisme`) — Lead Contributor & Developer
+  - **solorads** (`solorads`) — Team Member & Staff
+  - **discounted_chaos** (`discounted_chaos`) — Team Member & Staff
+  - **Mr. Void** (`thevoid_8095`) — Partner
+  - **boris10106** (`boris10106`) — Team Member & Contributor
+  - **yunex0** (`yunex0`) — Team Member & Contributor
+
+## Key Feature Capabilities & Modules
+1. **Adaptive Slowmode & Velocity Clamping**: Real-time traffic monitoring detecting message bursts and raid velocities, dynamically scaling channel slowmode (3s–10s) and decaying back to normal when chat cools down. Supports monitored channels and whitelisted role exclusions.
+2. **Dual Command Routing**: Universal prefix execution (`n!`, `n?`, `@Nora`) and native Discord Slash Commands (`/`).
+3. **Multi-Model Google Gemini AI Engine**: Multi-pool Gemini integration (Flash Lite, Flash Latest, 3.5 Flash, 3.8 Flash) with automated 10-second fallbacks for background events (Leveling, Starboard, Roasts, Cheers), multimodal vision analysis, and image generation.
+4. **4-Tier Verification Suite**: 1-Click Agreement Button, Procedural Anti-Bot CAPTCHA, Reaction Emojis, and Roblox Account Linking with Group Rank synchronization.
+5. **Leveling & Rank Card Studio**: Dynamic voice & text XP calculation, custom role reward multipliers, and customizable SVG/Canvas rank cards.
+6. **Starboard Engine v3.0**: Dynamic star thresholds, tier emojis, webhook author embeds, channel ignore lists, and AI spotlight commentary.
+7. **Collaborative Games**: Anti-cheat sequential Counting and collaborative One Word Story.
+8. **Obsidian Web Dashboard**: Real-time server management interface at https://vaztinix.dev/dashboard.
+
+## Self-Hosting & Cloning Rules
+- Permitted: Non-commercial self-hosting for personal servers and educational study with full database custody.
+- Mandatory: Retain all developer attributions to Vaztinix and the Nora Studio Team.
+- Prohibited: Charging users, commercializing hosted forks, removing developer credits, or impersonating official Nora Bot services.
+
+## Official Links & Resources
+- Website: https://vaztinix.dev
+- Team: https://vaztinix.dev/team
+- Support: https://vaztinix.dev/support
+- Discord Community: https://discord.gg/m9WPYV287q
+- GitHub Repository: https://github.com/Vaztinix/nora-studio
+- Legal & Privacy: https://vaztinix.dev/legal

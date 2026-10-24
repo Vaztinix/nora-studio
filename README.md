@@ -21,7 +21,7 @@
 
 ## 🌟 What is Nora?
 
-**Nora** is a high-performance, enterprise-grade, privacy-first Discord ecosystem engineered by **Vaztinix** and the **Nora Studio Team**. Nora brings together next-generation AI conversational intelligence, forensic server security, multi-mode verification, Roblox identity synchronization, interactive community games, and an obsidian-styled real-time Web Dashboard—all built upon an uncompromising **Zero-Access Architecture**.
+**Nora** is a high-performance, enterprise-grade, privacy-first Discord ecosystem engineered by **Vaztinix** and the **Nora Studio Team**. Our core mission is not only to be the **#1 Privacy-First All-In-One Discord Bot**, but a guardian that **protects every community that she encounters**. Nora brings together next-generation AI conversational intelligence, forensic server security, multi-mode verification, Roblox identity synchronization, interactive community games, and an obsidian-styled real-time Web Dashboard—all built upon an uncompromising **Zero-Access Architecture**.
 
 Nora supports seamless **Dual Command Routing**: run any feature using native Discord Slash Commands (`/`) or universal text chat prefixes (`n!`, `n?`, or `@Nora`).
 
@@ -67,11 +67,13 @@ Behind Nora is **Nora Studio**, a passionate collective of developers, community
 
 | Module | Version | Highlights & Capabilities |
 | :--- | :---: | :--- |
-| **Gemini 3.8 Flash AI** | `v3.0` | Upgraded to Google's next-gen Gemini 3.8 Flash with multi-key quota balancing (up to 10 pooled keys), dynamic mood matching, multimodal vision, and automatic rate-limit cascading. |
+| **Adaptive Slowmode & Raid Defense** | `v3.1` | Heuristic real-time chat velocity monitoring that automatically clamps slowmode (3s–10s) during floods/raids with smooth decay. Supports channel monitoring filters and exempt role whitelists. |
+| **10s AI Fallbacks & Quota Longevity** | `v3.1` | Intelligent model pooling prioritizing lightweight, smart models (`gemini-flash-lite`, `gemini-3.5-flash-lite`) with strict 10s non-blocking fallbacks for Leveling accolades and Starboard spotlight commentary. |
+| **Gemini Multi-Model Cluster** | `v3.0` | Multi-key pool load-balancing across project keys, multimodal vision analysis, sticker recognition, and live PC hardware telemetry. |
 | **Permanent Server Revoke & Blacklist** | `v3.0` | Comprehensive server blacklist engine in Owner Admin Desk with reason popups, automatic DM delivery to the evicted server owner, and auto-leave logic upon unauthorized re-invites. |
 | **4-Tier Verification Suite** | `v2.9` | 4 Server verification engines: 1-Click Instant Button, Anti-Bot Visual CAPTCHA, Reaction Emojis, and Roblox Account Linking with Group Rank synchronization. |
 | **Forensic Intelligence & Anti-Raid** | `v2.8` | Automated velocity join detection, account age verification, avatar requirements, phishing signature traps, and 1-click server lockdown. |
-| **Starboard Engine** | `v2.7` | Reaction highlights, threshold triggers, custom star emojis, webhook-rendered author embeds, and **Ignored Channels filter** to protect private channels. |
+| **Starboard Engine v3.0** | `v2.8` | Reaction highlights, threshold triggers, custom star emojis, webhook-rendered author embeds, and **Ignored Channels filter** to protect private channels. |
 | **AFK & Availability Manager** | `v2.7` | Status broadcast system, auto `[AFK]` nickname prefixing, anti-ping notifications with automatic cleanup, and return greetings. |
 | **Age Suspension & Appeal System** | `v3.0` | Automated age suspension enforcement (`/agesuspension`), forensic sweep utilities, and dedicated automated appeal notification dispatcher. |
 | **Leveling & Rank Card Studio** | `v2.8` | Text and voice XP algorithms, milestone role rewards, and rank card studio with live coordinate transforms and custom image uploads. |

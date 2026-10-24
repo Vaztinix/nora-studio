@@ -581,11 +581,15 @@ module.exports = {
                 const template = settings?.levelUpMessage;
                 let desc = template ? formatMessage(template, message.member || message.author, level) : `<@${message.author.id}> has reached level **${level}**. GG!`;
                 
-                // AI Enhance: Celebratory AI title/accolade on level up
+                // AI Enhance: Celebratory AI title/accolade on level up (10s fallback to normal announcement)
                 if (settings?.noraAiEnabled !== false && settings?.levelingAiEnabled !== false) {
                     try {
                         const AIFeatureEnhancer = require('../utils/aiFeatureEnhancer');
-                        const accolade = await AIFeatureEnhancer.getLevelUpAccolade(message.author.username, level);
+                        const aiPromise = AIFeatureEnhancer.getLevelUpAccolade(message.author.username, level);
+                        const accolade = await Promise.race([
+                            aiPromise,
+                            new Promise(resolve => setTimeout(() => resolve(null), 10000))
+                        ]);
                         if (accolade) desc += `\n✨ *"${accolade}"*`;
                     } catch (_) {}
                 }

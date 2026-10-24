@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const sharp = require('sharp');
 const geminiKeyManager = require('./geminiKeyManager');
+const { ensureCleanSentenceEnding } = require('./sentenceSanitizer');
 
 /**
  * Tiered Gemini Models for Maximum Quota Longevity & Performance
@@ -205,9 +206,13 @@ You were created and developed by Vaztinix (Discord ID: 1214048435632603137, men
   - **HOST PC HARDWARE SPECS & PRIVACY**:
     - When asked for device specs, PC specs, machine specs, or computer hardware, return the host specifications (AMD Ryzen 7 5700X, 32GB RAM, Windows 11 x64, Node.js) based on the live sanitized telemetry.
     - NEVER share personal user directories, Windows username, local/external IP addresses, or MAC addresses. Keep personal privacy 100% guarded.
-- **DISCORD FORMATTING**:
+- **DISCORD FORMATTING & CONCISENESS**:
   - Respond like a real Discord chatter (she/her). Use markdown naturally.
-  - Keep responses punchy, concise, and Discord-ready (under 1800 characters)${isPremium ? ' with thorough depth when requested.' : '.'}`;
+  - Keep responses punchy, concise, and Discord-ready (typically 1 to 3 complete, crisp sentences or a compact short paragraph).
+  - NEVER write large essay paragraphs or rambling walls of text unless explicitly instructed.
+- **CRITICAL SENTENCE COMPLETION RULES**:
+  - Every single message MUST finish as a complete, well-formed thought ending with terminal punctuation (., !, ?, or natural emoji).
+  - NEVER cut off mid-sentence, trail off, or leave dangling conjunctions or prepositions (e.g. "and", "or", "because", "but", "are", "with", "in", "to", "either"). Finish exactly what you are saying with zero ambiguity or confusion.${isPremium ? ' Provide thorough depth when requested.' : ''}`;
 
     // Fetch live quota telemetry
     const stats = geminiKeyManager.getQuotaStats();
@@ -281,26 +286,34 @@ ${optionsOrContext.mentionedRoles ? `- Mentioned Members Roles:\n${optionsOrCont
     const engineeredPrompt = `${contextSection}Current User (${authorName}) says: "${promptText || 'Hello Nora!'}"`;
     const parts = [engineeredPrompt];
 
-    // Process and optimize image attachments to preserve token quota
+    // Process and optimize image attachments to preserve token quota (Max 3 images per request)
     if (imageAttachments && imageAttachments.size > 0) {
+        let processedImages = 0;
         for (const [id, attachment] of imageAttachments) {
+            if (processedImages >= 3) break;
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-                const res = await fetch(attachment.url, { signal: controller.signal });
-                clearTimeout(timeoutId);
-
-                const arrayBuffer = await res.arrayBuffer();
-                const rawBuffer = Buffer.from(arrayBuffer);
-                const optimized = await optimizeImageForVision(rawBuffer);
-
-                parts.push({
-                    inlineData: {
-                        data: optimized.data,
-                        mimeType: optimized.mimeType
+                let rawBuffer = attachment.buffer;
+                if (!rawBuffer && attachment.url) {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 6000);
+                    const res = await fetch(attachment.url, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+                    if (res.ok) {
+                        const arrayBuffer = await res.arrayBuffer();
+                        rawBuffer = Buffer.from(arrayBuffer);
                     }
-                });
+                }
+
+                if (rawBuffer) {
+                    const optimized = await optimizeImageForVision(rawBuffer);
+                    parts.push({
+                        inlineData: {
+                            data: optimized.data,
+                            mimeType: optimized.mimeType
+                        }
+                    });
+                    processedImages++;
+                }
             } catch (e) {
                 console.error('[System AI] Image fetch/optimization error:', e.message);
             }
@@ -334,21 +347,55 @@ ${optionsOrContext.mentionedRoles ? `- Mentioned Members Roles:\n${optionsOrCont
 
         for (const modelName of modelsToTry) {
             try {
-                const model = genAI.getGenerativeModel({
-                    model: modelName,
-                    systemInstruction: effectiveSystemInstruction,
-                    generationConfig: {
-                        maxOutputTokens: isPremium ? 1200 : 600,
-                        temperature: 0.75,
-                        topP: 0.95
-                    }
-                });
+                const isThinkingModel = modelName.includes('2.5') || modelName.includes('3.') || modelName.includes('3-');
+                const generationConfig = {
+                    maxOutputTokens: isPremium ? 2048 : 1200,
+                    temperature: 0.75,
+                    topP: 0.95
+                };
+                if (isThinkingModel) {
+                    generationConfig.thinkingConfig = { thinkingBudget: 0 };
+                }
 
-                const result = await model.generateContent(parts);
-                const text = result.response.text();
+                let model;
+                try {
+                    model = genAI.getGenerativeModel({
+                        model: modelName,
+                        systemInstruction: effectiveSystemInstruction,
+                        generationConfig
+                    });
+                } catch (cfgErr) {
+                    delete generationConfig.thinkingConfig;
+                    model = genAI.getGenerativeModel({
+                        model: modelName,
+                        systemInstruction: effectiveSystemInstruction,
+                        generationConfig
+                    });
+                }
+
+                let result;
+                try {
+                    result = await model.generateContent(parts);
+                } catch (genErr) {
+                    // If model rejects thinkingConfig with INVALID_ARGUMENT (e.g. non-thinking models), retry cleanly
+                    if (generationConfig.thinkingConfig && genErr?.message?.includes('INVALID_ARGUMENT')) {
+                        delete generationConfig.thinkingConfig;
+                        const retryModel = genAI.getGenerativeModel({
+                            model: modelName,
+                            systemInstruction: effectiveSystemInstruction,
+                            generationConfig
+                        });
+                        result = await retryModel.generateContent(parts);
+                    } else {
+                        throw genErr;
+                    }
+                }
+
+                const text = result?.response?.text();
                 if (text && text.trim().length > 0) {
                     geminiKeyManager.reportSuccess(apiKey, text);
-                    return text.replace(/\\n/g, '\n').replace(/\\\\n/g, '\n');
+                    const normalized = text.replace(/\\n/g, '\n').replace(/\\\\n/g, '\n');
+                    return ensureCleanSentenceEnding(normalized);
                 }
             } catch (error) {
                 lastError = error;
