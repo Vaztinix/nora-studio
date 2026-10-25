@@ -22605,8 +22605,21 @@
         window.openStarboardEmojiPicker = function(event) {
             event.stopPropagation();
             let picker = document.getElementById('starboard-emoji-picker-popover');
+            
+            const targetBtn = event.currentTarget || event.target;
+            const rect = targetBtn.getBoundingClientRect();
+            const popoverWidth = 324;
+            const leftPos = Math.max(10, Math.min(window.innerWidth - popoverWidth - 10, rect.left + window.scrollX - (popoverWidth / 2) + (rect.width / 2)));
+            const topPos = (rect.bottom + window.scrollY + 8) + 'px';
+
             if (picker) {
-                picker.style.display = picker.style.display === 'none' ? 'grid' : 'none';
+                if (picker.style.display === 'none') {
+                    picker.style.top = topPos;
+                    picker.style.left = leftPos + 'px';
+                    picker.style.display = 'grid';
+                } else {
+                    picker.style.display = 'none';
+                }
                 return;
             }
 
@@ -22614,26 +22627,40 @@
             picker.id = 'starboard-emoji-picker-popover';
             picker.style.cssText = `
                 position: absolute;
+                box-sizing: border-box;
+                width: ${popoverWidth}px;
+                max-width: calc(100vw - 20px);
                 background: #181a24;
                 border: 1px solid rgba(255,255,255,0.15);
                 border-radius: 14px;
                 padding: 12px;
                 display: grid;
-                grid-template-columns: repeat(6, 1fr);
+                grid-template-columns: repeat(6, 42px);
                 gap: 8px;
+                justify-content: center;
+                align-content: center;
                 box-shadow: 0 15px 40px rgba(0,0,0,0.7), 0 0 20px rgba(245, 158, 11, 0.15);
                 z-index: 100000;
-                max-width: 270px;
             `;
 
             const popularEmojis = ['⭐', '🌟', '✨', '💫', '🌠', '🔥', '🏆', '🎉', '❤️', '👍', '🐱', '🎮', '🚀', '💡', '👑', '💎', '💯', '👏'];
             popularEmojis.forEach(emoji => {
                 const btn = document.createElement('button');
                 btn.type = 'button';
-                btn.style.cssText = 'background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); font-size: 1.3rem; padding: 6px; cursor: pointer; transition: all 0.2s; border-radius: 8px; display: flex; align-items: center; justify-content: center;';
+                btn.style.cssText = 'box-sizing: border-box; width: 42px; height: 42px; padding: 0; margin: 0; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); font-size: 1.35rem; line-height: 1; cursor: pointer; transition: all 0.15s ease; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;';
                 btn.textContent = emoji;
-                btn.onmouseover = () => { btn.style.background = 'rgba(245,158,11,0.2)'; btn.style.transform = 'scale(1.15)'; };
-                btn.onmouseout = () => { btn.style.background = 'rgba(255,255,255,0.04)'; btn.style.transform = 'scale(1)'; };
+                btn.onmouseover = () => { 
+                    btn.style.background = 'rgba(245,158,11,0.22)'; 
+                    btn.style.borderColor = 'rgba(245,158,11,0.45)';
+                    btn.style.transform = 'scale(1.12)'; 
+                    btn.style.zIndex = '2';
+                };
+                btn.onmouseout = () => { 
+                    btn.style.background = 'rgba(255,255,255,0.04)'; 
+                    btn.style.borderColor = 'rgba(255,255,255,0.08)';
+                    btn.style.transform = 'scale(1)'; 
+                    btn.style.zIndex = '1';
+                };
                 btn.onclick = () => {
                     const input = document.getElementById('setting-starboardEmoji');
                     if (input) {
@@ -22645,14 +22672,13 @@
                 picker.appendChild(btn);
             });
 
-            const rect = event.target.getBoundingClientRect();
-            picker.style.top = (rect.bottom + window.scrollY + 6) + 'px';
-            picker.style.left = Math.max(10, (rect.left + window.scrollX - 40)) + 'px';
+            picker.style.top = topPos;
+            picker.style.left = leftPos + 'px';
 
             document.body.appendChild(picker);
 
             document.addEventListener('click', function closePicker(e) {
-                if (!picker.contains(e.target) && e.target !== event.target) {
+                if (!picker.contains(e.target) && !targetBtn.contains(e.target)) {
                     picker.style.display = 'none';
                 }
             });
