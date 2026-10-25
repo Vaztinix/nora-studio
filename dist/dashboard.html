@@ -8891,7 +8891,13 @@
                             if (borderPicker) borderPicker.value = border;
                             if (borderText) borderText.value = border.toUpperCase();
 
-                            updateRankCardLivePreview();
+                            if (typeof markFormDirty === 'function') {
+                                markFormDirty('setting-levelingCardBgColor');
+                                markFormDirty('setting-levelingCardAccentColor');
+                                markFormDirty('setting-levelingCardBorderColor');
+                            }
+
+                            updateServerRankCardLivePreview();
                         };
 
                         window.setLevelingRatePreset = function(preset) {
@@ -8935,31 +8941,53 @@
                             el.innerHTML = '🎉 ' + txt;
                         };
 
-                        function updateRankCardLivePreview() {
+                        function updateServerRankCardLivePreview() {
                             const previewBox = document.getElementById('rank-preview-box');
+                            if (!previewBox) return;
+
                             const avatar = document.getElementById('rank-preview-avatar');
                             const progressBar = document.getElementById('rank-preview-progress-bar');
                             const accentTexts = document.querySelectorAll('.rank-preview-accent');
 
-                            const bgVal = document.getElementById('setting-levelingCardBgColor')?.value || '#111217';
-                            const accentVal = document.getElementById('setting-levelingCardAccentColor')?.value || '#7c3aed';
-                            const borderVal = document.getElementById('setting-levelingCardBorderColor')?.value || '#23252e';
+                            const bgInput = document.getElementById('setting-levelingCardBgColor');
+                            const bgVal = bgInput?.value || '#111217';
+                            const bgText = document.getElementById('setting-levelingCardBgColor-text');
+                            if (bgText && bgInput && bgText.value !== bgInput.value.toUpperCase()) {
+                                bgText.value = bgInput.value.toUpperCase();
+                            }
+
+                            const accentInput = document.getElementById('setting-levelingCardAccentColor');
+                            const accentVal = accentInput?.value || '#7c3aed';
+                            const accentText = document.getElementById('setting-levelingCardAccentColor-text');
+                            if (accentText && accentInput && accentText.value !== accentInput.value.toUpperCase()) {
+                                accentText.value = accentInput.value.toUpperCase();
+                            }
+
+                            const borderInput = document.getElementById('setting-levelingCardBorderColor');
+                            const borderVal = borderInput?.value || '#23252e';
+                            const borderText = document.getElementById('setting-levelingCardBorderColor-text');
+                            if (borderText && borderInput && borderText.value !== borderInput.value.toUpperCase()) {
+                                borderText.value = borderInput.value.toUpperCase();
+                            }
+
                             const bgImg = document.getElementById('setting-levelingCardBackgroundImage')?.value?.trim() || '';
                             const showPfp = document.getElementById('setting-levelingPfpEnabled')?.checked !== false;
 
-                            if (previewBox) {
-                                const safeBg = sanitizeUrl(bgImg);
-                                if (safeBg && (safeBg.startsWith('http://') || safeBg.startsWith('https://') || safeBg.startsWith('data:image/'))) {
-                                    previewBox.style.backgroundImage = `linear-gradient(rgba(17, 18, 23, 0.78), rgba(17, 18, 23, 0.88)), url('${encodeURI(safeBg)}')`;
-                                    previewBox.style.backgroundSize = 'cover';
-                                    previewBox.style.backgroundPosition = 'center';
-                                } else {
-                                    previewBox.style.backgroundImage = 'none';
-                                    previewBox.style.backgroundColor = bgVal;
-                                }
-                                previewBox.style.borderColor = borderVal;
-                                previewBox.style.boxShadow = `0 8px 32px rgba(0, 0, 0, 0.6), 0 0 16px ${borderVal}33`;
+                            // 🖼️ Apply Background (Custom Image or Theme Palette)
+                            if (bgImg && (bgImg.startsWith('data:image/') || bgImg.startsWith('http://') || bgImg.startsWith('https://') || bgImg.startsWith('/') || bgImg.startsWith('./'))) {
+                                const cleanUrl = bgImg.replace(/[\r\n]/g, '').replace(/"/g, '\\"');
+                                previewBox.style.backgroundImage = `linear-gradient(rgba(17, 18, 23, 0.72), rgba(17, 18, 23, 0.85)), url("${cleanUrl}")`;
+                                previewBox.style.backgroundSize = 'cover';
+                                previewBox.style.backgroundPosition = 'center';
+                                previewBox.style.backgroundRepeat = 'no-repeat';
+                                previewBox.style.backgroundColor = bgVal;
+                            } else {
+                                previewBox.style.backgroundImage = 'none';
+                                previewBox.style.backgroundColor = bgVal;
                             }
+
+                            previewBox.style.borderColor = borderVal;
+                            previewBox.style.boxShadow = `0 15px 40px rgba(0, 0, 0, 0.6), 0 0 20px ${borderVal}40`;
 
                             if (avatar) {
                                 avatar.style.visibility = showPfp ? 'visible' : 'hidden';
@@ -8972,10 +9000,20 @@
 
                             if (progressBar) {
                                 progressBar.style.background = `linear-gradient(90deg, ${accentVal}, #a78bfa)`;
-                                progressBar.style.boxShadow = `0 0 12px ${accentVal}66`;
+                                progressBar.style.boxShadow = `0 0 14px ${accentVal}66`;
                             }
                         }
-                        window.updateRankCardLivePreview = updateRankCardLivePreview;
+                        window.updateServerRankCardLivePreview = updateServerRankCardLivePreview;
+
+                        // Unified live preview dispatcher
+                        window.updateRankCardLivePreview = function() {
+                            if (typeof window.updateServerRankCardLivePreview === 'function') {
+                                window.updateServerRankCardLivePreview();
+                            }
+                            if (typeof window.updateUserProfileRankCardLivePreview === 'function') {
+                                window.updateUserProfileRankCardLivePreview();
+                            }
+                        };
 
                         // Sync text inputs with color pickers and trigger live preview
                         document.addEventListener('DOMContentLoaded', () => {
@@ -8985,12 +9023,12 @@
                                 if (picker && text) {
                                     picker.addEventListener('input', () => {
                                         text.value = picker.value.toUpperCase();
-                                        updateRankCardLivePreview();
+                                        updateServerRankCardLivePreview();
                                     });
                                     text.addEventListener('input', () => {
                                         if (/^#[0-9A-F]{6}$/i.test(text.value)) {
                                             picker.value = text.value;
-                                            updateRankCardLivePreview();
+                                            updateServerRankCardLivePreview();
                                         }
                                     });
                                 }
@@ -8998,7 +9036,12 @@
                         });
 
                         window.updateRankCardBgPreview = function(val) {
-                            if (typeof updateRankCardLivePreview === 'function') updateRankCardLivePreview();
+                            const input = document.getElementById('setting-levelingCardBackgroundImage');
+                            if (input && val !== undefined && input.value !== val) {
+                                input.value = val;
+                            }
+                            updateServerRankCardLivePreview();
+                            if (typeof markFormDirty === 'function') markFormDirty('setting-levelingCardBackgroundImage');
                         };
 
                         window.handleRankCardBgUpload = function(event) {
@@ -9011,12 +9054,14 @@
                             const reader = new FileReader();
                             reader.onload = function(e) {
                                 const dataUrl = e.target.result;
+                                const input = document.getElementById('setting-levelingCardBackgroundImage');
+                                if (input) {
+                                    input.value = dataUrl;
+                                    if (typeof markFormDirty === 'function') markFormDirty('setting-levelingCardBackgroundImage');
+                                }
+                                updateServerRankCardLivePreview();
                                 if (typeof openRankCardCropModal === 'function') {
                                     openRankCardCropModal('server', dataUrl);
-                                } else {
-                                    const input = document.getElementById('setting-levelingCardBackgroundImage');
-                                    if (input) input.value = dataUrl;
-                                    if (typeof updateRankCardLivePreview === 'function') updateRankCardLivePreview();
                                 }
                             };
                             reader.readAsDataURL(file);
@@ -9024,10 +9069,13 @@
 
                         window.clearRankCardBgImage = function() {
                             const input = document.getElementById('setting-levelingCardBackgroundImage');
-                            if (input) input.value = '';
+                            if (input) {
+                                input.value = '';
+                                if (typeof markFormDirty === 'function') markFormDirty('setting-levelingCardBackgroundImage');
+                            }
                             const fileInput = document.getElementById('rank-card-bg-file');
                             if (fileInput) fileInput.value = '';
-                            if (typeof updateRankCardLivePreview === 'function') updateRankCardLivePreview();
+                            updateServerRankCardLivePreview();
                             if (typeof showToast === 'function') showToast('Server rank card background cleared.', 'info');
                         };
 
@@ -16293,14 +16341,14 @@
                 const base64Data = e.target.result;
                 document.getElementById('user-pref-rankCardBackgroundImage').value = base64Data;
                 document.getElementById('rank-card-image-filename').textContent = file.name;
-                updateRankCardLivePreview();
+                updateUserProfileRankCardLivePreview();
                 saveUserProfile();
             };
             reader.readAsDataURL(file);
         }
         window.handleRankCardImageUpload = handleRankCardImageUpload;
 
-        function updateRankCardLivePreview() {
+        function updateUserProfileRankCardLivePreview() {
             const showAvatar = document.getElementById('user-pref-showAvatarInRankCard')?.checked ?? true;
             const mode = document.querySelector('input[name="rankCardThemeMode"]:checked')?.value || 'preset';
             const customColor = document.getElementById('user-pref-rankCardCustomColor')?.value || '#4f46e5';
@@ -16327,7 +16375,16 @@
                 }
             }
         }
-        window.updateRankCardLivePreview = updateRankCardLivePreview;
+        window.updateUserProfileRankCardLivePreview = updateUserProfileRankCardLivePreview;
+
+        window.updateRankCardLivePreview = function() {
+            if (typeof window.updateServerRankCardLivePreview === 'function') {
+                window.updateServerRankCardLivePreview();
+            }
+            if (typeof window.updateUserProfileRankCardLivePreview === 'function') {
+                window.updateUserProfileRankCardLivePreview();
+            }
+        };
 
         window.userGuilds = [];
 
@@ -19600,6 +19657,8 @@
                     } else if (tabId === 'tab-starboard') {
                         if (typeof updateStarboardPreview === 'function') updateStarboardPreview();
                         if (typeof fetchStarboardLeaderboardData === 'function') fetchStarboardLeaderboardData();
+                    } else if (tabId === 'tab-leveling') {
+                        if (typeof updateServerRankCardLivePreview === 'function') updateServerRankCardLivePreview();
                     } else if (tabId === 'tab-applications') {
                         if (typeof fetchApplications === 'function') fetchApplications();
                     } else if (tabId === 'tab-feeds') {
@@ -26193,56 +26252,7 @@
             }
         }
 
-        function updateRankCardBgPreview(url) {
-            const container = document.getElementById('rank-card-bg-preview-container');
-            const img = document.getElementById('rank-card-bg-preview');
-            if (img) {
-                if (url && url.trim()) {
-                    img.src = url.trim();
-                    if (container) container.style.display = 'block';
-                } else {
-                    if (container) container.style.display = 'none';
-                    img.src = '';
-                }
-            }
-            if (typeof updateRankCardLivePreview === 'function') {
-                updateRankCardLivePreview();
-            }
-        }
 
-        function handleRankCardBgUpload(event) {
-            const file = event.target.files && event.target.files[0];
-            if (!file) return;
-            if (file.size > 5 * 1024 * 1024) {
-                if (typeof showToast === 'function') showToast('Image file too large. Please select an image under 5MB.', 'error');
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const dataUrl = e.target.result;
-                const input = document.getElementById('setting-levelingCardBackgroundImage');
-                if (input) {
-                    input.value = dataUrl;
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                }
-                updateRankCardBgPreview(dataUrl);
-                if (typeof updateRankCardLivePreview === 'function') updateRankCardLivePreview();
-                if (typeof showToast === 'function') showToast('Rank card background image loaded successfully!', 'success');
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function clearRankCardBgImage() {
-            const input = document.getElementById('setting-levelingCardBackgroundImage');
-            const fileInput = document.getElementById('rank-card-bg-file');
-            if (input) {
-                input.value = '';
-                input.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-            if (fileInput) fileInput.value = '';
-            updateRankCardBgPreview('');
-            if (typeof updateRankCardLivePreview === 'function') updateRankCardLivePreview();
-        }
 
         async function fetchContentFeeds(force = false) {
 
@@ -30570,6 +30580,7 @@ try {
                 const serverInput = document.getElementById('setting-levelingCardBackgroundImage');
                 if (serverInput) serverInput.value = finalMediaValue;
 
+                if (typeof updateServerRankCardLivePreview === 'function') updateServerRankCardLivePreview();
                 if (typeof updateRankCardLivePreview === 'function') updateRankCardLivePreview();
                 if (typeof markFormDirty === 'function') markFormDirty('setting-levelingCardBackgroundImage');
 
