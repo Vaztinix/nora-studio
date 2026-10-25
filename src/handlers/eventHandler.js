@@ -22,12 +22,14 @@ module.exports = (client) => {
                 client.on(event.name, async (...args) => {
                     if (event.name === 'messageCreate') {
                         const message = args[0];
-                        try {
-                            const { processMessageEvent } = require('../bot/middleware/gateway');
-                            const processed = await processMessageEvent(message);
-                            if (!processed) return; // Silent discard
-                        } catch (err) {
-                            console.error('[Gateway Middleware Error]:', err.message);
+                        if (message && message.guild) {
+                            try {
+                                const { processMessageEvent } = require('../bot/middleware/gateway');
+                                const processed = await processMessageEvent(message);
+                                if (!processed) return; // Silent discard
+                            } catch (err) {
+                                console.error('[Gateway Middleware Error]:', err.message);
+                            }
                         }
                     }
                     event.execute(...args, client);

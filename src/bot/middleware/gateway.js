@@ -5,8 +5,10 @@ const settingsCache = require('../../utils/settingsCache');
  * Completely isolates pre-existing history to maintain strict data privacy compliance.
  */
 async function processMessageEvent(incomingMessage) {
-    // Ignore messages processed outside of formal server text spaces
-    if (!incomingMessage.guild) return null;
+    // Allow messages processed in Direct Messages for DM Support and Appeal Relays
+    if (!incomingMessage || !incomingMessage.guild) {
+        return { isDirectMessage: true, eligibleForUptime: false };
+    }
     
     const targetGuildId = incomingMessage.guild.id;
     

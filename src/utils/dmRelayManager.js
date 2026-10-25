@@ -259,7 +259,8 @@ class DMRelayManager {
             }
 
             // Send to Developer
-            let forwardedMsg;
+            let forwardedMsg = null;
+            let dmDeliverySuccess = false;
             try {
                 forwardedMsg = await devUser.send({
                     content: contentNotice,
@@ -267,18 +268,48 @@ class DMRelayManager {
                     files: processedFiles,
                     components
                 });
+                dmDeliverySuccess = true;
             } catch (sendErr) {
-                console.error('[DMRelayManager] Send with attachments failed, retrying without files:', sendErr.message);
-                relayEmbed.setImage(null);
-                forwardedMsg = await devUser.send({
-                    content: contentNotice,
-                    embeds: [relayEmbed],
-                    components
-                });
+                console.warn('[DMRelayManager] Send with attachments failed, retrying without files:', sendErr.message);
+                try {
+                    relayEmbed.setImage(null);
+                    forwardedMsg = await devUser.send({
+                        content: contentNotice,
+                        embeds: [relayEmbed],
+                        components
+                    });
+                    dmDeliverySuccess = true;
+                } catch (retryErr) {
+                    console.error('[DMRelayManager] Direct message to developer failed (DMs may be restricted):', retryErr.message);
+                }
             }
 
-            // Store in cache
-            this.relayCache.set(forwardedMsg.id, message.author.id);
+            if (forwardedMsg) {
+                this.relayCache.set(forwardedMsg.id, message.author.id);
+            }
+
+            // Dual Dispatch: Mirror to the dedicated staff audit log channel so the appeal is visible in Milo's World
+            try {
+                const targetGuildId = (suspension && suspension.guildId) ? suspension.guildId : '1487342521133830174';
+                const logChannelId = '1510677727206969625';
+                const logChannel = client.channels.cache.get(logChannelId) || await client.channels.fetch(logChannelId).catch(() => null);
+                if (logChannel && logChannel.isTextBased()) {
+                    const auditNotice = dmDeliverySuccess 
+                        ? `📩 **[DM Appeal Relay]** From <@${message.author.id}> (\`${message.author.id}\`):`
+                        : `⚠️ <@${DEVELOPER_ID}> **[DM Appeal Alert — Direct DM Delivery Unavailable]** From <@${message.author.id}> (\`${message.author.id}\`):`;
+                    const auditMsg = await logChannel.send({
+                        content: auditNotice,
+                        embeds: [relayEmbed],
+                        files: processedFiles.length > 0 ? processedFiles : undefined,
+                        components: isAppeal ? components : []
+                    }).catch(() => null);
+                    if (auditMsg) {
+                        this.relayCache.set(auditMsg.id, message.author.id);
+                    }
+                }
+            } catch (auditErr) {
+                console.error('[DMRelayManager] Failed to mirror to audit log channel:', auditErr.message);
+            }
 
             // Acknowledge receipt to the user
             const ackEmbed = new EmbedBuilder()
@@ -521,7 +552,8 @@ class DMRelayManager {
                 contentNotice += `\n**🔗 Provided Links:**\n` + urlMatches.slice(0, 5).join('\n');
             }
 
-            let forwardedMsg;
+            let forwardedMsg = null;
+            let dmDeliverySuccess = false;
             try {
                 forwardedMsg = await devUser.send({
                     content: contentNotice,
@@ -529,16 +561,47 @@ class DMRelayManager {
                     files: modalFiles,
                     components: [actionRow]
                 });
+                dmDeliverySuccess = true;
             } catch (sendErr) {
                 relayEmbed.setImage(null);
-                forwardedMsg = await devUser.send({
-                    content: contentNotice,
-                    embeds: [relayEmbed],
-                    components: [actionRow]
-                });
+                try {
+                    forwardedMsg = await devUser.send({
+                        content: contentNotice,
+                        embeds: [relayEmbed],
+                        components: [actionRow]
+                    });
+                    dmDeliverySuccess = true;
+                } catch (retryErr) {
+                    console.error('[DMRelayManager] Direct message to developer failed for modal appeal:', retryErr.message);
+                }
             }
 
-            this.relayCache.set(forwardedMsg.id, interaction.user.id);
+            if (forwardedMsg) {
+                this.relayCache.set(forwardedMsg.id, interaction.user.id);
+            }
+
+            // Dual Dispatch: Mirror to the dedicated staff audit log channel so the appeal is visible in Milo's World
+            try {
+                const targetGuildId = (suspension && suspension.guildId) ? suspension.guildId : '1487342521133830174';
+                const logChannelId = '1510677727206969625';
+                const logChannel = client.channels.cache.get(logChannelId) || await client.channels.fetch(logChannelId).catch(() => null);
+                if (logChannel && logChannel.isTextBased()) {
+                    const auditNotice = dmDeliverySuccess 
+                        ? `📩 **[DM Appeal Relay Form]** From <@${interaction.user.id}> (\`${interaction.user.id}\`):`
+                        : `⚠️ <@${DEVELOPER_ID}> **[DM Appeal Alert — Direct DM Delivery Unavailable]** From <@${interaction.user.id}> (\`${interaction.user.id}\`):`;
+                    const auditMsg = await logChannel.send({
+                        content: auditNotice,
+                        embeds: [relayEmbed],
+                        files: modalFiles.length > 0 ? modalFiles : undefined,
+                        components: [actionRow]
+                    }).catch(() => null);
+                    if (auditMsg) {
+                        this.relayCache.set(auditMsg.id, interaction.user.id);
+                    }
+                }
+            } catch (auditErr) {
+                console.error('[DMRelayManager] Failed to mirror modal appeal to audit log channel:', auditErr.message);
+            }
 
             const ackEmbed = new EmbedBuilder()
                 .setTitle('⚖️ Appeal Forwarded Successfully')
