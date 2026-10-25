@@ -57,3 +57,8 @@ src/utils/rokuController.js
 src/commands/utility/roku.js
 src/api/routes/roku.js
 
+# Web Push VAPID Secrets
+.vapid_keys.json
+*.vapid_keys*.json
+
+
