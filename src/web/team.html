@@ -1598,6 +1598,7 @@
                         <i class="fas fa-times"></i>
                     </button>
                 </div>
+            </div>
             <!-- Delegation Card Switcher -->
             <div id="card-switcher-container" style="display: none; margin-bottom: 20px; padding: 14px 18px; background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -4106,115 +4107,123 @@
                 if (res.ok) {
                     const data = await res.json();
                     if (data.success && Array.isArray(data.cards) && data.cards.length > 0) {
-                        grid.innerHTML = '';
+                        const frag = document.createDocumentFragment();
                         data.cards.forEach(m => {
-                            // Check local overrides if any saved from this session
                             try {
-                                const localOverride = localStorage.getItem('nora_team_override_' + m.id);
-                                if (localOverride) {
-                                    const parsed = JSON.parse(localOverride);
-                                    delete parsed.image;
-                                    delete parsed.username;
-                                    m = { ...m, ...parsed };
+                                // Check local overrides if any saved from this session
+                                try {
+                                    const localOverride = localStorage.getItem('nora_team_override_' + m.id);
+                                    if (localOverride) {
+                                        const parsed = JSON.parse(localOverride);
+                                        delete parsed.image;
+                                        delete parsed.username;
+                                        m = { ...m, ...parsed };
+                                    }
+                                } catch(e) {}
+
+                                if (m.hideCard) return;
+
+                                const card = document.createElement('article');
+                                card.className = 'team-card' + (m.banner ? ' has-custom-bg' : '');
+                                card.setAttribute('data-user', m.id);
+                                if (m.username) card.id = m.username.replace(/[^a-zA-Z0-9_]/g, '');
+                                if (m.banner) {
+                                    applyCardBackground(card, m.banner);
                                 }
-                            } catch(e) {}
+                                applyCardTextAndGlow(card, m.textColor, m.glowColor);
 
-                            if (m.hideCard) return;
+                                const cardTop = document.createElement('div');
+                                cardTop.className = 'card-top';
 
-                            const card = document.createElement('article');
-                            card.className = 'team-card' + (m.banner ? ' has-custom-bg' : '');
-                            card.setAttribute('data-user', m.id);
-                            if (m.username) card.id = m.username.replace(/[^a-zA-Z0-9_]/g, '');
-                            if (m.banner) {
-                                applyCardBackground(card, m.banner);
+                                const avatarSrc = m.image || m.avatar || 'nora.png';
+                                const avatarWrap = document.createElement('div');
+                                avatarWrap.className = 'avatar-wrap';
+                                const avatarImg = document.createElement('img');
+                                avatarImg.className = 'avatar-img';
+                                avatarImg.src = avatarSrc;
+                                avatarImg.alt = '';
+                                avatarImg.onerror = function() { this.onerror = null; this.src = 'nora.png'; };
+
+                                const rawStatus = (m.isApp ? 'online' : (m.status || 'offline')).toLowerCase();
+                                const statusLabel = DISCORD_STATUS_LABELS[rawStatus] || 'Offline';
+
+                                const statusDot = document.createElement('span');
+                                statusDot.className = `status-dot ${rawStatus}`;
+                                statusDot.setAttribute('data-status-label', statusLabel);
+                                statusDot.setAttribute('role', 'status');
+                                statusDot.setAttribute('aria-label', statusLabel);
+                                statusDot.setAttribute('tabindex', '0');
+                                statusDot.addEventListener('click', (e) => {
+                                    e.stopPropagation();
+                                    const wasActive = statusDot.classList.contains('active-tooltip');
+                                    document.querySelectorAll('.status-dot.active-tooltip').forEach(d => d.classList.remove('active-tooltip'));
+                                    if (!wasActive) statusDot.classList.add('active-tooltip');
+                                });
+
+                                avatarWrap.appendChild(avatarImg);
+                                avatarWrap.appendChild(statusDot);
+
+                                const headerInfo = document.createElement('div');
+                                headerInfo.className = 'card-header-info';
+                                if (!m.hideRole && m.role) {
+                                    const rolePill = document.createElement('span');
+                                    rolePill.className = 'role-pill ' + (m.roleClass || 'member');
+                                    rolePill.textContent = m.role;
+                                    headerInfo.appendChild(rolePill);
+                                }
+                                const h2 = document.createElement('h2');
+                                h2.className = 'member-name';
+                                h2.textContent = m.displayName || 'Staff Member';
+                                const handle = document.createElement('span');
+                                handle.className = 'member-handle';
+                                handle.textContent = '@' + (m.username || 'member');
+                                headerInfo.appendChild(h2);
+                                headerInfo.appendChild(handle);
+
+                                cardTop.appendChild(avatarWrap);
+                                cardTop.appendChild(headerInfo);
+                                card.appendChild(cardTop);
+
+                                const badgesDiv = document.createElement('div');
+                                badgesDiv.className = 'discord-badges';
+                                if (m.public_flags !== undefined) {
+                                    renderBadges(badgesDiv, m.public_flags);
+                                }
+                                card.appendChild(badgesDiv);
+
+                                const bioText = m.bio || m.description || '';
+                                if (bioText) {
+                                    const bioDiv = document.createElement('div');
+                                    bioDiv.className = 'member-bio';
+                                    renderDiscordMarkdownToElement(bioDiv, bioText);
+                                    card.appendChild(bioDiv);
+                                }
+
+                                if (!m.hideJoinDate && m.joined) {
+                                    const joinSpan = document.createElement('span');
+                                    joinSpan.className = 'member-join-date';
+                                    joinSpan.textContent = m.joined;
+                                    card.appendChild(joinSpan);
+                                }
+
+                                let linksObj = m.links;
+                                if (typeof linksObj === 'string') {
+                                    try { linksObj = JSON.parse(linksObj); } catch(e) { linksObj = {}; }
+                                }
+                                const socialDiv = renderSocialButtonsElement(linksObj, m.id, !!m.hideDiscord);
+                                if (socialDiv) {
+                                    card.appendChild(socialDiv);
+                                }
+
+                                frag.appendChild(card);
+                            } catch (cardErr) {
+                                console.error('Error rendering individual card for', m?.username, cardErr);
                             }
-                            applyCardTextAndGlow(card, m.textColor, m.glowColor);
-
-                            const cardTop = document.createElement('div');
-                            cardTop.className = 'card-top';
-
-                            const avatarSrc = m.image || m.avatar || 'nora.png';
-                            const avatarWrap = document.createElement('div');
-                            avatarWrap.className = 'avatar-wrap';
-                            const avatarImg = document.createElement('img');
-                            avatarImg.className = 'avatar-img';
-                            avatarImg.src = avatarSrc;
-                            avatarImg.alt = '';
-                            avatarImg.onerror = function() { this.onerror = null; this.src = 'nora.png'; };
-
-                            const rawStatus = (m.isApp ? 'online' : (m.status || 'offline')).toLowerCase();
-                            const statusLabel = DISCORD_STATUS_LABELS[rawStatus] || 'Offline';
-
-                            const statusDot = document.createElement('span');
-                            statusDot.className = `status-dot ${rawStatus}`;
-                            statusDot.setAttribute('data-status-label', statusLabel);
-                            statusDot.setAttribute('role', 'status');
-                            statusDot.setAttribute('aria-label', statusLabel);
-                            statusDot.setAttribute('tabindex', '0');
-                            statusDot.addEventListener('click', (e) => {
-                                e.stopPropagation();
-                                const wasActive = statusDot.classList.contains('active-tooltip');
-                                document.querySelectorAll('.status-dot.active-tooltip').forEach(d => d.classList.remove('active-tooltip'));
-                                if (!wasActive) statusDot.classList.add('active-tooltip');
-                            });
-
-                            avatarWrap.appendChild(avatarImg);
-                            avatarWrap.appendChild(statusDot);
-
-                            const headerInfo = document.createElement('div');
-                            headerInfo.className = 'card-header-info';
-                            if (!m.hideRole && m.role) {
-                                const rolePill = document.createElement('span');
-                                rolePill.className = 'role-pill ' + (m.roleClass || 'member');
-                                rolePill.textContent = m.role;
-                                headerInfo.appendChild(rolePill);
-                            }
-                            const h2 = document.createElement('h2');
-                            h2.className = 'member-name';
-                            h2.textContent = m.displayName || 'Staff Member';
-                            const handle = document.createElement('span');
-                            handle.className = 'member-handle';
-                            handle.textContent = '@' + (m.username || 'member');
-                            headerInfo.appendChild(h2);
-                            headerInfo.appendChild(handle);
-
-                            cardTop.appendChild(avatarWrap);
-                            cardTop.appendChild(headerInfo);
-                            card.appendChild(cardTop);
-
-                            const badgesDiv = document.createElement('div');
-                            badgesDiv.className = 'discord-badges';
-                            if (m.public_flags !== undefined) {
-                                renderBadges(badgesDiv, m.public_flags);
-                            }
-                            card.appendChild(badgesDiv);
-
-                            const bioText = m.bio || m.description || '';
-                            if (bioText) {
-                                const bioDiv = document.createElement('div');
-                                bioDiv.className = 'member-bio';
-                                renderDiscordMarkdownToElement(bioDiv, bioText);
-                                card.appendChild(bioDiv);
-                            }
-
-                            if (!m.hideJoinDate && m.joined) {
-                                const joinSpan = document.createElement('span');
-                                joinSpan.className = 'member-join-date';
-                                joinSpan.textContent = m.joined;
-                                card.appendChild(joinSpan);
-                            }
-
-                            let linksObj = m.links;
-                            if (typeof linksObj === 'string') {
-                                try { linksObj = JSON.parse(linksObj); } catch(e) { linksObj = {}; }
-                            }
-                            const socialDiv = renderSocialButtonsElement(linksObj, m.id, !!m.hideDiscord);
-                            if (socialDiv) {
-                                card.appendChild(socialDiv);
-                            }
-
-                            grid.appendChild(card);
                         });
+                        if (frag.children.length > 0) {
+                            grid.innerHTML = '';
+                            grid.appendChild(frag);
+                        }
                     }
                 }
             } catch (e) {
