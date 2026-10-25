@@ -3,23 +3,49 @@ const { create, all } = require('mathjs');
 // Initialize a fully sandboxed mathjs instance with zero root-level system access
 const mathInstance = create(all);
 
+// Register user-friendly function aliases on the sandboxed mathjs instance
+mathInstance.import({
+    ln: (x) => mathInstance.log(x),
+    nCr: (n, r) => mathInstance.combinations(n, r),
+    nPr: (n, r) => mathInstance.permutations(n, r),
+    trunc: (x) => Math.trunc(x),
+    fact: (x) => mathInstance.factorial(x)
+}, { override: true });
+
 // Whitelisted mathematical functions and constants for advanced math support
 const ALLOWED_SYMBOLS = new Set([
     // Constants
     'pi', 'PI', 'e', 'E', 'tau', 'TAU', 'phi', 'PHI', 'LN2', 'LN10', 'LOG2E', 'LOG10E', 'SQRT1_2', 'SQRT2',
     // Basic, Roots & Powers
-    'sqrt', 'cbrt', 'nthRoot', 'pow', 'exp', 'log', 'ln', 'log10', 'log2',
+    'sqrt', 'cbrt', 'nthRoot', 'pow', 'exp', 'log', 'ln', 'log10', 'log2', 'hypot', 'trunc',
     // Rounding & Sign
     'abs', 'ceil', 'floor', 'round', 'fix', 'sign',
     // Trigonometry
     'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2',
     'sinh', 'cosh', 'tanh', 'asinh', 'acosh', 'atanh',
     // Number Theory & Combinatorics
-    'factorial', 'gamma', 'gcd', 'lcm',
-    'combinations', 'permutations',
-    // Min, Max, Modulo
-    'min', 'max', 'mod'
+    'factorial', 'fact', 'gamma', 'gcd', 'lcm',
+    'combinations', 'permutations', 'nCr', 'nPr',
+    // Min, Max, Modulo, Units
+    'min', 'max', 'mod', 'deg', 'rad'
 ]);
+
+const SUPERSCRIPTS = {
+    '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
+    '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+    '⁺': '+', '⁻': '-', '⁽': '(', '⁾': ')'
+};
+
+/**
+ * Normalizes Unicode superscript digits into standard exponent notation ^(...)
+ */
+function normalizeSuperscripts(str) {
+    if (!str) return '';
+    return str.replace(/([⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁽⁾]+)/g, (match) => {
+        const converted = Array.from(match).map(c => SUPERSCRIPTS[c] || c).join('');
+        return '^(' + converted + ')';
+    });
+}
 
 /**
  * Strips all emoji characters from a string, including:
@@ -53,7 +79,9 @@ function stripEmojis(str) {
  */
 function stripMarkdown(str) {
     if (!str) return '';
-    let s = str.trim().normalize('NFKC');
+    // Superscripts must be converted before NFKC decomposition turns ² into 2
+    let s = normalizeSuperscripts(str.trim());
+    s = s.normalize('NFKC');
     s = s.replace(/```(?:[a-z]*\n)?([\s\S]*?)```/gi, '$1');
     s = s.replace(/`([^`]+)`/g, '$1');
     s = s.replace(/\|\|([\s\S]*?)\|\|/g, '$1');
@@ -71,12 +99,50 @@ function stripMarkdown(str) {
  */
 function normalizeMathSyntax(str) {
     let s = str.trim();
-    return s
-        .replace(/×/g, '*')
-        .replace(/÷/g, '/')
-        .replace(/−/g, '-')
-        .replace(/π/g, 'pi')
-        .replace(/√\s*(\d+|\([^\)]+\))/g, 'sqrt($1)');
+
+    // 1. Grouping brackets & braces to parentheses
+    s = s.replace(/\[/g, '(').replace(/\]/g, ')');
+    s = s.replace(/\{/g, '(').replace(/\}/g, ')');
+
+    // 2. Division operators: colon (:), obelus (÷), division slash (∕), fraction slash (⁄)
+    s = s.replace(/÷/g, '/');
+    s = s.replace(/∕/g, '/');
+    s = s.replace(/⁄/g, '/');
+    s = s.replace(/:+/g, '/');
+
+    // 3. Exponents: ** to ^
+    s = s.replace(/\*\*/g, '^');
+
+    // 4. Multiplication symbols: ×, ✕, ✖, ∗, ＊, •, ·, ⋅, ∙
+    s = s.replace(/[×✕✖∗＊]/g, '*');
+    s = s.replace(/[•·⋅∙]/g, '*');
+    // Letter x/X as multiplication between numbers/brackets (preserve hex like 0x10)
+    s = s.replace(/(?<=([1-9]|\)))\s*[xX]\s*(?=[\d\(])/g, ' * ');
+    s = s.replace(/(?<=\b0)\s+[xX]\s+(?=[\d\(])/g, ' * ');
+
+    // 5. Minus / Subtraction signs: −, –, —, ―, ー, ﹣, －
+    s = s.replace(/[−–—―ー﹣－]/g, '-');
+
+    // 6. Mathematical Constants
+    s = s.replace(/[πΠ]/g, 'pi');
+    s = s.replace(/τ/g, 'tau');
+    s = s.replace(/[ϕφ]/g, 'phi');
+    s = s.replace(/ℯ/g, 'e');
+
+    // 7. Absolute value bars |x|
+    s = s.replace(/\|([^|]+)\|/g, 'abs($1)');
+
+    // 8. Roots: fourth root (∜), cube root (∛), square root (√)
+    s = s.replace(/∜\s*(\d+(?:\.\d+)?|\([^)]+\))/g, 'nthRoot($1, 4)');
+    s = s.replace(/∛\s*(\d+(?:\.\d+)?|\([^)]+\))/g, 'cbrt($1)');
+    s = s.replace(/√\s*(\d+(?:\.\d+)?|\([^)]+\))/g, 'sqrt($1)');
+
+    // 9. Combinatorics & modulo shortcuts (e.g. 4 choose 2, 4 nCr 2, 10 modulo 3)
+    s = s.replace(/(\d+)\s*(?:choose|nCr)\s*(\d+)/gi, 'combinations($1, $2)');
+    s = s.replace(/(\d+)\s*nPr\s*(\d+)/gi, 'permutations($1, $2)');
+    s = s.replace(/\bmodulo\b/gi, 'mod');
+
+    return s;
 }
 
 /**

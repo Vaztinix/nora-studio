@@ -23,11 +23,12 @@ class NoraV12Engine {
                 .replace(/million/gi, '*1000000')
                 .replace(/billion/gi, '*1000000000')
                 .replace(/thousand/gi, '*1000')
-                .replace(/times/gi, '*')
-                .replace(/divided by/gi, '/')
+                .replace(/times|×/gi, '*')
+                .replace(/divided by|÷|:|\//gi, '/')
                 .replace(/plus/gi, '+')
-                .replace(/minus/gi, '-')
+                .replace(/minus|[−–—]/gi, '-')
                 .replace(/ x /gi, ' * ')
+                .replace(/\*\*/g, '^')
                 .replace(/(\d+)%/g, '($1/100)')
                 .trim();
 
