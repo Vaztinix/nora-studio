@@ -117,7 +117,11 @@ module.exports = {
 
             // Determine custom avatar & theme settings
             const userShowAvatar = targetPrefs ? targetPrefs.showAvatarInRankCard !== false : true;
-            const finalShowPfp = showPfp && userShowAvatar;
+            const { APP_OWNER_IDS } = require('../../utils/premiumManager');
+            const isTargetUserPrem = APP_OWNER_IDS.includes(target.id) ||
+                Boolean(targetPrefs && (targetPrefs.isPremium || targetPrefs.isManualPremium || (targetPrefs.paidExpiresAt && new Date(targetPrefs.paidExpiresAt).getTime() > Date.now())));
+            const isGuildPrem = Boolean(settings && (settings.isPremium || settings.isManualPremium || (settings.paidExpiresAt && new Date(settings.paidExpiresAt).getTime() > Date.now())));
+            const hasStudioPlus = isTargetUserPrem || isGuildPrem;
 
             const themeMode = targetPrefs?.rankCardThemeMode || 'preset';
 
@@ -126,14 +130,15 @@ module.exports = {
             let cardBorder = settings?.levelingCardBorderColor || '#23252e';
             let cardUserBg = null;
 
-            if (themeMode === 'image') {
+            // Custom GIF rank cards and custom HEX color builder are exclusive to Studio Plus
+            if (hasStudioPlus && themeMode === 'image') {
                 cardUserBg = targetPrefs?.rankCardBackgroundImage || null;
                 if (targetPrefs?.rankCardCustomColor) cardAccent = targetPrefs.rankCardCustomColor;
-            } else if (themeMode === 'custom') {
+            } else if (hasStudioPlus && themeMode === 'custom') {
                 cardUserBg = null;
                 if (targetPrefs?.rankCardCustomColor) cardAccent = targetPrefs.rankCardCustomColor;
             } else {
-                // 'preset' mode: strictly adhere to server presets
+                // Free tier or preset mode: adhere strictly to server theme
                 cardUserBg = null;
                 cardAccent = settings?.levelingCardAccentColor || '#7c3aed';
                 cardBgColor = settings?.levelingCardBgColor || '#111217';
@@ -153,7 +158,7 @@ module.exports = {
                     bgColor: cardBgColor,
                     accentColor: cardAccent,
                     borderColor: cardBorder,
-                    isPremium: true, // Always allow animated GIFs when present
+                    isPremium: hasStudioPlus, // Strictly gated by Studio Plus entitlement
                     userCustomBg: cardUserBg,
                     serverCustomBg: settings?.levelingCardBackgroundImage || null
                 }),

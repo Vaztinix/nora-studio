@@ -2847,6 +2847,16 @@ app.post('/api/user/profile', async (req, res) => {
         if (dmNotifBroadcasts !== undefined) prefs.dmNotifBroadcasts = dmNotifBroadcasts;
         if (overwriteServerPresets !== undefined) prefs.overwriteServerPresets = overwriteServerPresets;
         if (showAvatarInRankCard !== undefined) prefs.showAvatarInRankCard = showAvatarInRankCard;
+
+        // Custom GIF Rank Cards & Color Builder are strictly exclusive to Studio Plus
+        const { APP_OWNER_IDS } = require('./utils/premiumManager');
+        const isUserPrem = APP_OWNER_IDS.includes(user.id) ||
+            Boolean(prefs.isPremium || prefs.isManualPremium || (prefs.paidExpiresAt && new Date(prefs.paidExpiresAt).getTime() > Date.now()));
+
+        if ((rankCardBackgroundImage || (rankCardCustomColor && rankCardCustomColor !== '#7c3aed') || rankCardThemeMode === 'image' || rankCardThemeMode === 'custom') && !isUserPrem) {
+            return res.status(403).json({ error: 'Custom GIF Rank Cards & Color Builder are exclusive to Studio Plus ($1.99/mo).' });
+        }
+
         if (rankCardThemeMode !== undefined) prefs.rankCardThemeMode = rankCardThemeMode;
         if (rankCardCustomColor !== undefined) prefs.rankCardCustomColor = rankCardCustomColor;
         if (rankCardBackgroundImage !== undefined) prefs.rankCardBackgroundImage = rankCardBackgroundImage;

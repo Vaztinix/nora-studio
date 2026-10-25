@@ -1432,6 +1432,28 @@ module.exports = {
                 if (i.customId === 'action_log_channel') {
                     const selectedCategory = state.selectedLogCategory || 'default';
                     const targetChannelId = i.values[0];
+                    let currentMap = {};
+                    if (typeof settings.loggingChannels === 'object' && settings.loggingChannels !== null) {
+                        currentMap = { ...settings.loggingChannels };
+                    } else if (typeof settings.loggingChannels === 'string') {
+                        try { currentMap = JSON.parse(settings.loggingChannels); } catch(e) { currentMap = {}; }
+                    }
+
+                    // Enforce log channel limit (Studio Plus: 15+ channels, Free: 3)
+                    const { isPremium, getBenefits } = require('../../utils/premiumManager');
+                    const hasPremium = isPremium({ guildId: guild.id });
+                    const benefits = getBenefits(hasPremium);
+
+                    const distinctChannels = new Set(Object.values(currentMap).filter(Boolean));
+                    if (targetChannelId) distinctChannels.add(targetChannelId);
+
+                    if (distinctChannels.size > benefits.maxLogChannels && !hasPremium) {
+                        return await i.reply({
+                            content: `🛡️ **Dedicated Log Stream Limit**: Free servers are capped at **${benefits.maxLogChannels} distinct log channels**.\nUpgrade to **Studio Plus ($1.99/mo)** to unlock **15+ dedicated audit streams**!`,
+                            ephemeral: true
+                        });
+                    }
+
                     if (selectedCategory === 'default') {
                         settings.loggingChannelId = targetChannelId;
                     } else if (selectedCategory === 'moderation') {
@@ -1444,12 +1466,6 @@ module.exports = {
                         settings.boostChannelId = targetChannelId;
                     }
 
-                    let currentMap = {};
-                    if (typeof settings.loggingChannels === 'object' && settings.loggingChannels !== null) {
-                        currentMap = { ...settings.loggingChannels };
-                    } else if (typeof settings.loggingChannels === 'string') {
-                        try { currentMap = JSON.parse(settings.loggingChannels); } catch(e) { currentMap = {}; }
-                    }
                     currentMap[selectedCategory] = targetChannelId;
                     settings.loggingChannels = currentMap;
                     if (typeof settings.changed === 'function') settings.changed('loggingChannels', true);

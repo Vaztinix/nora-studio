@@ -158,27 +158,62 @@ function sendCountingHelpEmbed(message, guildData) {
     const nextNumber = currentCount + 1;
 
     const embed = new EmbedBuilder()
-        .setTitle('🔢 Nora Counting Game Guide')
+        .setTitle('🔢 Nora Counting Game & Math Syntax Manual')
         .setDescription(
-            `Welcome to **Nora Counting**! Work together with your server members to count as high as possible.\n\n` +
-            `**📖 Rules:**\n` +
-            `• Count up sequentially starting from **1** (or current number **${nextNumber}**).\n` +
+            `Welcome to **Nora Counting**! Work together with your server members to count as high as possible using standard integers or advanced mathematical expressions.\n\n` +
+            `**📖 Core Rules:**\n` +
+            `• Count up sequentially starting from **1** (Next required number: **${nextNumber}**).\n` +
             `• **You cannot count twice in a row!** Another member must count next.\n` +
-            `• Super advanced math is fully supported (e.g. \`sqrt(144)\`, \`2^4\`, \`factorial(5)\`, \`sin(pi/2)*5\`, \`gcd(24, 36)\`).\n` +
-            `• **Formatting edits are allowed!** You may edit your message to add bolding, italics, or spoilers as long as no numbers or letters are changed.\n` +
-            `• Making a mistake or double-counting resets the server count to **0** and wipes the offender's personal count!\n\n` +
-            `**⭐ Checkmark & Milestone Reactions:**\n` +
-            `• 💯 **100 Milestone**: Special reaction when hitting **100**!\n` +
-            `• ✅ **Green Checkmark**: Valid count (working towards server record).\n` +
-            `• ☑️ **Blue Checkmark**: **NEW SERVER RECORD / BEST SCORE!** (Exceeds server high score!)\n\n` +
-            `**📊 Server Counting Stats:**\n` +
-            `• **Current Count:** \`${currentCount}\`\n` +
-            `• **Server High Score Best:** \`${highScore}\`\n` +
-            `• **Next Required Count:** \`${nextNumber}\`\n\n` +
-            `*Use \`n!help\` anytime for counting guidance.*`
+            `• **Formatting edits are allowed!** You may edit your message for bolding, italics, or spoilers as long as alphanumeric characters remain untouched.\n` +
+            `• Making a mistake or double-counting resets the server count to **0** and wipes the offender's personal score!`
+        )
+        .addFields(
+            {
+                name: '🧮 Division & Basic Arithmetic',
+                value:
+                    '• **Colon Division (`:`)**: `(2^2^1+38):7-2 = 4`, `42:7 = 6`, `10:2 = 5`\n' +
+                    '• **Obelus & Slashes (`÷`, `/`, `∕`, `⁄`)**: `20 ÷ 5 = 4`, `16 / 4 = 4`\n' +
+                    '• **Subtraction & Dashes (`-`, `−`, `–`, `—`)**: `10 − 6 = 4`, `8 - 4 = 4`\n' +
+                    '• **Grouping Symbols (`(...)`, `[...]`, `{...}`)**: `[(2+3)*2] - 6 = 4`',
+                inline: false
+            },
+            {
+                name: '✖️ Multiplication & Powers',
+                value:
+                    '• **Multiplication Signs (`*`, `×`, `•`, `·`, `⋅`, `∙`)**: `2 × 2 = 4`, `2 • 2 = 4`\n' +
+                    '• **Algebraic & Implicit Multiplication**: `2(2) = 4`, `(2)(2) = 4`, `2x2 = 4`\n' +
+                    '• **Exponents (`^`, `**`)**: `2^2 = 4`, `2**3 = 8`\n' +
+                    '• **Unicode Superscripts (`⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻`)**: `2² = 4`, `2³ = 8`, `10⁴ = 10000`, `2²⁺¹ = 8`',
+                inline: false
+            },
+            {
+                name: '📐 Roots, Radicals & Absolute Values',
+                value:
+                    '• **Roots (`√`, `∛`, `∜`, `nthRoot`)**: `√16 = 4`, `∛8 = 2`, `∜16 = 2`, `nthRoot(81, 4) = 3`\n' +
+                    '• **Absolute Values (`|x|`, `abs`)**: `|-4| = 4`, `|2 - 6| = 4`, `abs(-4) = 4`\n' +
+                    '• **Rounding & Sign**: `round(3.6) = 4`, `floor(4.9) = 4`, `ceil(3.1) = 4`, `trunc(4.8) = 4`',
+                inline: false
+            },
+            {
+                name: '🎲 Combinatorics, Modulo & Advanced Functions',
+                value:
+                    '• **Combinations & Permutations**: `4 choose 2 = 6`, `4 nCr 2 = 6`, `4 nPr 2 = 12`\n' +
+                    '• **Factorials**: `4! = 24`, `fact(4) = 24`\n' +
+                    '• **Modulo & Bases**: `10 % 3 = 1`, `10 mod 3 = 1`, Hex `0x10 = 16`, Binary `0b100 = 4`\n' +
+                    '• **Constants & Functions**: `pi` (`π`), `tau` (`τ`), `phi` (`ϕ`), `e`, `ln(e) = 1`, `hypot(3, 4) = 5`, `gcd(12, 8) = 4`, `lcm(2, 4) = 4`',
+                inline: false
+            },
+            {
+                name: '📊 Server Counting Stats',
+                value:
+                    `• **Current Streak:** \`${currentCount}\`\n` +
+                    `• **Server Record:** \`${highScore}\`\n` +
+                    `• **Next Target:** \`${nextNumber}\``,
+                inline: false
+            }
         )
         .setColor(0x4F46E5)
-        .setFooter({ text: 'Nora Counting System' })
+        .setFooter({ text: 'Nora Counting System • Type n!help counting for rules & math guide' })
         .setTimestamp();
 
     return safeReplyOrSend(message, { embeds: [embed] });
@@ -235,11 +270,11 @@ module.exports = {
         const guildData = allData[message.guild.id] || { currentCount: 0, lastUserId: null, highScore: 0 };
         const expectedNext = guildData.currentCount + 1;
 
-        // Check for help commands in counting channel (n!help, !help, n!counting)
+        // Check specifically for counting help commands (n!help counting, !help counting, /help counting)
         const contentLower = message.content.toLowerCase().trim();
         if ([
-            'n!help', '!help', 'n!counting', 
-            'n!help counting', '!help counting', '/help counting'
+            'n!help counting', '!help counting', '/help counting',
+            'n!counting help', '!counting help', 'n!counting rules', '!counting rules'
         ].includes(contentLower)) {
             return sendCountingHelpEmbed(message, guildData);
         }

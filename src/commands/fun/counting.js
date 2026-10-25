@@ -101,7 +101,7 @@ function buildLeaderboardEmbed(guild, data) {
 
 function buildRulesEmbed() {
     return new EmbedBuilder()
-        .setTitle('📖 Nora Counting Game Rules & Guide')
+        .setTitle('📖 Nora Counting Game Rules & Math Guide')
         .setDescription(
             `Nora's Counting Game is a real-time collaborative chat game designed to test your server's coordination.\n\n` +
             `**1. Sequential Progression:**\n` +
@@ -111,12 +111,20 @@ function buildRulesEmbed() {
             `• **You cannot count twice in a row!** Another member must count next before you can count again.\n` +
             `• Counting twice in a row or entering the wrong number resets the count to **0** and wipes the offender's personal score.\n\n` +
             `**3. Super Advanced Math Sandbox:**\n` +
-            `• Nora features an advanced mathematical AST parser supporting algebra, roots, powers, and trigonometry.\n` +
-            `• Examples: \`sqrt(144)\`, \`2^4\`, \`factorial(5)\`, \`sin(pi/2)*5\`, \`gcd(24, 36)\`, \`cbrt(27)\`, \`round(cos(0)*10)\`!\n\n` +
+            `• Nora features an advanced, sandboxed mathematical AST engine supporting extensive notations:\n` +
+            `  • **Division:** Colon \`:\` (e.g. \`(2^2^1+38):7-2 = 4\`, \`42:7 = 6\`), obelus \`÷\`, slashes \`/\`, \`∕\`, \`⁄\`\n` +
+            `  • **Multiplication:** \`*\`, \`×\`, \`•\`, \`·\`, \`⋅\`, implicit \`2(2) = 4\`, algebraic \`2x2 = 4\`\n` +
+            `  • **Exponents & Superscripts:** \`2^3 = 8\`, \`2**3 = 8\`, \`2² = 4\`, \`2³ = 8\`, \`10⁴ = 10000\`, \`2²⁺¹ = 8\`\n` +
+            `  • **Grouping:** Parentheses \`(...)\`, brackets \`[...]\`, braces \`{...}\` (e.g. \`[(2+3)*2]-6 = 4\`)\n` +
+            `  • **Roots & Radicals:** \`√16 = 4\`, \`∛8 = 2\`, \`∜16 = 2\`, \`sqrt(16)\`, \`cbrt(27)\`, \`nthRoot(81, 4)\`\n` +
+            `  • **Absolute Values & Rounding:** \`|-4| = 4\`, \`abs(-4)\`, \`round()\`, \`floor()\`, \`ceil()\`, \`trunc()\`\n` +
+            `  • **Combinatorics & Modulo:** \`4 choose 2 = 6\`, \`4 nCr 2\`, \`4 nPr 2\`, \`4! = 24\`, \`10 % 3 = 1\`, \`10 mod 3\`\n` +
+            `  • **Bases & Constants:** Hex \`0x10 = 16\`, Binary \`0b100 = 4\`, \`pi\` (\`π\`), \`tau\` (\`τ\`), \`phi\` (\`ϕ\`), \`e\`, \`ln(e) = 1\`\n` +
+            `  • **Functions:** \`hypot(3, 4) = 5\`, \`gcd(12, 8) = 4\`, \`lcm(2, 4) = 4\`, \`sin(pi/2) = 1\`, \`cos(0) = 1\`\n\n` +
             `**4. Markdown & Formatting Edits:**\n` +
             `• **You may edit your messages for formatting** (bold, italics, underline, spoilers, code) as long as no numbers or letters are added, removed, or altered.\n\n` +
             `**5. Fail Role Penalty:**\n` +
-            `• Server administrators can configure a **Fail Role** via \`/setup counting\` or \`/counting failrole\`. If a user fails the count a set number of times, they are automatically assigned the role (e.g. Counting Blacklist).\n\n` +
+            `• Server administrators can configure a **Fail Role** via \`/setup counting\` or \`/counting failrole\`. If a user fails the count a set number of times, they are automatically assigned the role.\n\n` +
             `**6. Reactions & Milestones:**\n` +
             `• ✅ **Green Checkmark:** Correct count progressing towards the record.\n` +
             `• ☑️ **Blue Checkmark:** **New Server Record!** (Exceeds all-time high score).\n` +
@@ -126,7 +134,7 @@ function buildRulesEmbed() {
             `• Every successful count awards leveling experience to boost your server rank.`
         )
         .setColor(0x57F287)
-        .setFooter({ text: 'Nora Counting Engine • Safe, sandboxed math parsing' })
+        .setFooter({ text: 'Nora Counting Engine • Type n!help counting anytime for counting rules' })
         .setTimestamp();
 }
 

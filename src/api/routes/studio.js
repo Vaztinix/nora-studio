@@ -184,10 +184,48 @@ router.post('/autoresponders', requireAuth, async (req, res) => {
             return res.status(400).json({ error: 'Missing required parameters' });
         }
         const Autoresponder = require('../../database/models/Autoresponder');
-        
+        const GuildSettings = require('../../database/models/GuildSettings');
+        const { APP_OWNER_IDS } = require('../../utils/premiumManager');
+
+        // Check guild premium status
+        let settings = await GuildSettings.findOne({ where: { guildId } });
+        let isPremium = !!(settings && (settings.isPremium || settings.isManualPremium));
+        if (req.user && APP_OWNER_IDS.includes(req.user.id)) isPremium = true;
+        if (settings?.paidExpiresAt) {
+            const paidTime = new Date(settings.paidExpiresAt).getTime();
+            const expandedMs = settings.expandedTimeMs ? Number(settings.expandedTimeMs) : 0;
+            if (paidTime + expandedMs > Date.now()) isPremium = true;
+        }
+
         let record;
         if (id) {
             record = await Autoresponder.findOne({ where: { id, guildId } });
+        }
+
+        // 1. Capacity limit check (Studio Plus: 200, Free: 5)
+        if (!record) {
+            const currentCount = await Autoresponder.count({ where: { guildId } });
+            const cap = isPremium ? 200 : 5;
+            if (currentCount >= cap) {
+                return res.status(400).json({ error: `Limit exceeded: Free servers are capped at 5 triggers, while Studio Plus servers get up to 200. Please upgrade to Studio Plus ($1.99/mo) to unlock 200 slots.` });
+            }
+        }
+
+        // 2. Granular Role Filters check
+        let hasRoleFilters = false;
+        try {
+            const igR = Array.isArray(ignoredRoles) ? ignoredRoles : JSON.parse(ignoredRoles || '[]');
+            const alR = Array.isArray(allowedRoles) ? allowedRoles : JSON.parse(allowedRoles || '[]');
+            hasRoleFilters = igR.length > 0 || alR.length > 0;
+        } catch (_) {}
+
+        if (!isPremium && hasRoleFilters) {
+            return res.status(400).json({ error: 'Studio Plus Exclusive: Granular Role Ignored/Allowed Filters require Studio Plus ($1.99/mo).' });
+        }
+
+        // 3. Regex matching check
+        if (matchType === 'regex' && !isPremium) {
+            return res.status(400).json({ error: 'Studio Plus Exclusive: Regular Expression (Regex) matching requires Studio Plus ($1.99/mo).' });
         }
         
         const payload = {

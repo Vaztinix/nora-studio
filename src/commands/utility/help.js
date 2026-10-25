@@ -156,7 +156,21 @@ function buildSingleCommandHelp(client, query, guild) {
     } else if (name === 'verify') {
         examples.push('`n!verify link Lunar_Dev`', '`n!verify check`');
     } else if (name === 'counting') {
-        examples.push('`n!counting`', '`n!counting stats`', '`n!counting top`', '`n!counting rules`', '`n!counting channel #counting`', '`n!counting reset 0`');
+        embed.addFields({
+            name: '🧮 Advanced Mathematical Syntax Manual',
+            value:
+                '• **Division Operators:** Colon `:` (e.g. `(2^2^1+38):7-2 = 4`, `42:7 = 6`), `÷`, `/`, `∕`, `⁄`\n' +
+                '• **Multiplication:** `*`, `×`, `•`, `·`, `⋅`, implicit `2(2) = 4`, algebraic `2x2 = 4`\n' +
+                '• **Exponents & Superscripts:** `2^3 = 8`, `2**3 = 8`, `2² = 4`, `2³ = 8`, `10⁴ = 10000`, `2²⁺¹ = 8`\n' +
+                '• **Grouping Symbols:** Parentheses `(...)`, brackets `[...]`, braces `{...}` (e.g. `[(2+3)*2]-6 = 4`)\n' +
+                '• **Roots & Radicals:** `√16 = 4`, `∛8 = 2`, `∜16 = 2`, `nthRoot(81, 4) = 3`\n' +
+                '• **Absolute Values & Rounding:** `|-4| = 4`, `abs(-4)`, `round()`, `floor()`, `ceil()`, `trunc()`\n' +
+                '• **Combinatorics & Modulo:** `4 choose 2 = 6`, `4 nCr 2`, `4 nPr 2`, `4! = 24`, `10 % 3 = 1`, `10 mod 3`\n' +
+                '• **Bases & Constants:** Hex `0x10 = 16`, Binary `0b100 = 4`, `pi` (`π`), `tau` (`τ`), `phi` (`ϕ`), `e`, `ln(e) = 1`\n' +
+                '• **Advanced Functions:** `hypot(3, 4) = 5`, `gcd(12, 8) = 4`, `lcm(2, 4) = 4`, `sin(pi/2) = 1`, `cos(0) = 1`',
+            inline: false
+        });
+        examples.push('`n!help counting`', '`n!counting`', '`n!counting rules`', '`n!counting stats`', '`n!counting top`', '`n!counting channel #counting`');
     } else if (name === 'onewordstory') {
         examples.push('`n!story start`', '`n!story history`', '`n!story stats`');
     } else if (name === 'ticket') {
