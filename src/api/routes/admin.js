@@ -1169,4 +1169,186 @@ router.post('/clear-cache', requireOwner, async (req, res) => {
     }
 });
 
+// ==========================================
+// 🪙 AI CREDIT DESK & SERVER CONTROLS
+// ==========================================
+
+// GET /api/admin/ai-credits
+router.get('/ai-credits', requireOwner, async (req, res) => {
+    try {
+        const allSettings = await GuildSettings.findAll({
+            attributes: [
+                'guildId',
+                'aiCreditsRemaining',
+                'aiCreditsUsed',
+                'aiDailyCreditLimit',
+                'aiRateLimitPerMinute',
+                'aiModel',
+                'noraAiEnabled',
+                'aiLastCreditReset'
+            ]
+        });
+
+        const clientGuilds = req.client?.guilds?.cache || new Map();
+        const results = [];
+        let depletedCount = 0;
+        let lowCount = 0;
+        let totalRemaining = 0;
+        let totalUsedToday = 0;
+
+        for (const gs of allSettings) {
+            const guild = clientGuilds.get(gs.guildId);
+            const remaining = gs.aiCreditsRemaining !== undefined && gs.aiCreditsRemaining !== null 
+                ? gs.aiCreditsRemaining 
+                : (gs.aiDailyCreditLimit || 1000);
+            const used = gs.aiCreditsUsed || 0;
+            const limit = gs.aiDailyCreditLimit || 1000;
+            const isDepleted = remaining <= 0;
+            const isLow = remaining > 0 && remaining < 200;
+
+            if (isDepleted) depletedCount++;
+            if (isLow) lowCount++;
+            totalRemaining += remaining;
+            totalUsedToday += used;
+
+            results.push({
+                guildId: gs.guildId,
+                name: guild ? guild.name : `Server (${gs.guildId})`,
+                icon: guild && guild.icon ? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
+                memberCount: guild ? guild.memberCount : 0,
+                inGuild: Boolean(guild),
+                creditsRemaining: remaining,
+                creditsUsed: used,
+                dailyLimit: limit,
+                rateLimitPerMinute: gs.aiRateLimitPerMinute || 6,
+                activeModel: gs.aiModel || 'gemini-3.8-flash',
+                noraAiEnabled: gs.noraAiEnabled !== false,
+                lastReset: gs.aiLastCreditReset,
+                isDepleted,
+                isLow
+            });
+        }
+
+        // Sort: Depleted first, then Low balance, then lowest credits remaining
+        results.sort((a, b) => {
+            if (a.isDepleted && !b.isDepleted) return -1;
+            if (!a.isDepleted && b.isDepleted) return 1;
+            if (a.isLow && !b.isLow) return -1;
+            if (!a.isLow && b.isLow) return 1;
+            return a.creditsRemaining - b.creditsRemaining;
+        });
+
+        res.json({
+            success: true,
+            summary: {
+                totalServers: results.length,
+                depletedCount,
+                lowCount,
+                totalRemaining,
+                totalUsedToday
+            },
+            servers: results
+        });
+    } catch (e) {
+        console.error('[Admin] Error fetching AI credits:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/ai-credits/add
+router.post('/ai-credits/add', requireOwner, async (req, res) => {
+    try {
+        const { guildId, amount } = req.body;
+        if (!guildId) return res.status(400).json({ error: 'Missing guildId parameter.' });
+        const parsedAmount = parseInt(amount, 10);
+        if (isNaN(parsedAmount) || parsedAmount <= 0) {
+            return res.status(400).json({ error: 'Amount must be a positive integer.' });
+        }
+
+        const aiCreditManager = require('../../utils/aiCreditManager');
+        const result = await aiCreditManager.addCredits(guildId, parsedAmount);
+        res.json({
+            success: true,
+            message: `Successfully granted +${parsedAmount.toLocaleString()} credits to server ${guildId}. New balance: ${result.newRemaining.toLocaleString()}.`,
+            result
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/ai-credits/limit
+router.post('/ai-credits/limit', requireOwner, async (req, res) => {
+    try {
+        const { guildId, newLimit } = req.body;
+        if (!guildId) return res.status(400).json({ error: 'Missing guildId parameter.' });
+        const parsedLimit = parseInt(newLimit, 10);
+        if (isNaN(parsedLimit) || parsedLimit < 0) {
+            return res.status(400).json({ error: 'Daily limit must be a non-negative integer.' });
+        }
+
+        const aiCreditManager = require('../../utils/aiCreditManager');
+        const result = await aiCreditManager.setDailyLimit(guildId, parsedLimit);
+        res.json({
+            success: true,
+            message: `Daily credit limit updated to ${parsedLimit.toLocaleString()} for server ${guildId}.`,
+            result
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/ai-credits/toggle-ai
+router.post('/ai-credits/toggle-ai', requireOwner, async (req, res) => {
+    try {
+        const { guildId, enabled } = req.body;
+        if (!guildId) return res.status(400).json({ error: 'Missing guildId parameter.' });
+
+        const aiCreditManager = require('../../utils/aiCreditManager');
+        const isEnabled = Boolean(enabled);
+        const result = await aiCreditManager.setAiEnabled(guildId, isEnabled);
+        res.json({
+            success: true,
+            message: `AI usage has been ${isEnabled ? 'FORCE ENABLED' : 'FORCE DISABLED'} for server ${guildId}.`,
+            result
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/ai-credits/reset
+router.post('/ai-credits/reset', requireOwner, async (req, res) => {
+    try {
+        const { guildId } = req.body;
+        if (!guildId) return res.status(400).json({ error: 'Missing guildId parameter.' });
+
+        const aiCreditManager = require('../../utils/aiCreditManager');
+        const result = await aiCreditManager.resetGuildCredits(guildId);
+        res.json({
+            success: true,
+            message: `Server ${guildId} credits have been reset to daily allowance (${result.remaining.toLocaleString()}).`,
+            result
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/ai-credits/rollover-all
+router.post('/ai-credits/rollover-all', requireOwner, async (req, res) => {
+    try {
+        const aiCreditManager = require('../../utils/aiCreditManager');
+        const resetCount = await aiCreditManager.performDailyRolloverCheck();
+        res.json({
+            success: true,
+            message: `Daily credit rollover check completed. Rolled over ${resetCount} guild(s).`,
+            resetCount
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = router;

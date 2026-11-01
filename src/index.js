@@ -379,7 +379,6 @@ const client = new Client({
         GatewayIntentBits.AutoModerationExecution,
         GatewayIntentBits.AutoModerationConfiguration,
         GatewayIntentBits.DirectMessages,
-        GatewayIntentBits.GuildPresences,
         GatewayIntentBits.GuildMessageReactions
     ],
     partials: [Partials.Message, Partials.Channel, Partials.Reaction, Partials.User, Partials.GuildMember, Partials.ThreadMember]

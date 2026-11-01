@@ -1,10 +1,18 @@
 const { Events, EmbedBuilder } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
+const { handleVoiceStateUpdate } = require('../utils/activityVoiceRouter');
 
 module.exports = {
     name: Events.VoiceStateUpdate,
     async execute(oldState, newState, client) {
-        if (!oldState.guild) return;
+        if (!oldState.guild && !newState.guild) return;
+
+        // 🎮 Current User Activities: Check member's active game upon joining/moving voice
+        try {
+            await handleVoiceStateUpdate(oldState, newState);
+        } catch (actErr) {
+            console.error('[Activity VC Router VoiceState Error]:', actErr.message);
+        }
 
         // 🤫 VajjyVC auto-leave: if the summoner leaves VC, bot disconnects & stops player
         try {

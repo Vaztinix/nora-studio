@@ -273,8 +273,9 @@ async function processMessageInternal(message, client) {
                     const sorted = Array.from(fetched.values()).reverse();
                     for (const m of sorted) {
                         if (m.id === message.id) continue;
-                        const name = m.author.id === client.user.id ? 'Nora' : (nameViewingEnabled ? (m.member?.displayName || m.author.username) : 'Member');
                         const cleanText = (m.cleanContent || m.content || '').replace(/\s+/g, ' ').trim();
+                        if (m.author.id === message.author.id && cleanText === plainContent && Math.abs(message.createdTimestamp - m.createdTimestamp) < 4000) continue;
+                        const name = m.author.id === client.user.id ? 'Nora' : (nameViewingEnabled ? (m.member?.displayName || m.author.username) : 'Member');
                         if (!cleanText && (!m.attachments || m.attachments.size === 0)) continue;
                         historyList.push(`[${name}]: ${cleanText || '[Sent an image/attachment]'}`);
                     }
@@ -306,7 +307,8 @@ async function processMessageInternal(message, client) {
             conversationHub.addMessage(message.channel.id, authorDisplayName, plainContent, false, {
                 isStaffOnly: isCurrentChannelStaffOnly,
                 authorId: message.author.id,
-                channelName: message.channel.name
+                channelName: message.channel.name,
+                messageId: message.id
             });
         }
 
@@ -321,7 +323,8 @@ async function processMessageInternal(message, client) {
         }
 
         // 7. Cluster Shared Multi-Turn Thread & Dynamic Channel Mood (Staff Privacy Filtered)
-        const sharedThreadStr = memoryEnabled ? conversationHub.getSharedThreadContext(message.channel.id, isCurrentChannelStaffOnly) : '';
+        // Exclude the active message.id from the historical thread so the user's message is not repeated
+        const sharedThreadStr = memoryEnabled ? conversationHub.getSharedThreadContext(message.channel.id, isCurrentChannelStaffOnly, message.id) : '';
         const channelMoodStr = memoryEnabled ? conversationHub.getChannelMoodSummary(message.channel.id) : 'Balanced';
 
         // 8. Smart History Recall (for explicit search keywords only)

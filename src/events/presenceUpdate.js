@@ -1,11 +1,19 @@
 const { Events, EmbedBuilder } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
+const { handlePresenceUpdate } = require('../utils/activityVoiceRouter');
 
 module.exports = {
     name: Events.PresenceUpdate,
     async execute(oldPresence, newPresence) {
         if (!newPresence || !newPresence.guild || !newPresence.member) return;
-        if (newPresence.member.user.bot) return;
+        if (newPresence.member.user?.bot) return;
+
+        // 🎮 1. Current User Activities: Automatic Voice Channel Router
+        try {
+            await handlePresenceUpdate(oldPresence, newPresence);
+        } catch (actErr) {
+            console.error('[Activity VC Router Error]:', actErr.message);
+        }
 
         try {
             // High-Performance Settings Fetch (with safety fallback for schema sync)

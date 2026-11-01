@@ -1119,6 +1119,19 @@ module.exports = {
             }
         }
 
+        // Handle Autocomplete Interactions
+        if (interaction.isAutocomplete()) {
+            const command = client.commands.get(interaction.commandName);
+            if (command && typeof command.autocomplete === 'function') {
+                try {
+                    await command.autocomplete(interaction);
+                } catch (e) {
+                    console.error('[Autocomplete Error]:', e.message);
+                }
+            }
+            return;
+        }
+
         // Handle standard Commands
         if (!interaction.isChatInputCommand()) return;
 

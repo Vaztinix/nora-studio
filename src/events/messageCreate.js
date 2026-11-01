@@ -43,7 +43,8 @@ module.exports = {
                 conversationHub.addMessage(message.channel.id, authorDisplayName, contentToRecord, false, {
                     isStaffOnly,
                     authorId: message.author.id,
-                    channelName: message.channel.name
+                    channelName: message.channel.name,
+                    messageId: message.id
                 });
             }
         } catch (e) {}

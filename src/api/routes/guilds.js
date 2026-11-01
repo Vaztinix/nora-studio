@@ -268,6 +268,44 @@ router.get('/channels', async (req, res) => {
 
  */
 
+/**
+ * GET /api/guilds/:guildId/voice-channels
+ * Returns all voice and stage channels in the server.
+ */
+router.get('/voice-channels', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const guild = req.client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
+
+        const me = guild.members.me || (req.client.user ? await guild.members.fetch(req.client.user.id).catch(() => null) : null);
+        const voiceChannels = [];
+
+        guild.channels.cache.forEach(c => {
+            if (typeof c.isVoiceBased === 'function' && c.isVoiceBased()) {
+                const canView = me ? (c.permissionsFor(me)?.has('ViewChannel') || false) : true;
+                const canConnect = me ? (c.permissionsFor(me)?.has('Connect') || false) : true;
+                const canMove = me ? (c.permissionsFor(me)?.has('MoveMembers') || false) : true;
+                if (canView) {
+                    voiceChannels.push({
+                        id: c.id,
+                        name: c.name,
+                        type: c.type,
+                        userLimit: c.userLimit || 0,
+                        canConnect,
+                        canMove
+                    });
+                }
+            }
+        });
+
+        res.json(voiceChannels.sort((a, b) => a.name.localeCompare(b.name)));
+    } catch (e) {
+        console.error('Error fetching voice channels:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
 router.get('/roles', async (req, res) => {
 
     try {

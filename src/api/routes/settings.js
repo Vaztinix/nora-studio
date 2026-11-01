@@ -274,6 +274,39 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             }
         }
 
+        // Sanitize & validate Current User Activities VC rules
+        if (payload.activityVcRules !== undefined) {
+            if (!payload.activityVcRules) {
+                payload.activityVcRules = '[]';
+            } else {
+                try {
+                    const parsed = typeof payload.activityVcRules === 'string'
+                        ? JSON.parse(payload.activityVcRules)
+                        : payload.activityVcRules;
+                    if (Array.isArray(parsed)) {
+                        const cap = 25;
+                        const sanitizedRules = [];
+                        for (const item of parsed.slice(0, cap)) {
+                            if (!item || typeof item !== 'object') continue;
+                            const gameName = String(item.gameName || '').trim();
+                            const channelId = String(item.channelId || '').trim();
+                            if (!gameName || !channelId) continue;
+                            sanitizedRules.push({
+                                id: item.id || `act_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+                                gameName: gameName.substring(0, 100),
+                                channelId
+                            });
+                        }
+                        payload.activityVcRules = JSON.stringify(sanitizedRules);
+                    } else {
+                        payload.activityVcRules = '[]';
+                    }
+                } catch (e) {
+                    payload.activityVcRules = '[]';
+                }
+            }
+        }
+
         // Decode topggWebhookAvatar base64 image if present
         if (payload.topggWebhookAvatar) {
             const { saveBase64Image } = require('../../utils/imageSaver');

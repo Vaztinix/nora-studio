@@ -24,6 +24,90 @@ class AICreditManager {
         this.guildRequestTimestamps = new Map();
         // In-memory cache for fast atomic credit balance updates
         this.guildCreditCache = new Map();
+        this._schedulerStarted = false;
+        this.startDailyResetScheduler();
+    }
+
+    /**
+     * Start automatic periodic rollover check (every 5 minutes)
+     */
+    startDailyResetScheduler() {
+        if (this._schedulerStarted) return;
+        this._schedulerStarted = true;
+
+        const runCheck = async () => {
+            try {
+                await this.performDailyRolloverCheck();
+            } catch (err) {
+                console.error('[AICreditManager] Scheduled rollover error:', err.message);
+            }
+        };
+
+        // Run initial check shortly after startup
+        setTimeout(runCheck, 3000);
+        this._schedulerInterval = setInterval(runCheck, 5 * 60 * 1000);
+    }
+
+    /**
+     * Scan database and perform 00:00 UTC daily replenishment for all guilds
+     */
+    async performDailyRolloverCheck() {
+        try {
+            const GuildSettings = require('../database/models/GuildSettings');
+            const settingsCache = require('./settingsCache');
+            const { Op } = require('sequelize');
+
+            const now = new Date();
+            const startOfTodayUtc = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0));
+
+            const outdatedGuilds = await GuildSettings.findAll({
+                where: {
+                    [Op.or]: [
+                        { aiLastCreditReset: null },
+                        { aiLastCreditReset: { [Op.lt]: startOfTodayUtc } }
+                    ]
+                }
+            });
+
+            if (!outdatedGuilds || outdatedGuilds.length === 0) return 0;
+
+            let resetCount = 0;
+            for (const gs of outdatedGuilds) {
+                const allowance = gs.aiDailyCreditLimit || DEFAULT_DAILY_ALLOWANCE;
+                const currentRemaining = gs.aiCreditsRemaining !== undefined && gs.aiCreditsRemaining !== null 
+                    ? gs.aiCreditsRemaining 
+                    : allowance;
+                // If guild has less than daily allowance, restore to allowance.
+                // If owner gifted bonus credits (> allowance), preserve their bonus!
+                const newRemaining = Math.max(allowance, currentRemaining);
+
+                await GuildSettings.update(
+                    {
+                        aiCreditsRemaining: newRemaining,
+                        aiCreditsUsed: 0,
+                        aiLastCreditReset: now
+                    },
+                    { where: { guildId: gs.guildId } }
+                ).catch(err => console.error(`[AICreditManager] Failed to rollover guild ${gs.guildId}:`, err.message));
+
+                if (this.guildCreditCache.has(gs.guildId)) {
+                    const cached = this.guildCreditCache.get(gs.guildId);
+                    cached.remaining = newRemaining;
+                    cached.used = 0;
+                    cached.dailyAllowance = allowance;
+                    cached.lastReset = now.getTime();
+                }
+
+                settingsCache.invalidate(gs.guildId);
+                resetCount++;
+            }
+
+            console.log(`[AICreditManager] Daily credit rollover synchronized for ${resetCount} guild(s).`);
+            return resetCount;
+        } catch (e) {
+            console.error('[AICreditManager] Rollover query failed:', e.message);
+            return 0;
+        }
     }
 
     /**
@@ -123,31 +207,70 @@ class AICreditManager {
         let cached = this.guildCreditCache.get(guildId);
 
         const dailyAllowance = settings?.aiDailyCreditLimit || DEFAULT_DAILY_ALLOWANCE;
-        const lastReset = settings?.aiLastCreditReset ? new Date(settings.aiLastCreditReset).getTime() : now;
 
-        // Check if 24 hours have passed or if we entered a new UTC day
-        const isNewDay = (now - lastReset >= 24 * 60 * 60 * 1000) || 
-            (new Date(now).getUTCDate() !== new Date(lastReset).getUTCDate());
+        // Determine if 24h passed or a new UTC day has dawned
+        let isNewDay = false;
+        let lastResetTime = 0;
+
+        if (!settings?.aiLastCreditReset) {
+            // Null in database -> trigger reset immediately!
+            isNewDay = true;
+        } else {
+            const parsed = new Date(settings.aiLastCreditReset).getTime();
+            if (isNaN(parsed) || parsed <= 0) {
+                isNewDay = true;
+            } else {
+                lastResetTime = parsed;
+                const lastDate = new Date(parsed);
+                const nowDate = new Date(now);
+                isNewDay = (now - parsed >= 24 * 60 * 60 * 1000) || 
+                    (nowDate.getUTCFullYear() !== lastDate.getUTCFullYear()) ||
+                    (nowDate.getUTCMonth() !== lastDate.getUTCMonth()) ||
+                    (nowDate.getUTCDate() !== lastDate.getUTCDate());
+            }
+        }
 
         if (!cached || isNewDay) {
-            const remaining = isNewDay ? dailyAllowance : (settings?.aiCreditsRemaining !== undefined ? settings.aiCreditsRemaining : dailyAllowance);
+            const currentBalance = cached?.remaining !== undefined 
+                ? cached.remaining 
+                : (settings?.aiCreditsRemaining !== undefined ? settings.aiCreditsRemaining : dailyAllowance);
+            
+            // On daily reset, replenish up to dailyAllowance. Preserve bonus credits if balance > dailyAllowance.
+            const remaining = isNewDay ? Math.max(dailyAllowance, currentBalance) : currentBalance;
             const used = isNewDay ? 0 : (settings?.aiCreditsUsed || 0);
 
             cached = {
                 remaining: Math.max(0, remaining),
                 used: Math.max(0, used),
                 dailyAllowance,
-                lastReset: isNewDay ? now : lastReset,
+                lastReset: isNewDay ? now : lastResetTime,
                 rateLimitPerMinute: settings?.aiRateLimitPerMinute || DEFAULT_RATE_LIMIT_PER_MINUTE
             };
 
             this.guildCreditCache.set(guildId, cached);
 
-            if (isNewDay && settings && typeof settings.save === 'function') {
-                settings.aiCreditsRemaining = cached.remaining;
-                settings.aiCreditsUsed = 0;
-                settings.aiLastCreditReset = new Date(now);
-                settings.save().catch(e => console.error('[AICreditManager] Failed to persist reset:', e.message));
+            if (isNewDay) {
+                try {
+                    const GuildSettings = require('../database/models/GuildSettings');
+                    const settingsCache = require('./settingsCache');
+                    GuildSettings.update(
+                        {
+                            aiCreditsRemaining: cached.remaining,
+                            aiCreditsUsed: 0,
+                            aiLastCreditReset: new Date(now)
+                        },
+                        { where: { guildId } }
+                    ).catch(e => console.error('[AICreditManager] Failed to persist reset:', e.message));
+
+                    if (settings) {
+                        settings.aiCreditsRemaining = cached.remaining;
+                        settings.aiCreditsUsed = 0;
+                        settings.aiLastCreditReset = new Date(now);
+                    }
+                    settingsCache.invalidate(guildId);
+                } catch (err) {
+                    console.error('[AICreditManager] Reset persistence exception:', err.message);
+                }
             }
         }
 
@@ -224,6 +347,153 @@ class AICreditManager {
             cost,
             remaining: creditState.remaining,
             used: creditState.used
+        };
+    }
+
+    /**
+     * Add bonus credits directly to a guild's remaining balance.
+     * Does NOT update the daily limit; only adds credits and allows it to go over the 1k limit.
+     * @param {string} guildId 
+     * @param {number} amount 
+     */
+    async addCredits(guildId, amount) {
+        const parsed = parseInt(amount, 10);
+        if (isNaN(parsed) || parsed <= 0) {
+            throw new Error('Credit amount must be a positive number.');
+        }
+
+        const GuildSettings = require('../database/models/GuildSettings');
+        const settingsCache = require('./settingsCache');
+
+        let settings = await settingsCache.get(guildId);
+        const currentRemaining = settings?.aiCreditsRemaining !== undefined ? settings.aiCreditsRemaining : DEFAULT_DAILY_ALLOWANCE;
+        const newRemaining = Math.max(0, currentRemaining + parsed);
+
+        await GuildSettings.update(
+            { aiCreditsRemaining: newRemaining },
+            { where: { guildId } }
+        );
+
+        if (this.guildCreditCache.has(guildId)) {
+            const cached = this.guildCreditCache.get(guildId);
+            cached.remaining = newRemaining;
+        }
+
+        settingsCache.invalidate(guildId);
+
+        return {
+            guildId,
+            previousRemaining: currentRemaining,
+            newRemaining,
+            added: parsed,
+            dailyLimit: settings?.aiDailyCreditLimit || DEFAULT_DAILY_ALLOWANCE
+        };
+    }
+
+    /**
+     * Manually expand or adjust a guild's daily credit limit.
+     * @param {string} guildId 
+     * @param {number} newLimit 
+     */
+    async setDailyLimit(guildId, newLimit) {
+        const parsed = parseInt(newLimit, 10);
+        if (isNaN(parsed) || parsed < 0) {
+            throw new Error('Daily limit must be a non-negative number.');
+        }
+
+        const GuildSettings = require('../database/models/GuildSettings');
+        const settingsCache = require('./settingsCache');
+
+        let settings = await settingsCache.get(guildId);
+        const currentRemaining = settings?.aiCreditsRemaining !== undefined ? settings.aiCreditsRemaining : DEFAULT_DAILY_ALLOWANCE;
+        // If current credits are lower than the new expanded limit, replenish immediately
+        const updatedRemaining = Math.max(currentRemaining, parsed);
+
+        await GuildSettings.update(
+            { 
+                aiDailyCreditLimit: parsed,
+                aiCreditsRemaining: updatedRemaining
+            },
+            { where: { guildId } }
+        );
+
+        if (this.guildCreditCache.has(guildId)) {
+            const cached = this.guildCreditCache.get(guildId);
+            cached.dailyAllowance = parsed;
+            cached.remaining = updatedRemaining;
+        }
+
+        settingsCache.invalidate(guildId);
+
+        return {
+            guildId,
+            previousLimit: settings?.aiDailyCreditLimit || DEFAULT_DAILY_ALLOWANCE,
+            newLimit: parsed,
+            creditsRemaining: updatedRemaining
+        };
+    }
+
+    /**
+     * Force disable or enable AI usage for a guild.
+     * @param {string} guildId 
+     * @param {boolean} enabled 
+     */
+    async setAiEnabled(guildId, enabled) {
+        const GuildSettings = require('../database/models/GuildSettings');
+        const settingsCache = require('./settingsCache');
+
+        const isEnabled = Boolean(enabled);
+
+        await GuildSettings.update(
+            { noraAiEnabled: isEnabled },
+            { where: { guildId } }
+        );
+
+        settingsCache.invalidate(guildId);
+
+        return {
+            guildId,
+            noraAiEnabled: isEnabled
+        };
+    }
+
+    /**
+     * Manually reset a guild's credits back to full daily allowance immediately.
+     * @param {string} guildId 
+     */
+    async resetGuildCredits(guildId) {
+        const GuildSettings = require('../database/models/GuildSettings');
+        const settingsCache = require('./settingsCache');
+
+        const settings = await settingsCache.get(guildId);
+        const dailyAllowance = settings?.aiDailyCreditLimit || DEFAULT_DAILY_ALLOWANCE;
+        const now = new Date();
+
+        await GuildSettings.update(
+            {
+                aiCreditsRemaining: dailyAllowance,
+                aiCreditsUsed: 0,
+                aiLastCreditReset: now
+            },
+            { where: { guildId } }
+        );
+
+        if (this.guildCreditCache.has(guildId)) {
+            const cached = this.guildCreditCache.get(guildId);
+            cached.remaining = dailyAllowance;
+            cached.used = 0;
+            cached.dailyAllowance = dailyAllowance;
+            cached.lastReset = now.getTime();
+        }
+
+        settingsCache.invalidate(guildId);
+
+        return {
+            guildId,
+            remaining: dailyAllowance,
+            used: 0,
+            dailyLimit: dailyAllowance,
+            lastReset: now
         };
     }
 

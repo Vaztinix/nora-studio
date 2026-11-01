@@ -14,7 +14,7 @@ class ConversationHub {
     }
 
     /**
-     * Add a message to the shared cross-project thread with staff privacy tagging
+     * Add a message to the shared cross-project thread with staff privacy tagging & deduplication
      */
     addMessage(channelId, speaker, text, isBot = false, meta = {}) {
         if (!channelId || !text) return;
@@ -29,14 +29,30 @@ class ConversationHub {
         }
 
         const thread = this.threads.get(cid);
+        const cleanText = text.trim();
+        const incomingSpeaker = isBot ? 'Nora' : speaker;
+        const messageId = meta.messageId ? String(meta.messageId) : null;
+
+        // 🛡️ Deduplication Guard 1: Ignore exact same message ID
+        if (messageId && thread.some(t => t.messageId === messageId)) {
+            return;
+        }
+
+        // 🛡️ Deduplication Guard 2: Ignore rapid duplicate messages from same speaker within 6 seconds
+        const last = thread[thread.length - 1];
+        if (last && last.speaker === incomingSpeaker && last.text === cleanText && (Date.now() - last.timestamp < 6000)) {
+            return;
+        }
+
         thread.push({
-            speaker: isBot ? 'Nora' : speaker,
-            text: text.trim(),
+            speaker: incomingSpeaker,
+            text: cleanText,
             timestamp: Date.now(),
             isBot,
             isStaffOnly,
             authorId: meta.authorId || null,
-            channelName: meta.channelName || null
+            channelName: meta.channelName || null,
+            messageId: messageId
         });
 
         if (thread.length > this.MAX_TURNS) {
@@ -44,14 +60,15 @@ class ConversationHub {
         }
 
         // Dynamically analyze and update the conversational mood for the channel
-        this._updateChannelMood(cid, text, isBot);
+        this._updateChannelMood(cid, cleanText, isBot);
     }
 
     /**
      * Get shared multi-turn dialogue context formatted for prompt injection.
      * Enforces strict staff privacy: Staff-only channel messages are NEVER leaked to non-staff channels.
+     * Excludes the current active turn to prevent the user's message from appearing twice in context.
      */
-    getSharedThreadContext(channelId, requestingChannelIsStaffOnly = false) {
+    getSharedThreadContext(channelId, requestingChannelIsStaffOnly = false, excludeMessageId = null) {
         const cid = String(channelId);
         const thread = this.threads.get(cid);
         if (!thread || thread.length === 0) return '';
@@ -59,6 +76,7 @@ class ConversationHub {
         // Strict Privacy Firewall: Never share staff-only messages with public/non-staff channels
         const safeMessages = thread.filter(t => {
             if (t.isStaffOnly && !requestingChannelIsStaffOnly) return false;
+            if (excludeMessageId && t.messageId && t.messageId === String(excludeMessageId)) return false;
             return true;
         });
 

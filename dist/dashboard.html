@@ -3871,7 +3871,7 @@
                 if (!window.previousSettings || Object.keys(window.previousSettings).length === 0) {
                     return diffs;
                 }
-                const KEYS_ARRAY = (typeof KEYS !== 'undefined' && Array.isArray(KEYS)) ? KEYS : ['prefix', 'language', 'automodProfanity', 'automodLinks', 'automodInvites', 'automodSpam', 'automodCaps', 'antiSpamMuteDuration', 'welcomeChannelId', 'welcomeMessage', 'leaveChannelId', 'boostChannelId', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketLogChannelId', 'levelUpChannelId', 'levelUpMessage', 'xpRate', 'countingChannelId', 'starboardChannelId', 'starboardThreshold', 'loggingChannelId', 'autoresponderTrigger', 'roleSelectionMode', 'countingTopCounterRoleId', 'countingFailRoleId', 'countingFailThreshold', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId', 'levelingAiEnabled', 'starboardAiEnabled', 'aiRateLimitPerMinute'];
+                const KEYS_ARRAY = (typeof KEYS !== 'undefined' && Array.isArray(KEYS)) ? KEYS : ['prefix', 'language', 'automodProfanity', 'automodLinks', 'automodInvites', 'automodSpam', 'automodCaps', 'antiSpamMuteDuration', 'welcomeChannelId', 'welcomeMessage', 'leaveChannelId', 'boostChannelId', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketLogChannelId', 'levelUpChannelId', 'levelUpMessage', 'xpRate', 'countingChannelId', 'starboardChannelId', 'starboardThreshold', 'loggingChannelId', 'autoresponderTrigger', 'roleSelectionMode', 'countingTopCounterRoleId', 'countingFailRoleId', 'countingFailThreshold', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId', 'levelingAiEnabled', 'starboardAiEnabled', 'aiRateLimitPerMinute', 'activityVcLockEnabled', 'activityVcRules', 'activityVcNotifyUser'];
 
                 KEYS_ARRAY.forEach(k => {
                     const el = document.getElementById('setting-' + k);
@@ -5349,6 +5349,7 @@
                     <i class="fas fa-paper-plane"></i>
                     <span>Webhooks & Embeds</span>
                 </button>
+                <button class="mobile-nav-item" data-tab="tab-activities" onclick="showTab('tab-activities'); closeMobileNav();"><i class="fas fa-gamepad"></i> <span>Activities & Voice</span></button>
                 <button class="mobile-nav-item" data-tab="tab-topgg" onclick="showTab('tab-topgg'); closeMobileNav();">
                     <i class="fas fa-arrow-up"></i>
                     <span>Top.gg Votes</span>
@@ -6447,7 +6448,8 @@
                         </button>
                         <button class="h-tab" data-tab="tab-autoresponder" onclick="showTab('tab-autoresponder')"><span><i class="fas fa-reply-all"></i> Autoresponder Rules</span></button>
                         <button class="h-tab" data-tab="tab-reactionroles" onclick="showTab('tab-reactionroles')"><span><i class="fas fa-magic"></i> Reaction Roles</span></button>
-                        <button class="h-tab" data-tab="tab-topgg" onclick="showTab('tab-topgg')"><span style="display: inline-flex; align-items: center; gap: 8px;"><img src="https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg" alt="Top.gg" style="width: 16px; height: 16px; border-radius: 4px; object-fit: cover; flex-shrink: 0;"> Top.gg Votes</span></button>
+                        <button class="h-tab" data-tab="tab-activities" onclick="showTab('tab-activities')"><span><i class="fas fa-gamepad"></i> Activities & Voice</span></button>
+                    <button class="h-tab" data-tab="tab-topgg" onclick="showTab('tab-topgg')"><span style="display: inline-flex; align-items: center; gap: 8px;"><img src="https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg" alt="Top.gg" style="width: 16px; height: 16px; border-radius: 4px; object-fit: cover; flex-shrink: 0;"> Top.gg Votes</span></button>
                         
                         <div id="sidebar-server-premium-container" class="sidebar-premium-cta" style="margin-top: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;">
                             <button id="sidebar-server-premium-btn" class="save-btn sidebar-premium-cta" style="background: #ffffff !important; color: #000000 !important; font-weight: 800; font-size: 0.85rem; text-align: center; justify-content: center; width: 100%; padding: 12px; border-radius: 12px; box-shadow: 0 4px 15px rgba(255, 255, 255, 0.25);" onclick="window.open('https://discord.com/application-directory/1375943730951098549/store/1490857354609168534', '_blank')"><i class="fas fa-crown" style="color: #000;"></i> Get Premium</button>
@@ -11693,7 +11695,135 @@
                 </div>
 
                 <!-- Top.gg Official Integration Studio (Vote Tracker Aligned) -->
-                <div id="tab-topgg" class="tab-content" style="display: none;">
+                
+                <!-- ============================================== -->
+                <!-- CURRENT USER ACTIVITIES & GAME VC LOCK SUITE   -->
+                <!-- ============================================== -->
+                <div id="tab-activities" class="tab-content" style="display: none;">
+                    <div class="panel" style="background: linear-gradient(135deg, rgba(88, 101, 242, 0.12) 0%, rgba(30, 27, 75, 0.4) 100%); border: 1px solid rgba(88, 101, 242, 0.3); border-radius: 20px; padding: 26px 30px; margin-bottom: 24px; position: relative; overflow: hidden; backdrop-filter: blur(15px);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 52px; height: 52px; border-radius: 14px; background: rgba(88, 101, 242, 0.2); border: 1px solid rgba(88, 101, 242, 0.4); color: #818cf8; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; box-shadow: 0 0 20px rgba(88, 101, 242, 0.3);">
+                                    <i class="fas fa-gamepad"></i>
+                                </div>
+                                <div>
+                                    <div style="display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px; background: rgba(88, 101, 242, 0.18); border: 1px solid rgba(88, 101, 242, 0.35); border-radius: 999px; font-size: 0.72rem; font-weight: 800; color: #a5b4fc; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">
+                                        <i class="fas fa-satellite-dish"></i> Presence Gateway Intent Active
+                                    </div>
+                                    <h2 style="font-size: 1.4rem; font-weight: 800; color: #fff; margin: 0 0 4px 0;">Current User Activities & Game Voice Locks</h2>
+                                    <p style="color: rgba(255,255,255,0.7); font-size: 0.85rem; margin: 0; max-width: 650px;">
+                                        Automatically detect what games members are playing via Discord Game Presence and route them to designated voice channels in real time.
+                                    </p>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <span style="font-size: 0.85rem; font-weight: 700; color: #fff;">Enable Activity VC Lock</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="setting-activityVcLockEnabled">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1.35fr; gap: 24px; align-items: start; margin-bottom: 24px;">
+                        <div class="panel" style="background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 24px;">
+                            <h3 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0 0 6px 0; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-plus-circle" style="color: #22c55e;"></i> Lock Game to Voice Channel
+                            </h3>
+                            <p style="font-size: 0.78rem; color: var(--muted); margin: 0 0 18px 0;">
+                                Select a game from Discord's game library (or enter a custom game title) and link it to a voice channel.
+                            </p>
+
+                            <div class="input-group" style="margin-bottom: 14px;">
+                                <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">Select Discord Game</label>
+                                <select id="activity-preset-select" onchange="handleActivityPresetChange()" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 10px; font-size: 0.85rem;">
+                                    <option value="">-- Choose from Popular Games --</option>
+                                    <option value="Roblox">Roblox</option>
+                                    <option value="Rocket League">Rocket League</option>
+                                    <option value="Minecraft">Minecraft</option>
+                                    <option value="Fortnite">Fortnite</option>
+                                    <option value="Valorant">Valorant</option>
+                                    <option value="League of Legends">League of Legends</option>
+                                    <option value="Counter-Strike 2">Counter-Strike 2</option>
+                                    <option value="Grand Theft Auto V">Grand Theft Auto V</option>
+                                    <option value="Apex Legends">Apex Legends</option>
+                                    <option value="Call of Duty">Call of Duty</option>
+                                    <option value="Overwatch 2">Overwatch 2</option>
+                                    <option value="Genshin Impact">Genshin Impact</option>
+                                    <option value="Honkai: Star Rail">Honkai: Star Rail</option>
+                                    <option value="Rainbow Six Siege">Rainbow Six Siege</option>
+                                    <option value="Terraria">Terraria</option>
+                                    <option value="Among Us">Among Us</option>
+                                    <option value="Dead by Daylight">Dead by Daylight</option>
+                                    <option value="Destiny 2">Destiny 2</option>
+                                    <option value="Rust">Rust</option>
+                                    <option value="Helldivers 2">Helldivers 2</option>
+                                    <option value="Brawlhalla">Brawlhalla</option>
+                                    <option value="Warframe">Warframe</option>
+                                    <option value="Dota 2">Dota 2</option>
+                                    <option value="Team Fortress 2">Team Fortress 2</option>
+                                    <option value="Palworld">Palworld</option>
+                                    <option value="World of Warcraft">World of Warcraft</option>
+                                    <option value="osu!">osu!</option>
+                                    <option value="Cyberpunk 2077">Cyberpunk 2077</option>
+                                    <option value="Elden Ring">Elden Ring</option>
+                                    <option value="CUSTOM">Custom Game Title...</option>
+                                </select>
+                            </div>
+
+                            <div class="input-group" id="activity-custom-game-group" style="margin-bottom: 14px;">
+                                <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">Game Title</label>
+                                <input type="text" id="activity-rule-game" placeholder="e.g. Roblox, Rocket League, Minecraft" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 10px; font-size: 0.85rem;">
+                            </div>
+
+                            <div class="input-group" style="margin-bottom: 18px;">
+                                <label style="font-size: 0.82rem; font-weight: 700; color: #fff; margin-bottom: 6px; display: block;">Designated Voice Channel</label>
+                                <select id="activity-rule-channel" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.35); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 10px; font-size: 0.85rem;">
+                                    <option value="">Select a voice channel...</option>
+                                </select>
+                            </div>
+
+                            <button type="button" class="config-btn" onclick="addActivityRule()" style="width: 100%; background: linear-gradient(135deg, #5865F2, #4338ca); color: #fff; font-weight: 700; padding: 12px; border-radius: 10px; font-size: 0.9rem; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                <i class="fas fa-plus"></i> Lock Game to Voice Channel
+                            </button>
+
+                            <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.08); margin: 20px 0;">
+
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                                <div>
+                                    <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">DM Notification to User</div>
+                                    <div style="font-size: 0.74rem; color: var(--muted);">Send a polite message explaining why they were routed</div>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="setting-activityVcNotifyUser" checked>
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="panel" style="background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 24px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                                <h3 style="font-size: 1.05rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-list-check" style="color: #60a5fa;"></i> Active Game Mappings
+                                </h3>
+                                <span id="activity-rules-count-badge" style="font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 999px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);">
+                                    0 Rules Active
+                                </span>
+                            </div>
+
+                            <input type="hidden" id="setting-activityVcRules" value="[]">
+
+                            <div id="activity-rules-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 480px; overflow-y: auto;">
+                                <div style="text-align: center; padding: 30px 20px; color: var(--muted); font-size: 0.85rem;">
+                                    <i class="fas fa-gamepad" style="font-size: 2rem; opacity: 0.3; margin-bottom: 10px; display: block;"></i>
+                                    No game voice channel locks configured yet.<br>Select a game and voice channel on the left to add one!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+<div id="tab-topgg" class="tab-content" style="display: none;">
                     <!-- Sleek Top.gg Header Banner -->
                     <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 51, 102, 0.25); border-radius: 20px; padding: 26px 30px; margin-bottom: 22px; position: relative; overflow: hidden; backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);">
                         <div style="position: absolute; right: -40px; top: -40px; width: 180px; height: 180px; background: radial-gradient(circle, rgba(255, 51, 102, 0.18) 0%, transparent 70%); border-radius: 50%; pointer-events: none;"></div>
@@ -13132,7 +13262,164 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             setupNumericalValidators();
-            // Early notifications loading if we have a last known user ID to prevent showing 0 count badge
+            
+        // ---- Current User Activities & Voice Channel Lock Engine ----
+        window.currentActivityRules = [];
+        window.cachedVoiceChannels = [];
+
+        function handleActivityPresetChange() {
+            const select = document.getElementById('activity-preset-select');
+            const input = document.getElementById('activity-rule-game');
+            if (!select || !input) return;
+            const val = select.value;
+            if (val && val !== 'CUSTOM') {
+                input.value = val;
+            } else if (val === 'CUSTOM') {
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        async function fetchAndPopulateVoiceChannels(guildId) {
+            try {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const authHeader = localStorage.getItem('token') || localStorage.getItem('nora_auth_token') || sessionStorage.getItem('nora_token');
+                const headers = authHeader ? { 'Authorization': authHeader.startsWith('Bearer ') ? authHeader : 'Bearer ' + authHeader } : {};
+                
+                const res = await fetch(`${apiBase}/api/guilds/${guildId}/voice-channels`, { headers });
+                if (res.ok) {
+                    window.cachedVoiceChannels = await res.json();
+                } else {
+                    window.cachedVoiceChannels = [];
+                }
+            } catch (e) {
+                console.warn('[Activity VC] Failed to fetch voice channels:', e.message);
+                window.cachedVoiceChannels = [];
+            }
+            populateVoiceChannelSelect();
+            renderActivityRules();
+        }
+
+        function populateVoiceChannelSelect() {
+            const select = document.getElementById('activity-rule-channel');
+            if (!select) return;
+            let html = '<option value="">Select a voice channel...</option>';
+            if (Array.isArray(window.cachedVoiceChannels) && window.cachedVoiceChannels.length > 0) {
+                window.cachedVoiceChannels.forEach(vc => {
+                    html += `<option value="${vc.id}">🔊 ${vc.name}${vc.userLimit > 0 ? ' (Limit ' + vc.userLimit + ')' : ''}</option>`;
+                });
+            } else {
+                html += '<option value="" disabled>No voice channels found</option>';
+            }
+            select.innerHTML = html;
+        }
+
+        function renderActivityRules() {
+            const container = document.getElementById('activity-rules-container');
+            const badge = document.getElementById('activity-rules-count-badge');
+            const hiddenInput = document.getElementById('setting-activityVcRules');
+            if (!container) return;
+
+            const rules = window.currentActivityRules || [];
+            if (hiddenInput) {
+                hiddenInput.value = JSON.stringify(rules);
+            }
+            if (badge) {
+                badge.innerText = `${rules.length} Rule${rules.length === 1 ? '' : 's'} Active`;
+            }
+
+            if (rules.length === 0) {
+                container.innerHTML = `
+                    <div style="text-align: center; padding: 30px 20px; color: var(--muted); font-size: 0.85rem;">
+                        <i class="fas fa-gamepad" style="font-size: 2rem; opacity: 0.3; margin-bottom: 10px; display: block;"></i>
+                        No game voice channel locks configured yet.<br>Select a game and voice channel on the left to add one!
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            rules.forEach((rule, idx) => {
+                const vc = (window.cachedVoiceChannels || []).find(c => c.id === rule.channelId);
+                const vcName = vc ? vc.name : ('Voice Channel ' + rule.channelId);
+
+                html += `
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; transition: all 0.2s;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div style="width: 34px; height: 34px; border-radius: 8px; background: rgba(88, 101, 242, 0.15); border: 1px solid rgba(88, 101, 242, 0.3); color: #818cf8; display: flex; align-items: center; justify-content: center; font-size: 0.95rem;">
+                                <i class="fas fa-gamepad"></i>
+                            </div>
+                            <div>
+                                <div style="font-size: 0.9rem; font-weight: 700; color: #fff;">${escapeHtml(rule.gameName)}</div>
+                                <div style="font-size: 0.76rem; color: #94a3b8; display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                                    <span>Routes to</span> <i class="fas fa-arrow-right" style="font-size: 0.65rem; color: #818cf8;"></i> <span style="color: #60a5fa; font-weight: 600;">🔊 ${escapeHtml(vcName)}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" onclick="deleteActivityRule('${rule.id || idx}')" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;" title="Remove this rule">
+                            <i class="fas fa-trash-alt" style="font-size: 0.8rem;"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function addActivityRule() {
+            const gameInput = document.getElementById('activity-rule-game');
+            const channelSelect = document.getElementById('activity-rule-channel');
+            if (!gameInput || !channelSelect) return;
+
+            const gameName = (gameInput.value || '').trim();
+            const channelId = channelSelect.value;
+
+            if (!gameName) {
+                if (typeof showToast === 'function') showToast('Please enter or select a game name.', 'error');
+                else alert('Please enter or select a game name.');
+                gameInput.focus();
+                return;
+            }
+
+            if (!channelId) {
+                if (typeof showToast === 'function') showToast('Please select a designated voice channel.', 'error');
+                else alert('Please select a designated voice channel.');
+                channelSelect.focus();
+                return;
+            }
+
+            if (!window.currentActivityRules) window.currentActivityRules = [];
+
+            // Remove existing mapping for same game if exists
+            window.currentActivityRules = window.currentActivityRules.filter(r => r.gameName.toLowerCase() !== gameName.toLowerCase());
+
+            window.currentActivityRules.push({
+                id: 'act_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+                gameName: gameName,
+                channelId: channelId
+            });
+
+            // Auto-enable master toggle if adding rule
+            const masterToggle = document.getElementById('setting-activityVcLockEnabled');
+            if (masterToggle) masterToggle.checked = true;
+
+            renderActivityRules();
+
+            // Clear input
+            gameInput.value = '';
+            const presetSelect = document.getElementById('activity-preset-select');
+            if (presetSelect) presetSelect.value = '';
+
+            if (typeof showToast === 'function') showToast('Locked ' + gameName + ' to voice channel! Click Save to apply.', 'success');
+        }
+
+        function deleteActivityRule(idOrIdx) {
+            if (!window.currentActivityRules) return;
+            window.currentActivityRules = window.currentActivityRules.filter((r, i) => r.id !== idOrIdx && String(i) !== String(idOrIdx));
+            renderActivityRules();
+            if (typeof showToast === 'function') showToast('Game lock removed. Click Save to apply.', 'info');
+        }
+
+        // Early notifications loading if we have a last known user ID to prevent showing 0 count badge
             const lastUserId = localStorage.getItem('nora_last_user_id');
             if (lastUserId) {
                 window.currentUser = { id: lastUserId };
@@ -25618,6 +25905,7 @@
 
                 window.guildChannels = chRes;
                 window.guildRoles = rlRes;
+                fetchAndPopulateVoiceChannels(guildId);
 
                 // Populate Target Channel dropdowns
                 const targetChannelSelects = [
@@ -25660,6 +25948,14 @@
                     select.innerHTML = opts;
                     if (typeof refreshCustomDropdown === 'function') refreshCustomDropdown(select.id);
                 });
+
+                
+                try {
+                    window.currentActivityRules = JSON.parse(settings.activityVcRules || '[]');
+                } catch (_) {
+                    window.currentActivityRules = [];
+                }
+                renderActivityRules();
 
                 // Populate single role dropdowns
                 window._cachedGuildRoles = rlRes;

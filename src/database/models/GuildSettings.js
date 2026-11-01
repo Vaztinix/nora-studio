@@ -1326,6 +1326,24 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: null
+    },
+
+    // ---- Current User Activities & Game Voice Channel Lock Suite ----
+    activityVcLockEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    activityVcRules: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]' // Array of { id, gameName, channelId }
+    },
+    activityVcNotifyUser: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    activityVcStrict: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 });
 
