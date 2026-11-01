@@ -234,6 +234,9 @@ router.get('/channels', async (req, res) => {
                     channels.push({
                         id: c.id,
                         name: c.name,
+                        type: c.type,
+                        userLimit: c.userLimit || 0,
+                        isVoice: c.type === 2 || c.type === 13 || (typeof c.isVoiceBased === 'function' && c.isVoiceBased()),
                         canSend: canSend,
                         rateLimitPerUser: c.rateLimitPerUser || 0
                     });
@@ -279,23 +282,30 @@ router.get('/voice-channels', async (req, res) => {
         if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
 
         const me = guild.members.me || (req.client.user ? await guild.members.fetch(req.client.user.id).catch(() => null) : null);
+
+        const hasCachedVoice = guild.channels.cache.some(c => c.type === 2 || c.type === 13 || (typeof c.isVoiceBased === 'function' && c.isVoiceBased()));
+        if (guild.channels.cache.size === 0 || !hasCachedVoice) {
+            await guild.channels.fetch().catch(() => null);
+        }
+
         const voiceChannels = [];
 
         guild.channels.cache.forEach(c => {
-            if (typeof c.isVoiceBased === 'function' && c.isVoiceBased()) {
-                const canView = me ? (c.permissionsFor(me)?.has('ViewChannel') || false) : true;
-                const canConnect = me ? (c.permissionsFor(me)?.has('Connect') || false) : true;
-                const canMove = me ? (c.permissionsFor(me)?.has('MoveMembers') || false) : true;
-                if (canView) {
-                    voiceChannels.push({
-                        id: c.id,
-                        name: c.name,
-                        type: c.type,
-                        userLimit: c.userLimit || 0,
-                        canConnect,
-                        canMove
-                    });
-                }
+            const isVoice = c.type === 2 || c.type === 13 || (typeof c.isVoiceBased === 'function' && c.isVoiceBased());
+            if (isVoice) {
+                const perms = me && typeof c.permissionsFor === 'function' ? c.permissionsFor(me) : null;
+                const canView = perms ? perms.has('ViewChannel') : true;
+                const canConnect = perms ? perms.has('Connect') : true;
+                const canMove = perms ? perms.has('MoveMembers') : true;
+                voiceChannels.push({
+                    id: c.id,
+                    name: c.name,
+                    type: c.type,
+                    userLimit: c.userLimit || 0,
+                    canView,
+                    canConnect,
+                    canMove
+                });
             }
         });
 

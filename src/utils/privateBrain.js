@@ -174,6 +174,9 @@ class NoraV12Engine {
         if (lower.match(/\b(where\s+(?:is|does)\s+(?:vaz|vaztinix|your\s+(?:creator|dev|developer|owner))\s+(?:live|from|located)|what\s+country\s+is\s+vaz|what\s+nationality\s+is\s+vaz|is\s+vaz\s+russian|is\s+vaztinix\s+russian)\b/i)) {
             return `**Vaztinix** (<@1214048435632603137>) is from **Moscow, Russia**! Vaz is Russian, studies lots of English :3, and created me to help manage and bring life to Discord communities worldwide! 🇷🇺✨`;
         }
+        if (lower.match(/\b(what\s+are\s+(?:your|the|vaz(?:'s|tinix's)?)\s+(?:pc\s+|computer\s+|hardware\s+|device\s+|system\s+)?specs?|pc\s+specs?|device\s+specs?|hardware\s+specs?|what\s+(?:gpu|cpu|graphics\s+card|ram)\s+(?:do\s+you|does\s+vaz(?:tinix)?)\s+(?:have|use|run))\b/i)) {
+            return `💻 **Host & Creator PC Specifications**:\n• **GPU**: NVIDIA GeForce RTX 5080 (16 GB GDDR7)\n• **CPU**: AMD Ryzen 7 5700X3D (8 Cores / 16 Threads, 3D V-Cache)\n• **RAM**: 32 GB DDR4 (3600MHz Dual-Channel)\n• **Storage**: 2 TB NVMe PCIe 4.0 SSD\n• **OS**: Windows 11 Pro (64-bit) | Node.js Runtime ⚡`;
+        }
         // 7c. Verification Threat Gatekeeper & Security Screening
         if (lower.match(/\b(how\s+does\s+(?:the\s+)?verification\s+security\s+check\s+work|what\s+is\s+verification\s+security|threat\s+gatekeeper|setup\s+security|verification\s+screening)\b/i)) {
             return `🛡️ **Nora Verification Threat Gatekeeper** runs an automated pre-entry background screening during verification!\n\n• **Checks**: Account age/freshness, Discord official \`Spammer\` flags (\`UserFlags.Spammer\`), phishing/scam lure bios, and avatar hash ban-evasion matching against server ban registries.\n• **Enforcement**: Configurable via \`/setup security\` to **Deny**, **Kick**, or **Ban**.\n• **Staff Review**: Sends a real-time Dossier with instant 1-click **Ban**, **Kick**, and **Override** buttons directly to your staff log!`;

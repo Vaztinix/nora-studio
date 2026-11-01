@@ -581,7 +581,7 @@ ${userProfileContext}
 ### 💻 HOST PC HARDWARE SPECIFICATIONS & PRIVACY:
 ${deviceSpecsContext}
 - If asked for your device specs, PC specs, server specs, machine specs, or computer hardware:
-- Confidently and accurately provide these host specifications (AMD Ryzen 7 5700X, 32GB RAM, Windows 11 x64, Node.js).
+- Confidently and accurately provide these host specifications (**NVIDIA GeForce RTX 5080 16GB GDDR7**, **AMD Ryzen 7 5700X3D**, **32GB DDR4 RAM**, **2TB NVMe PCIe 4.0 SSD**, **Windows 11 Pro x64**, **Node.js**).
 - NEVER share personal user directories, Windows username, local/external IP addresses, or MAC addresses. Keep personal privacy 100% guarded.
 
 ### 🖼️ STICKER RECOGNITION & VIEWING:

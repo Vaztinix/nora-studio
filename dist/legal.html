@@ -1038,7 +1038,7 @@
             <div class="legal-tab-pane active" id="pane-terms">
                 <h2>Terms of Service</h2>
                 <div class="legal-meta-bar">
-                    <span><i class="far fa-calendar-alt"></i> Last Updated: October 24, 2026</span>
+                    <span><i class="far fa-calendar-alt"></i> Last Updated: November 1, 2026</span>
                 </div>
                 
                 <p>Welcome to <strong>Nora Studio</strong>. These Terms of Service ("Terms") govern your use of the Nora Discord bot, our dashboard at <code>vaztinix.dev</code>, and all associated software, APIs, and community tools engineered by Vaztinix and the Nora Studio Team.</p>
@@ -1097,6 +1097,14 @@
                     <li><strong>Administrator Discretion:</strong> Automated moderation actions (timeouts, kicks, bans, message purges) are tools executed on behalf of server staff. Community owners remain solely responsible for the configuration and enforcement of their server rules.</li>
                 </ul>
 
+                <h3>6b. Activities & Voice (Game Activity Voice Channel Routing)</h3>
+                <p>Nora includes an optional <strong>Activities &amp; Voice</strong> system designed to improve community engagement by bringing members who are playing the same game together into the same voice channels:</p>
+                <ul>
+                    <li><strong>Real-Time Game Routing &amp; Voice Locks:</strong> Server administrators can map specific Discord games (e.g., Valorant, Minecraft, Roblox, Palworld) to designated voice channels via the Web Dashboard. When a member in voice chat launches or switches a game, Nora evaluates their live Discord Rich Presence activity in memory to route them into the matching game voice channel or enforce channel game locks.</li>
+                    <li><strong>Custom Status Supporter Roles:</strong> Server administrators may optionally configure automatic role rewards for members who display a community invite or tag in their Discord Custom Status.</li>
+                    <li><strong>User Opt-Out:</strong> Members may opt out of presence-based routing at any time by disabling activity sharing in their Discord Activity Privacy settings or setting their status to Invisible.</li>
+                </ul>
+
                 <h3>7. Roblox Verification & Group Rank Synchronization</h3>
                 <p>Nora facilitates verified Discord-to-Roblox identity mapping:</p>
                 <ul>
@@ -1133,7 +1141,7 @@
             <div class="legal-tab-pane" id="pane-privacy">
                 <h2>Privacy Policy</h2>
                 <div class="legal-meta-bar">
-                    <span><i class="far fa-calendar-alt"></i> Last Updated: October 24, 2026</span>
+                    <span><i class="far fa-calendar-alt"></i> Last Updated: November 1, 2026</span>
                 </div>
 
                 <p>At <strong>Nora Studio</strong>, user privacy is not an afterthought—it is the foundational engineering principle upon which our entire ecosystem is built. This Privacy Policy outlines what minimal data is required to operate, how it is safeguarded, and how you retain 100% sovereign control over your information.</p>
@@ -1146,7 +1154,7 @@
                 </div>
 
                 <h3 class="emerald-accent">1. Zero-Access RAM Architecture & Volatile Processing</h3>
-                <p>Unlike standard Discord bots that log entire message streams to persistent disks, Nora processes message text, prefix triggers, collaborative counting games, and AutoMod events <strong>strictly within volatile, ephemeral RAM</strong>. Once processed, content is immediately discarded from memory. Chat messages are never dumped to relational databases or long-term files.</p>
+                <p>Unlike standard Discord bots that log entire message streams or user activity timelines to persistent disks, Nora processes message text, prefix triggers, live user presence/game activity updates (<code>GUILD_PRESENCES</code>), collaborative counting games, and AutoMod events <strong>strictly within volatile, ephemeral RAM</strong>. Once processed, content and presence states are immediately discarded from memory. Chat messages and user activity histories are never dumped to relational databases or long-term files.</p>
 
                 <h3 class="emerald-accent">2. Data We Collect & Specific Retention Periods</h3>
                 <p>We retain only the bare minimum structured metadata strictly necessary to provide server automation and user progression:</p>
@@ -1187,6 +1195,12 @@
                                 <td>Scoped strictly to the issuing server. Purgeable upon server owner request.</td>
                             </tr>
                             <tr>
+                                <td><strong>Presence &amp; Game Activity Telemetry (<code>GUILD_PRESENCES</code>)</strong></td>
+                                <td>Live Discord game activity name, custom status text, and online/idle/DND state held momentarily in volatile RAM during gateway events.</td>
+                                <td>To bring players playing the same game together into designated voice channels (<strong>Activities &amp; Voice</strong>), grant custom status supporter roles, and show live status dots on <code>/rank</code> and <code>/mycard</code>.</td>
+                                <td><strong>Purely ephemeral (Zero off-platform storage).</strong> Evaluated in memory only at the moment of the event and immediately discarded; never written to disk or databases. Users can opt out anytime via Discord Activity Privacy settings.</td>
+                            </tr>
+                            <tr>
                                 <td><strong>Adaptive Slowmode Telemetry</strong></td>
                                 <td>10-second sliding window message count & anonymous author IDs in RAM.</td>
                                 <td>To compute real-time chat speed and clamp slowmode against flood attacks.</td>
@@ -1210,6 +1224,14 @@
                     <li><strong>Configurable Memory:</strong> Users and administrators can disable conversation memory at any time in server settings or dashboard toggles.</li>
                 </ul>
 
+                <h3 class="emerald-accent">3b. Presence &amp; Game Activity Data (<code>GUILD_PRESENCES</code>) &amp; Opt-Out Rights</h3>
+                <p>To help gaming communities connect and improve server engagement, Nora utilizes Discord's <code>GUILD_PRESENCES</code> gateway intent under strict privacy safeguards:</p>
+                <ul>
+                    <li><strong>How Presence Data is Used:</strong> When enabled by a server administrator under <strong>Community &amp; Games &rarr; Activities &amp; Voice</strong>, Nora checks a member's current Discord game activity when they join a voice channel or switch games so players playing the same game are automatically brought together into the corresponding game voice channel. Presence events are also used in memory to assign optional Custom Status supporter roles and render live online/idle/DND indicators on <code>/rank</code> and <code>/mycard</code> profile cards.</li>
+                    <li><strong>Zero Off-Platform Storage:</strong> Nora <strong>never</strong> stores, logs, indexes, or exports user activity data, game play histories, or status timelines outside of Discord or to any persistent database. All checks happen instantaneously in volatile RAM and are immediately discarded.</li>
+                    <li><strong>How Users Can Opt Out:</strong> Users have complete control and can opt out of presence detection at any time by toggling off <em>"Share your detected activities with others"</em> in <strong>Discord User Settings &rarr; Activity Privacy</strong>, setting their Discord status to <strong>Invisible</strong>, or erasing their bot profile data via the 1-click <strong>"Erase Data"</strong> button in <code>/mycard</code>. Server administrators can also disable Activity VC Locks or status role checks at any time from the Web Dashboard.</li>
+                </ul>
+
                 <h3 class="emerald-accent">4. What We NEVER Collect or Store</h3>
                 <p>Nora maintains an ironclad boundary regarding personal and private credentials. We NEVER collect, inspect, or store:</p>
                 <ul>
@@ -1217,6 +1239,7 @@
                     <li>Roblox passwords or private session cookies (<code>.ROBLOSECURITY</code>).</li>
                     <li>Real-world legal names, physical home addresses, phone numbers, or government IDs.</li>
                     <li>Private Direct Messages (DMs) between users.</li>
+                    <li>Historical user presence logs, game activity timelines, or custom status histories.</li>
                     <li>Server chat logs outside of closed support ticket archives.</li>
                 </ul>
 

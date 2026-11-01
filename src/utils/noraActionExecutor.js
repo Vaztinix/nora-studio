@@ -192,7 +192,7 @@ async function detectIntent(message, plainContent) {
 
     // 9b. Utility: Host Machine & Device Hardware Specs (Strict Privacy Protected)
     if (lower.match(/\b(?:what\s+are\s+(?:the\s+|your\s+)?(?:device|pc|computer|system|hardware|host)\s+specs?|(?:show|tell|check|display|give)\s+(?:me\s+)?(?:the\s+)?(?:device|pc|computer|system|hardware|host)\s+specs?|(?:device|pc|computer|system|hardware|host)\s+specs?)\b/i) ||
-        lower.match(/\b(?:specs\s+of\s+(?:the\s+)?(?:pc|computer|system|machine|host))\b/i)) {
+        lower.match(/\b(?:specs?\s+of\s+(?:the\s+|your\s+|vaz(?:'s|tinix's)?\s+)?(?:pc|computer|system|machine|host|rig|setup)|what\s+are\s+(?:your|vaz(?:'s|tinix's)?)\s+specs?|what\s+(?:gpu|graphics\s+card|cpu|processor|ram|pc\s+build)\s+(?:do\s+you|does\s+(?:nora|vaz|vaztinix))\s+(?:have|run|use))\b/i)) {
         return {
             type: 'UTILITY',
             action: 'DEVICE_SPECS'
@@ -748,9 +748,10 @@ async function executeUtility(message, client, intent) {
             .setColor(0x5865F2)
             .setDescription('Live hardware specifications for the dedicated host system running Nora. All personal identifiers, directories, and network details are strictly redacted for privacy.')
             .addFields(
-                { name: '🖥️ Processor (CPU)', value: `**${s.cpu.model}**\n${s.cpu.cores} Threads @ ${s.cpu.speed}`, inline: true },
+                { name: '🎮 Graphics Card (GPU)', value: `**${s.gpu.model}**\n${s.gpu.vram} VRAM (${s.gpu.architecture})`, inline: true },
+                { name: '🖥️ Processor (CPU)', value: `**${s.cpu.model}**\n${s.cpu.cores}C / ${s.cpu.threads}T @ ${s.cpu.speed}`, inline: true },
                 { name: '🧠 Memory (RAM)', value: `**${s.memory.total} Total**\n${s.memory.used} in use (${s.memory.percentUsed})\n${s.memory.free} free`, inline: true },
-                { name: '🪟 Operating System', value: `**${s.os.name}**\nKernel: \`${s.os.kernel}\` (\`${s.os.arch}\`)`, inline: true },
+                { name: '💾 Storage & OS', value: `**${s.storage.primary}**\n${s.os.name} (\`${s.os.arch}\`)`, inline: true },
                 { name: '⏱️ System Uptime', value: `Host: \`${s.uptime.host}\`\nProcess: \`${s.uptime.bot}\``, inline: true },
                 { name: '⚡ Runtime Engine', value: `Node.js \`${s.runtime.node}\`\nV8 \`${s.runtime.v8}\``, inline: true },
                 { name: '📊 Process Memory', value: `Heap: \`${s.runtime.heapUsed}\`\nRSS: \`${s.runtime.rss}\``, inline: true }

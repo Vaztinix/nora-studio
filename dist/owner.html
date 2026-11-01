@@ -914,6 +914,12 @@
                         <button class="btn-action" style="background: #f59e0b; color: #000; font-weight: 700;" onclick="publishSiteAlert()">
                             Publish Banner Alert
                         </button>
+                        <button type="button" class="btn-action" style="background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.5); color: #ddd6fe; font-weight: 700;" onclick="previewSiteAlertBubble()">
+                            <i class="fas fa-eye" style="margin-right: 6px;"></i> Preview Pop-Up Bubble
+                        </button>
+                        <span style="display:none">
+                            Publish Banner Alert
+                        </button>
                     </div>
                 </div>
 
@@ -2162,6 +2168,77 @@
             } catch (e) {
                 console.error('Failed to load site alerts:', e);
             }
+        }
+
+        function previewSiteAlertBubble() {
+            const title = (document.getElementById('alert-title')?.value || '').trim() || 'NORA SITE ANNOUNCEMENT';
+            const message = (document.getElementById('alert-message')?.value || '').trim() || 'Notice: Communities will not be able to see staff activity or server member counts until we apply for the presence intent.\nMore info coming soon!';
+            const type = document.getElementById('alert-type')?.value || 'announcement';
+
+            const existing = document.getElementById('site-alert-top-banner');
+            if (existing) existing.remove();
+
+            if (!document.getElementById('nora-site-alert-bubble-styles')) {
+                const styleEl = document.createElement('style');
+                styleEl.id = 'nora-site-alert-bubble-styles';
+                styleEl.textContent = `
+                    @keyframes noraBubblePopIn {
+                        0% { opacity: 0; transform: translate(-50%, 28px) scale(0.92); filter: blur(6px); }
+                        65% { opacity: 1; transform: translate(-50%, -3px) scale(1.015); filter: blur(0px); }
+                        100% { opacity: 1; transform: translate(-50%, 0) scale(1); filter: blur(0px); }
+                    }
+                    @keyframes noraWordFadeIn {
+                        0% { opacity: 0; transform: translateY(7px); filter: blur(4px); }
+                        100% { opacity: 1; transform: translateY(0); filter: blur(0px); }
+                    }
+                    @keyframes noraLineFadeIn {
+                        0% { opacity: 0; transform: translateY(8px); }
+                        100% { opacity: 1; transform: translateY(0); }
+                    }
+                    #site-alert-top-banner {
+                        position: fixed; bottom: 26px; left: 50%; transform: translate(-50%, 0); z-index: 999990;
+                        width: calc(100% - 32px); max-width: 660px; border-radius: 22px; padding: 16px 18px;
+                        background: linear-gradient(145deg, rgba(18, 21, 36, 0.86) 0%, rgba(11, 14, 25, 0.92) 100%);
+                        backdrop-filter: blur(22px) saturate(180%); -webkit-backdrop-filter: blur(22px) saturate(180%);
+                        color: #ffffff; animation: noraBubblePopIn 0.52s cubic-bezier(0.16, 1, 0.3, 1) forwards; overflow: hidden;
+                    }
+                    .nora-alert-line { display: block; opacity: 0; animation: noraLineFadeIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+                    .nora-alert-line + .nora-alert-line { margin-top: 6px; }
+                    .nora-alert-word { display: inline-block; opacity: 0; margin-right: 0.28em; animation: noraWordFadeIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+                `;
+                document.head.appendChild(styleEl);
+            }
+
+            const colorMap = {
+                announcement: { hex: '#8B5CF6', rgb: '139, 92, 246', icon: 'fa-bullhorn' },
+                warning: { hex: '#EF4444', rgb: '239, 68, 68', icon: 'fa-exclamation-triangle' },
+                info: { hex: '#3B82F6', rgb: '59, 130, 246', icon: 'fa-info-circle' },
+                success: { hex: '#10B981', rgb: '16, 185, 129', icon: 'fa-check-circle' }
+            };
+            const theme = colorMap[type] || colorMap.announcement;
+            const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            let wordIdx = 0;
+            const animatedHtml = message.split(/\r?\n/).filter(l => l.trim()).map((line, lIdx) => {
+                const words = line.trim().split(/\s+/).map(w => `<span class="nora-alert-word" style="animation-delay:${140 + (wordIdx++ * 36)}ms;">${esc(w)}</span>`).join('');
+                return `<span class="nora-alert-line" style="animation-delay:${120 + lIdx * 90}ms;">${words}</span>`;
+            }).join('');
+
+            const banner = document.createElement('div');
+            banner.id = 'site-alert-top-banner';
+            banner.style.border = `1px solid rgba(${theme.rgb}, 0.42)`;
+            banner.style.boxShadow = `0 22px 55px rgba(0, 0, 0, 0.72), 0 0 28px rgba(${theme.rgb}, 0.22)`;
+            banner.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;">
+                    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(${theme.rgb},0.18);border:1px solid rgba(${theme.rgb},0.45);color:#fff;padding:5px 13px;border-radius:999px;font-weight:800;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.65px;">
+                        <span style="width:7px;height:7px;border-radius:50%;background:${theme.hex};box-shadow:0 0 8px ${theme.hex};"></span>
+                        <i class="fas ${theme.icon}"></i>
+                        <span>${esc(title.replace(/^📢\s*/, ''))}</span>
+                    </div>
+                    <button type="button" onclick="document.getElementById('site-alert-top-banner')?.remove()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.16);color:#fff;border-radius:999px;padding:5px 13px;font-size:0.76rem;font-weight:700;cursor:pointer;">✕ Dismiss</button>
+                </div>
+                <div style="background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:12px 15px;backdrop-filter:blur(10px);line-height:1.55;font-size:0.9rem;color:rgba(248,250,252,0.96);font-weight:500;">${animatedHtml}</div>
+            `;
+            document.body.appendChild(banner);
         }
 
         async function publishSiteAlert() {

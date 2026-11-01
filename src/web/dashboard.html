@@ -5325,6 +5325,10 @@
                     <i class="fas fa-calculator"></i>
                     <span>Games & Counting</span>
                 </button>
+                <button class="mobile-nav-item" data-tab="tab-activities" onclick="showTab('tab-activities'); closeMobileNav();">
+                    <i class="fas fa-gamepad"></i>
+                    <span>Activities & Voice</span>
+                </button>
                 <button class="mobile-nav-item" data-tab="tab-starboard" onclick="showTab('tab-starboard'); closeMobileNav();">
                     <i class="fas fa-star"></i>
                     <span>Starboard</span>
@@ -5349,7 +5353,6 @@
                     <i class="fas fa-paper-plane"></i>
                     <span>Webhooks & Embeds</span>
                 </button>
-                <button class="mobile-nav-item" data-tab="tab-activities" onclick="showTab('tab-activities'); closeMobileNav();"><i class="fas fa-gamepad"></i> <span>Activities & Voice</span></button>
                 <button class="mobile-nav-item" data-tab="tab-topgg" onclick="showTab('tab-topgg'); closeMobileNav();">
                     <i class="fas fa-arrow-up"></i>
                     <span>Top.gg Votes</span>
@@ -6173,7 +6176,10 @@
                                         <strong style="font-size: 0.82rem; color: #fff; display: block;">System Announcements</strong>
                                         <span style="font-size: 0.72rem; color: var(--muted);">Broadcasts, maintenance, and critical incidents</span>
                                     </div>
-                                    <input type="checkbox" id="pref-notif-system" checked onchange="saveNotificationToggles()" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <button type="button" onclick="window.testSiteAnnouncement()" style="background: rgba(139, 92, 246, 0.16); border: 1px solid rgba(139, 92, 246, 0.4); color: #c4b5fd; border-radius: 6px; padding: 4px 10px; font-size: 0.72rem; font-weight: 700; cursor: pointer;">Test Bubble</button>
+                                        <input type="checkbox" id="pref-notif-system" checked onchange="saveNotificationToggles()" style="width: 17px; height: 17px; accent-color: #38bdf8; cursor: pointer;">
+                                    </div>
                                 </div>
 
                                 <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: 8px; gap: 12px;">
@@ -6278,7 +6284,8 @@
                                     <button class="notif-filter-btn" data-type="warning" onclick="filterNotifs('warning', this)">Warnings</button>
                                     <button class="notif-filter-btn" data-type="error" onclick="filterNotifs('error', this)">Errors</button>
                                 </div>
-                                <div style="display: flex; gap: 8px;">
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <button class="btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.78rem; border-radius: 8px; border-color: rgba(139, 92, 246, 0.45); color: #c4b5fd; background: rgba(139, 92, 246, 0.12);" onclick="window.testSiteAnnouncement()"><i class="fas fa-bullhorn" style="margin-right: 5px;"></i> Test Announcement</button>
                                     <button class="btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.78rem; border-radius: 8px;" onclick="markAllRead()">Mark All Read</button>
                                     <button class="btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.78rem; border-radius: 8px; border-color: rgba(255,85,85,0.2); color: #ff5555;" onclick="clearNotifications()">Clear All</button>
                                 </div>
@@ -6422,6 +6429,7 @@
                             <i class="fas fa-dice" style="font-size: 0.7rem;"></i> Community & Games
                         </div>
                         <button class="h-tab" data-tab="tab-welcome" onclick="showTab('tab-welcome')"><span><i class="fas fa-calculator"></i> Games & Counting</span></button>
+                        <button class="h-tab" data-tab="tab-activities" onclick="showTab('tab-activities')"><span><i class="fas fa-gamepad"></i> Activities & Voice</span></button>
                         <button class="h-tab" data-tab="tab-starboard" onclick="showTab('tab-starboard')"><span><i class="fas fa-star"></i> Starboard</span></button>
                         <button class="h-tab" data-tab="tab-leveling" onclick="showTab('tab-leveling')"><span><i class="fas fa-trophy"></i> Leveling & XP</span></button>
 
@@ -6448,7 +6456,6 @@
                         </button>
                         <button class="h-tab" data-tab="tab-autoresponder" onclick="showTab('tab-autoresponder')"><span><i class="fas fa-reply-all"></i> Autoresponder Rules</span></button>
                         <button class="h-tab" data-tab="tab-reactionroles" onclick="showTab('tab-reactionroles')"><span><i class="fas fa-magic"></i> Reaction Roles</span></button>
-                        <button class="h-tab" data-tab="tab-activities" onclick="showTab('tab-activities')"><span><i class="fas fa-gamepad"></i> Activities & Voice</span></button>
                     <button class="h-tab" data-tab="tab-topgg" onclick="showTab('tab-topgg')"><span style="display: inline-flex; align-items: center; gap: 8px;"><img src="https://discord.do/wp-content/uploads/2023/08/Top.gg_.jpg" alt="Top.gg" style="width: 16px; height: 16px; border-radius: 4px; object-fit: cover; flex-shrink: 0;"> Top.gg Votes</span></button>
                         
                         <div id="sidebar-server-premium-container" class="sidebar-premium-cta" style="margin-top: auto; padding: 10px 14px; display: flex; flex-direction: column; gap: 8px;">
@@ -13256,13 +13263,8 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'welcomeType', 'welcomeCardAccentColor', 'welcomeCardBgUrl', 'serverCardShape', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'goodbyeType', 'goodbyeCardAccentColor', 'goodbyeCardBgUrl', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'starboardSelfStar', 'starboardAuthorRewardXp', 'starboardDynamicColors', 'starboardNotifyAuthor', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'verificationSecurityCheck', 'verifyCheckOnlineThreats', 'verifyCheckBanEvasion', 'verifyActionOnFlagged', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers', 'logModBans', 'logModKicks', 'logModTimeouts', 'logModWarns', 'logSecurityRaids', 'logVerification', 'logMemberNicknames', 'logMemberRoles', 'logMessagePurges', 'logMessagePins', 'logRoleCreates', 'logRoleEdits', 'logRoleDeletes', 'logServerUpdates', 'logVoiceMuteDeaf', 'logVoiceStream', 'logLevelUps', 'logLevelingXp', 'logCounting', 'logMiniGames', 'logTickets', 'logReactionRoles', 'logAutoresponder', 'logTopggVotes', 'adaptiveSlowmodeEnabled', 'adaptiveSlowmodeSmallThreshold', 'adaptiveSlowmodeLargeThreshold', 'adaptiveSlowmodeSurgeThreshold', 'adaptiveSlowmodeInactiveSec', 'adaptiveSlowmodeSmallSec', 'adaptiveSlowmodeLargeSec', 'adaptiveSlowmodeSurgeSec', 'adaptiveSlowmodeDecaySec', 'adaptiveSlowmodeNotify', 'adaptiveSlowmodeModLog', 'adaptiveSlowmodeChannels', 'adaptiveSlowmodeIgnoredRoles', 'adaptiveSlowmodeAiEnabled', 'aiAutoRespondChannelId', 'aiAutoRespondEnabled', 'noraAiEnabled', 'aiExcludedChannels', 'aiAllowedChannels', 'aiDedicatedChannels', 'aiSystemPrompt', 'aiPromptTemplate', 'aiMemoryEnabled', 'aiRoleViewingEnabled', 'aiNameViewingEnabled', 'aiImageGenerationEnabled', 'aiModel', 'countingTopCounterRoleId', 'countingFailRoleId', 'countingFailThreshold', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId', 'levelingAiEnabled', 'starboardAiEnabled', 'aiRateLimitPerMinute'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'welcomeType', 'welcomeCardAccentColor', 'welcomeCardBgUrl', 'serverCardShape', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'goodbyeType', 'goodbyeCardAccentColor', 'goodbyeCardBgUrl', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'starboardSelfStar', 'starboardAuthorRewardXp', 'starboardDynamicColors', 'starboardNotifyAuthor', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'verificationSecurityCheck', 'verifyCheckOnlineThreats', 'verifyCheckBanEvasion', 'verifyActionOnFlagged', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers', 'logModBans', 'logModKicks', 'logModTimeouts', 'logModWarns', 'logSecurityRaids', 'logVerification', 'logMemberNicknames', 'logMemberRoles', 'logMessagePurges', 'logMessagePins', 'logRoleCreates', 'logRoleEdits', 'logRoleDeletes', 'logServerUpdates', 'logVoiceMuteDeaf', 'logVoiceStream', 'logLevelUps', 'logLevelingXp', 'logCounting', 'logMiniGames', 'logTickets', 'logReactionRoles', 'logAutoresponder', 'logTopggVotes', 'adaptiveSlowmodeEnabled', 'adaptiveSlowmodeSmallThreshold', 'adaptiveSlowmodeLargeThreshold', 'adaptiveSlowmodeSurgeThreshold', 'adaptiveSlowmodeInactiveSec', 'adaptiveSlowmodeSmallSec', 'adaptiveSlowmodeLargeSec', 'adaptiveSlowmodeSurgeSec', 'adaptiveSlowmodeDecaySec', 'adaptiveSlowmodeNotify', 'adaptiveSlowmodeModLog', 'adaptiveSlowmodeChannels', 'adaptiveSlowmodeIgnoredRoles', 'adaptiveSlowmodeAiEnabled', 'aiAutoRespondChannelId', 'aiAutoRespondEnabled', 'noraAiEnabled', 'aiExcludedChannels', 'aiAllowedChannels', 'aiDedicatedChannels', 'aiSystemPrompt', 'aiPromptTemplate', 'aiMemoryEnabled', 'aiRoleViewingEnabled', 'aiNameViewingEnabled', 'aiImageGenerationEnabled', 'aiModel', 'countingTopCounterRoleId', 'countingFailRoleId', 'countingFailThreshold', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId', 'levelingAiEnabled', 'starboardAiEnabled', 'aiRateLimitPerMinute', 'activityVcLockEnabled', 'activityVcRules', 'activityVcNotifyUser'];
 
-
-
-        document.addEventListener('DOMContentLoaded', () => {
-            setupNumericalValidators();
-            
         // ---- Current User Activities & Voice Channel Lock Engine ----
         window.currentActivityRules = [];
         window.cachedVoiceChannels = [];
@@ -13279,16 +13281,20 @@
                 input.focus();
             }
         }
+        window.handleActivityPresetChange = handleActivityPresetChange;
 
         async function fetchAndPopulateVoiceChannels(guildId) {
+            const targetGuildId = guildId || currentServerId || window.currentGuildId;
+            if (!targetGuildId) return;
             try {
                 const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
-                const authHeader = localStorage.getItem('token') || localStorage.getItem('nora_auth_token') || sessionStorage.getItem('nora_token');
+                const authHeader = sessionStorage.getItem('discord_token') || localStorage.getItem('nora_discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token') || localStorage.getItem('nora_auth_token') || sessionStorage.getItem('nora_token');
                 const headers = authHeader ? { 'Authorization': authHeader.startsWith('Bearer ') ? authHeader : 'Bearer ' + authHeader } : {};
                 
-                const res = await fetch(`${apiBase}/api/guilds/${guildId}/voice-channels`, { headers });
+                const res = await fetch(`${apiBase}/api/guilds/${targetGuildId}/voice-channels`, { headers });
                 if (res.ok) {
-                    window.cachedVoiceChannels = await res.json();
+                    const data = await res.json();
+                    window.cachedVoiceChannels = Array.isArray(data) ? data : [];
                 } else {
                     window.cachedVoiceChannels = [];
                 }
@@ -13296,23 +13302,42 @@
                 console.warn('[Activity VC] Failed to fetch voice channels:', e.message);
                 window.cachedVoiceChannels = [];
             }
+
+            // Fallback to window.guildChannels if voice-channels returned empty or endpoint was unavailable
+            if ((!Array.isArray(window.cachedVoiceChannels) || window.cachedVoiceChannels.length === 0) && Array.isArray(window.guildChannels) && window.guildChannels.length > 0) {
+                const voiceTyped = window.guildChannels.filter(c => c.type === 2 || c.type === 13 || c.isVoice === true);
+                const hasTypeInfo = window.guildChannels.some(c => c.type !== undefined || c.isVoice !== undefined);
+                window.cachedVoiceChannels = hasTypeInfo ? voiceTyped : window.guildChannels;
+            }
+
             populateVoiceChannelSelect();
             renderActivityRules();
         }
+        window.fetchAndPopulateVoiceChannels = fetchAndPopulateVoiceChannels;
 
         function populateVoiceChannelSelect() {
             const select = document.getElementById('activity-rule-channel');
             if (!select) return;
+            const currentVal = select.value;
             let html = '<option value="">Select a voice channel...</option>';
             if (Array.isArray(window.cachedVoiceChannels) && window.cachedVoiceChannels.length > 0) {
                 window.cachedVoiceChannels.forEach(vc => {
-                    html += `<option value="${vc.id}">🔊 ${vc.name}${vc.userLimit > 0 ? ' (Limit ' + vc.userLimit + ')' : ''}</option>`;
+                    const isSel = currentVal && String(vc.id) === String(currentVal) ? ' selected' : '';
+                    html += `<option value="${vc.id}" data-no-translate="true"${isSel}>🔊 ${escapeHtml(vc.name)}${vc.userLimit > 0 ? ' (Limit ' + vc.userLimit + ')' : ''}</option>`;
                 });
             } else {
-                html += '<option value="" disabled>No voice channels found</option>';
+                html += '<option value="__none__" disabled>No voice channels found</option>';
             }
             select.innerHTML = html;
+            if (typeof refreshCustomDropdown === 'function') {
+                refreshCustomDropdown('activity-rule-channel');
+            } else if (typeof select.refreshSearchableSelect === 'function') {
+                select.refreshSearchableSelect();
+            } else if (typeof window.initSearchableSelects === 'function') {
+                window.initSearchableSelects(select);
+            }
         }
+        window.populateVoiceChannelSelect = populateVoiceChannelSelect;
 
         function renderActivityRules() {
             const container = document.getElementById('activity-rules-container');
@@ -13340,7 +13365,7 @@
 
             let html = '';
             rules.forEach((rule, idx) => {
-                const vc = (window.cachedVoiceChannels || []).find(c => c.id === rule.channelId);
+                const vc = (window.cachedVoiceChannels || []).find(c => String(c.id) === String(rule.channelId)) || (window.guildChannels || []).find(c => String(c.id) === String(rule.channelId));
                 const vcName = vc ? vc.name : ('Voice Channel ' + rule.channelId);
 
                 html += `
@@ -13364,6 +13389,7 @@
             });
             container.innerHTML = html;
         }
+        window.renderActivityRules = renderActivityRules;
 
         function addActivityRule() {
             const gameInput = document.getElementById('activity-rule-game');
@@ -13380,7 +13406,7 @@
                 return;
             }
 
-            if (!channelId) {
+            if (!channelId || channelId === '__none__') {
                 if (typeof showToast === 'function') showToast('Please select a designated voice channel.', 'error');
                 else alert('Please select a designated voice channel.');
                 channelSelect.focus();
@@ -13400,24 +13426,41 @@
 
             // Auto-enable master toggle if adding rule
             const masterToggle = document.getElementById('setting-activityVcLockEnabled');
-            if (masterToggle) masterToggle.checked = true;
+            if (masterToggle) {
+                masterToggle.checked = true;
+                masterToggle.dispatchEvent(new Event('change', { bubbles: true }));
+            }
 
             renderActivityRules();
+            const hiddenInput = document.getElementById('setting-activityVcRules');
+            if (hiddenInput) hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+            if (typeof window.checkFormDirty === 'function') window.checkFormDirty();
 
             // Clear input
             gameInput.value = '';
             const presetSelect = document.getElementById('activity-preset-select');
-            if (presetSelect) presetSelect.value = '';
+            if (presetSelect) {
+                presetSelect.value = '';
+                if (typeof refreshCustomDropdown === 'function') refreshCustomDropdown('activity-preset-select');
+            }
 
             if (typeof showToast === 'function') showToast('Locked ' + gameName + ' to voice channel! Click Save to apply.', 'success');
         }
+        window.addActivityRule = addActivityRule;
 
         function deleteActivityRule(idOrIdx) {
             if (!window.currentActivityRules) return;
             window.currentActivityRules = window.currentActivityRules.filter((r, i) => r.id !== idOrIdx && String(i) !== String(idOrIdx));
             renderActivityRules();
+            const hiddenInput = document.getElementById('setting-activityVcRules');
+            if (hiddenInput) hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+            if (typeof window.checkFormDirty === 'function') window.checkFormDirty();
             if (typeof showToast === 'function') showToast('Game lock removed. Click Save to apply.', 'info');
         }
+        window.deleteActivityRule = deleteActivityRule;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupNumericalValidators();
 
         // Early notifications loading if we have a last known user ID to prevent showing 0 count badge
             const lastUserId = localStorage.getItem('nora_last_user_id');
@@ -18017,72 +18060,287 @@
             showToast('🔔 Notification settings updated successfully!', 'success');
         };
 
+        let __activeSiteAlertSignature = null;
+
         async function loadSiteAlerts() {
             try {
                 const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
-                const res = await fetch(apiBase + '/api/notifications/site-alerts');
+                const res = await fetch(apiBase + '/api/notifications/site-alerts', { cache: 'no-store' });
+                if (!res.ok) return;
                 const data = await res.json();
-                if (data && data.alerts && data.alerts.length > 0) {
-                    const active = data.alerts[0];
-                    const dismissedKey = 'dismissed_site_alert_' + active.id;
-                    if (!localStorage.getItem(dismissedKey)) {
-                        renderSiteAlertBanner(active);
-                    }
+                const alerts = Array.isArray(data?.alerts) ? data.alerts : [];
+                const active = alerts.find(a => a && a.isActive !== false && a.message);
+
+                if (!active) {
+                    const existing = document.getElementById('site-alert-top-banner');
+                    if (existing) existing.remove();
+                    __activeSiteAlertSignature = null;
+                    return;
                 }
+
+                const dismissedKey = 'dismissed_site_alert_' + active.id;
+                if (localStorage.getItem(dismissedKey)) {
+                    const existing = document.getElementById('site-alert-top-banner');
+                    if (existing) existing.remove();
+                    __activeSiteAlertSignature = null;
+                    return;
+                }
+
+                const signature = `${active.id}::${active.type || 'announcement'}::${active.title || ''}::${active.message || ''}`;
+                if (__activeSiteAlertSignature === signature && document.getElementById('site-alert-top-banner')) {
+                    return; // Already rendered and visible — avoid re-triggering animation on interval poll
+                }
+
+                __activeSiteAlertSignature = signature;
+                renderSiteAlertBanner(active);
             } catch (e) {}
         }
+
+        function escapeAlertHtml(str) {
+            return String(str || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        window.dismissSiteAlertBubble = function(alertId) {
+            if (alertId !== undefined && alertId !== null) {
+                localStorage.setItem('dismissed_site_alert_' + alertId, 'true');
+            }
+            const banner = document.getElementById('site-alert-top-banner');
+            if (banner) {
+                banner.classList.add('nora-bubble-closing');
+                setTimeout(() => {
+                    if (banner.parentNode) banner.remove();
+                }, 280);
+            }
+            __activeSiteAlertSignature = null;
+        };
 
         function renderSiteAlertBanner(alert) {
             const existing = document.getElementById('site-alert-top-banner');
             if (existing) existing.remove();
+
+            if (!document.getElementById('nora-site-alert-bubble-styles')) {
+                const styleEl = document.createElement('style');
+                styleEl.id = 'nora-site-alert-bubble-styles';
+                styleEl.textContent = `
+                    @keyframes noraBubblePopIn {
+                        0% {
+                            opacity: 0;
+                            transform: translate(-50%, 28px) scale(0.92);
+                            filter: blur(6px);
+                        }
+                        65% {
+                            opacity: 1;
+                            transform: translate(-50%, -3px) scale(1.015);
+                            filter: blur(0px);
+                        }
+                        100% {
+                            opacity: 1;
+                            transform: translate(-50%, 0) scale(1);
+                            filter: blur(0px);
+                        }
+                    }
+                    @keyframes noraBubblePopOut {
+                        0% {
+                            opacity: 1;
+                            transform: translate(-50%, 0) scale(1);
+                        }
+                        100% {
+                            opacity: 0;
+                            transform: translate(-50%, 22px) scale(0.93);
+                            filter: blur(4px);
+                        }
+                    }
+                    @keyframes noraWordFadeIn {
+                        0% {
+                            opacity: 0;
+                            transform: translateY(7px);
+                            filter: blur(4px);
+                        }
+                        100% {
+                            opacity: 1;
+                            transform: translateY(0);
+                            filter: blur(0px);
+                        }
+                    }
+                    @keyframes noraLineFadeIn {
+                        0% {
+                            opacity: 0;
+                            transform: translateY(8px);
+                        }
+                        100% {
+                            opacity: 1;
+                            transform: translateY(0);
+                        }
+                    }
+                    @keyframes noraAlertPulseDot {
+                        0%, 100% { transform: scale(1); opacity: 1; }
+                        50% { transform: scale(1.35); opacity: 0.55; }
+                    }
+                    #site-alert-top-banner {
+                        position: fixed;
+                        bottom: 26px;
+                        left: 50%;
+                        transform: translate(-50%, 0);
+                        z-index: 999990;
+                        width: calc(100% - 32px);
+                        max-width: 660px;
+                        border-radius: 22px;
+                        padding: 16px 18px;
+                        background: linear-gradient(145deg, rgba(18, 21, 36, 0.86) 0%, rgba(11, 14, 25, 0.92) 100%);
+                        backdrop-filter: blur(22px) saturate(180%);
+                        -webkit-backdrop-filter: blur(22px) saturate(180%);
+                        color: #ffffff;
+                        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+                        animation: noraBubblePopIn 0.52s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                        overflow: hidden;
+                        pointer-events: auto;
+                    }
+                    #site-alert-top-banner.nora-bubble-closing {
+                        animation: noraBubblePopOut 0.26s cubic-bezier(0.4, 0, 1, 1) forwards;
+                        pointer-events: none;
+                    }
+                    .nora-alert-bubble-header {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 12px;
+                        margin-bottom: 10px;
+                        position: relative;
+                        z-index: 2;
+                    }
+                    .nora-alert-text-well {
+                        position: relative;
+                        z-index: 2;
+                        background: rgba(255, 255, 255, 0.055);
+                        border: 1px solid rgba(255, 255, 255, 0.09);
+                        border-radius: 14px;
+                        padding: 12px 15px;
+                        backdrop-filter: blur(10px);
+                        -webkit-backdrop-filter: blur(10px);
+                        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+                        line-height: 1.55;
+                        font-size: 0.9rem;
+                        color: rgba(248, 250, 252, 0.96);
+                        font-weight: 500;
+                    }
+                    .nora-alert-line {
+                        display: block;
+                        opacity: 0;
+                        animation: noraLineFadeIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                    }
+                    .nora-alert-line + .nora-alert-line {
+                        margin-top: 6px;
+                    }
+                    .nora-alert-word {
+                        display: inline-block;
+                        opacity: 0;
+                        margin-right: 0.28em;
+                        animation: noraWordFadeIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                    }
+                    .nora-alert-dismiss-btn {
+                        background: rgba(255, 255, 255, 0.07);
+                        border: 1px solid rgba(255, 255, 255, 0.14);
+                        color: rgba(255, 255, 255, 0.88);
+                        border-radius: 999px;
+                        padding: 5px 13px;
+                        font-size: 0.76rem;
+                        font-weight: 700;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 6px;
+                        flex-shrink: 0;
+                    }
+                    .nora-alert-dismiss-btn:hover {
+                        background: rgba(255, 255, 255, 0.15);
+                        border-color: rgba(255, 255, 255, 0.28);
+                        color: #ffffff;
+                        transform: translateY(-1px);
+                    }
+                `;
+                document.head.appendChild(styleEl);
+            }
 
             const banner = document.createElement('div');
             banner.id = 'site-alert-top-banner';
             banner.setAttribute('data-no-translate', 'true');
 
             const colorMap = {
-                announcement: '#7C3AED',
-                warning: '#EF4444',
-                info: '#3B82F6',
-                success: '#10B981'
+                announcement: { hex: '#8B5CF6', rgb: '139, 92, 246', icon: 'fa-bullhorn' },
+                warning: { hex: '#EF4444', rgb: '239, 68, 68', icon: 'fa-exclamation-triangle' },
+                info: { hex: '#3B82F6', rgb: '59, 130, 246', icon: 'fa-info-circle' },
+                success: { hex: '#10B981', rgb: '16, 185, 129', icon: 'fa-check-circle' }
             };
-            const accentColor = colorMap[alert.type] || '#7C3AED';
+            const theme = colorMap[alert.type] || colorMap.announcement;
 
-            banner.style.cssText = `
-                background: linear-gradient(90deg, rgba(124, 58, 237, 0.25), rgba(15, 23, 42, 0.95));
-                border-bottom: 2px solid ${accentColor};
-                backdrop-filter: blur(12px);
-                -webkit-backdrop-filter: blur(12px);
-                padding: 12px 24px;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                color: #fff;
-                font-size: 0.9rem;
-                position: sticky;
-                top: 0;
-                z-index: 99999;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-                animation: slideDownIn 0.3s ease;
-            `;
+            banner.style.border = `1px solid rgba(${theme.rgb}, 0.42)`;
+            banner.style.boxShadow = `0 22px 55px rgba(0, 0, 0, 0.72), 0 0 28px rgba(${theme.rgb}, 0.22)`;
+
+            // Build line-by-line & word-by-word animated HTML
+            const rawLines = String(alert.message || '').split(/\r?\n/).filter(l => l.trim().length > 0);
+            let globalWordIdx = 0;
+            const animatedHtml = rawLines.map((line, lineIdx) => {
+                const words = line.trim().split(/\s+/);
+                const lineDelayMs = 120 + lineIdx * 90;
+                const wordsHtml = words.map((w) => {
+                    const delayMs = 140 + (globalWordIdx * 36);
+                    globalWordIdx++;
+                    return `<span class="nora-alert-word" style="animation-delay: ${delayMs}ms;">${escapeAlertHtml(w)}</span>`;
+                }).join('');
+                return `<span class="nora-alert-line" style="animation-delay: ${lineDelayMs}ms;">${wordsHtml}</span>`;
+            }).join('');
+
+            const cleanTitle = escapeAlertHtml(String(alert.title || 'NORA SITE ANNOUNCEMENT').replace(/^📢\s*/, ''));
 
             banner.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                    <span style="background: ${accentColor}; color: #fff; padding: 4px 12px; border-radius: 20px; font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.6px; display: inline-flex; align-items: center; gap: 6px;">
-                        <i class="fas fa-bullhorn"></i> ${alert.title || 'SITE ANNOUNCEMENT'}
-                    </span>
-                    <span style="font-weight: 500; line-height: 1.4;">${alert.message}</span>
+                <div style="position: absolute; top: -45px; left: -35px; width: 180px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(${theme.rgb}, 0.28) 0%, transparent 70%); filter: blur(22px); pointer-events: none; z-index: 1;"></div>
+                <div class="nora-alert-bubble-header">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(${theme.rgb}, 0.18); border: 1px solid rgba(${theme.rgb}, 0.45); color: #fff; padding: 5px 13px; border-radius: 999px; font-weight: 800; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.65px; box-shadow: 0 4px 14px rgba(${theme.rgb}, 0.22);">
+                        <span style="width: 7px; height: 7px; border-radius: 50%; background: ${theme.hex}; box-shadow: 0 0 8px ${theme.hex}; animation: noraAlertPulseDot 1.8s infinite;"></span>
+                        <i class="fas ${theme.icon}" style="font-size: 0.74rem;"></i>
+                        <span>${cleanTitle}</span>
+                    </div>
+                    <button type="button" class="nora-alert-dismiss-btn" onclick="window.dismissSiteAlertBubble('${escapeAlertHtml(alert.id)}')">
+                        <i class="fas fa-times" style="font-size: 0.72rem;"></i>
+                        <span>Dismiss</span>
+                    </button>
                 </div>
-                <button style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 6px; padding: 4px 10px; font-size: 0.8rem; cursor: pointer; transition: 0.2s; font-weight: 600;" onclick="localStorage.setItem('dismissed_site_alert_${alert.id}', 'true'); document.getElementById('site-alert-top-banner').remove();">Dismiss</button>
+                <div class="nora-alert-text-well">
+                    ${animatedHtml}
+                </div>
             `;
 
-            const mainNav = document.querySelector('nav') || document.body.firstChild;
-            if (mainNav && mainNav.parentNode) {
-                mainNav.parentNode.insertBefore(banner, mainNav);
-            } else {
-                document.body.prepend(banner);
-            }
+            document.body.appendChild(banner);
         }
+
+        window.testSiteAnnouncement = function(customMessage, type = 'announcement', title = 'NORA SITE ANNOUNCEMENT') {
+            // Clear any local dismissal keys so active server alerts can also re-show
+            Object.keys(localStorage).forEach(k => {
+                if (k.startsWith('dismissed_site_alert_')) localStorage.removeItem(k);
+            });
+            __activeSiteAlertSignature = null;
+            renderSiteAlertBanner({
+                id: 'test_' + Date.now(),
+                type: type || 'announcement',
+                title: title || 'NORA SITE ANNOUNCEMENT',
+                message: customMessage || 'Notice: Communities will not be able to see staff activity or server member counts until we apply for the presence intent.\nMore info coming soon — thank you for supporting Nora Studio!'
+            });
+        };
+
+        // Hotkey: Ctrl + Shift + A to test the announcement pop-up bubble anywhere on the dashboard
+        window.addEventListener('keydown', (e) => {
+            if (!e) return;
+            if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+                e.preventDefault();
+                window.testSiteAnnouncement();
+            }
+        });
 
         window.addEventListener('load', initServiceWorkerAndPush);
 
@@ -19880,7 +20138,8 @@
                         'tab-topgg': 'Top.gg Integration',
                         'tab-starboard': 'Starboard',
                         'tab-applications': 'Applications',
-                        'tab-members': 'Members'
+                        'tab-members': 'Members',
+                        'tab-activities': 'Activities & Voice'
                     };
                     const breadcrumbTab = document.getElementById('breadcrumb-tab-name');
                     if (breadcrumbTab && friendlyTabNames[tabId]) {
@@ -19953,6 +20212,10 @@
                     } else if (tabId === 'tab-topgg') {
                         if (typeof loadTopggSettings === 'function') loadTopggSettings();
                         if (typeof updateTopggPreview === 'function') updateTopggPreview();
+                    } else if (tabId === 'tab-activities') {
+                        if (typeof window.fetchAndPopulateVoiceChannels === 'function') {
+                            window.fetchAndPopulateVoiceChannels(currentServerId);
+                        }
                     }
                 } else if (tabId === 'servers') {
                     document.body.classList.remove('in-config');
@@ -22010,6 +22273,10 @@
                         el.appendChild(opt);
                     });
                 });
+
+                if (typeof window.fetchAndPopulateVoiceChannels === 'function') {
+                    window.fetchAndPopulateVoiceChannels(currentServerId);
+                }
             } catch (e) {
                 console.error('[Channels Apply Error]:', e);
             }
@@ -25951,11 +26218,12 @@
 
                 
                 try {
-                    window.currentActivityRules = JSON.parse(settings.activityVcRules || '[]');
+                    const rulesRaw = (document.getElementById('setting-activityVcRules') && document.getElementById('setting-activityVcRules').value) || (window.previousSettings && window.previousSettings.activityVcRules) || '[]';
+                    window.currentActivityRules = typeof rulesRaw === 'string' ? JSON.parse(rulesRaw) : (Array.isArray(rulesRaw) ? rulesRaw : []);
                 } catch (_) {
                     window.currentActivityRules = [];
                 }
-                renderActivityRules();
+                if (typeof renderActivityRules === 'function') renderActivityRules();
 
                 // Populate single role dropdowns
                 window._cachedGuildRoles = rlRes;
@@ -26044,8 +26312,16 @@
                     'aiNameViewingEnabled',
                     'aiImageGenerationEnabled',
                     'levelingAiEnabled',
-                    'starboardAiEnabled'
+                    'starboardAiEnabled',
+                    'activityVcNotifyUser'
                 ];
+
+                try {
+                    window.currentActivityRules = typeof s.activityVcRules === 'string' ? JSON.parse(s.activityVcRules || '[]') : (Array.isArray(s.activityVcRules) ? s.activityVcRules : []);
+                } catch (_) {
+                    window.currentActivityRules = [];
+                }
+                if (typeof renderActivityRules === 'function') renderActivityRules();
 
                 KEYS.forEach(k => {
                     const el = document.getElementById('setting-' + k);
