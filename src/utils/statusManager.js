@@ -58,12 +58,18 @@ async function updateBotStatus(client) {
     try {
 
         const serverCount = client.guilds.cache.size;
+        let guildMemberSum = 0;
         const uniqueMembers = new Set();
         client.guilds.cache.forEach(g => {
-            g.members.cache.forEach((_, id) => uniqueMembers.add(id));
+            guildMemberSum += (g.memberCount || g.approximateMemberCount || 0);
+            if (g.members && g.members.cache) {
+                g.members.cache.forEach((_, id) => uniqueMembers.add(id));
+            }
         });
-        client.users.cache.forEach((_, id) => uniqueMembers.add(id));
-        const memberCount = uniqueMembers.size > 0 ? uniqueMembers.size : client.users.cache.size;
+        if (client.users && client.users.cache) {
+            client.users.cache.forEach((_, id) => uniqueMembers.add(id));
+        }
+        const memberCount = Math.max(guildMemberSum, uniqueMembers.size, client.users?.cache?.size || 0);
         const shardId = client.shard ? client.shard.ids[0] : 0;
         const pingMs = Math.round(client.ws.ping) || 0;
         const uptimeStr = formatUptime(process.uptime());

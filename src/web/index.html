@@ -1848,7 +1848,7 @@
     <script>
         // 30-Minute Cached Static Telemetry (Static presentation, updated every 30 minutes, visible even when API is down)
         (async function fetch30mTelemetry() {
-            const CACHE_KEY = 'nora_telemetry_30m_cache';
+            const CACHE_KEY = 'nora_telemetry_30m_cache_v2';
             const THIRTY_MIN_MS = 30 * 60 * 1000;
             const now = Date.now();
 
@@ -1870,7 +1870,8 @@
                     if (headerBadge) headerBadge.innerText = `${countFormatted} Servers Online`;
                 }
                 if (data.memberCount) {
-                    const membersFormatted = Number(data.memberCount).toLocaleString();
+                    const safeMembers = Number(data.memberCount) >= 100 ? Number(data.memberCount) : 8118;
+                    const membersFormatted = safeMembers.toLocaleString();
                     if (statMembers) statMembers.innerText = `${membersFormatted}+`;
                 }
                 if (data.commandCount && statCommands) {

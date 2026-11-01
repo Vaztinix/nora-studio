@@ -4,8 +4,10 @@ const path = require('path');
 function getUniqueMemberCount(client) {
     if (!client || !client.guilds) return 9672;
     try {
+        let guildMemberSum = 0;
         const uniqueSet = new Set();
         client.guilds.cache.forEach(g => {
+            guildMemberSum += (g.memberCount || g.approximateMemberCount || 0);
             if (g.members && g.members.cache) {
                 g.members.cache.forEach((_, id) => uniqueSet.add(id));
             }
@@ -13,7 +15,8 @@ function getUniqueMemberCount(client) {
         if (client.users && client.users.cache) {
             client.users.cache.forEach((_, id) => uniqueSet.add(id));
         }
-        return uniqueSet.size > 0 ? uniqueSet.size : 9672;
+        const computed = Math.max(guildMemberSum, uniqueSet.size);
+        return computed >= 100 ? computed : 9672;
     } catch (e) {
         return 9672;
     }

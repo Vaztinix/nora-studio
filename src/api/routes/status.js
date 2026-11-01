@@ -519,10 +519,18 @@ module.exports = function(client) {
             const totalGuilds = client && client.guilds ? client.guilds.cache.size : 0;
             let totalMembers = 0;
             if (client && client.guilds) {
+                let guildMemberSum = 0;
                 const uniqueSet = new Set();
-                client.guilds.cache.forEach(g => g.members.cache.forEach((_, id) => uniqueSet.add(id)));
-                if (client.users) client.users.cache.forEach((_, id) => uniqueSet.add(id));
-                totalMembers = uniqueSet.size > 0 ? uniqueSet.size : (client.users ? client.users.cache.size : 0);
+                client.guilds.cache.forEach(g => {
+                    guildMemberSum += (g.memberCount || g.approximateMemberCount || 0);
+                    if (g.members && g.members.cache) {
+                        g.members.cache.forEach((_, id) => uniqueSet.add(id));
+                    }
+                });
+                if (client.users && client.users.cache) {
+                    client.users.cache.forEach((_, id) => uniqueSet.add(id));
+                }
+                totalMembers = Math.max(guildMemberSum, uniqueSet.size);
             }
 
             // High-precision memory measurements
