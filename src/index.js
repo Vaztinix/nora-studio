@@ -4621,25 +4621,6 @@ try {
     v6Server.on('error', () => { });
 } catch (e) { }
 
-// Secondary port listeners bound to IPv4 (0.0.0.0) & IPv6 (::1)
-const ALT_PORTS = [8080, 5000, 8000, 3001, 8081, 8001, 8888, 9000, 4000, 5001];
-ALT_PORTS.forEach(altPort => {
-    if (altPort !== Number(PORT)) {
-        try {
-            const altV4 = app.listen(altPort, '0.0.0.0', () => {
-                console.log(`[System] Secondary Tunnel IPv4 listener online at port ${altPort}`);
-            });
-            altV4.on('error', () => { });
-
-            const altV6 = http.createServer(app);
-            altV6.listen(altPort, '::1', () => {
-                console.log(`[System] Secondary Tunnel IPv6 listener online at port ${altPort}`);
-            });
-            altV6.on('error', () => { });
-        } catch (e) { }
-    }
-});
-
 
 module.exports = { client };
 
