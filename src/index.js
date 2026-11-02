@@ -1253,8 +1253,19 @@ function serveOwner(req, res) {
 
 app.get(['/owner', '/owner.html'], ipRateLimiter, serveOwner);
 
-app.get('/favicon.ico', ipRateLimiter, (req, res) => {
-    res.sendFile(path.join(__dirname, 'web/nora.png'));
+app.get(['/favicon.ico', '/nora.png', '/logo.png', '/apple-touch-icon.png'], ipRateLimiter, (req, res) => {
+    const webPath = path.join(__dirname, 'web/nora.png');
+    const distPath = path.join(__dirname, '../dist/nora.png');
+    const filePath = fs.existsSync(webPath) ? webPath : (fs.existsSync(distPath) ? distPath : null);
+    if (filePath) {
+        res.setHeader('Content-Type', 'image/png');
+        res.setHeader('Cache-Control', 'public, max-age=86400');
+        return res.sendFile(filePath);
+    }
+    if (client?.user?.displayAvatarURL) {
+        return res.redirect(client.user.displayAvatarURL({ extension: 'png', size: 256 }));
+    }
+    res.status(404).send('Logo not found');
 });
 
 app.get(['/me', '/me.html'], ipRateLimiter, (req, res) => {
