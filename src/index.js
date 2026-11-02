@@ -4625,6 +4625,7 @@ app.get('/api/user/roblox/groups/:robloxId', async (req, res) => {
     const token = authHeader.split(' ')[1];
     try {
         await getDiscordUser(token);
+        const axios = require('axios');
         const { robloxId } = req.params;
         const safeRobloxId = String(robloxId).replace(/[^0-9]/g, '');
         if (!safeRobloxId) return res.status(400).json({ error: 'Invalid Roblox ID' });
