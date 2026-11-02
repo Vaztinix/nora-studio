@@ -35,11 +35,10 @@ module.exports = {
             .setDescription(
                 'Pilot the **NORA-X1 Quantum Cruiser** in our fast-paced neon synthwave space combat game! ' +
                 'Annihilate swarms of rogue drones, weave through bullet barrages, defeat mega boss cores, and **earn real Nora leveling XP** directly synced to your Discord profile!\n\n' +
-                '🎮 **Controls**:\n' +
-                '• **WASD / Arrows**: Glide & maneuver ship\n' +
-                '• **Space / Left Click**: Fire plasma blasters *(Auto-Fire supported)*\n' +
-                '• **Shift / Right Click**: Warp Dash *(Invulnerable burst speed)*\n' +
-                '• **Mobile & Discord App**: Touch & drag controls with ergonomic dash button'
+                '🎮 **Controls (Auto-Tuned by Device)**:\n' +
+                '• **PC / Mac (Windows, macOS, Linux)**: WASD / Arrow Keys to fly • Space/Click to fire • Shift to Warp Dash • P/Esc to pause\n' +
+                '• **Mobile (iOS & Android)**: On-Screen Virtual Joystick (bottom-left) • Fire & Dash action buttons (bottom-right)\n' +
+                '• **Controllers**: Plug-and-play Gamepad & Left Stick support across all devices'
             )
             .setColor(0x38bdf8)
             .addFields(

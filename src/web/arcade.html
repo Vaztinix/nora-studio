@@ -737,12 +737,7 @@
                     </div>
                 </div>
 
-                <div style="font-size: 0.8rem; color: #cbd5e1; display: flex; gap: 15px; flex-wrap: wrap; justify-content: center;">
-                    <span><i class="fas fa-keyboard"></i> <strong>WASD / Arrows</strong> to fly</span>
-                    <span><i class="fas fa-mouse"></i> <strong>Space / Mouse</strong> to shoot</span>
-                    <span><i class="fas fa-bolt"></i> <strong>Shift</strong> to Warp Dash</span>
-                    <span><i class="fas fa-pause"></i> <strong>P / Esc</strong> to Pause</span>
-                </div>
+                <div id="controls-instructions-box" style="width: 100%; margin: 4px 0;"></div>
 
                 <button type="button" class="cta-btn-primary" onclick="startGame()">
                     <i class="fas fa-play"></i> LAUNCH MISSION
@@ -766,6 +761,8 @@
                         <span id="pause-wave">1</span>
                     </div>
                 </div>
+
+                <div id="pause-os-controls" style="width: 100%; margin: 4px 0;"></div>
 
                 <button type="button" class="cta-btn-primary" onclick="togglePause()">
                     <i class="fas fa-play"></i> RESUME FLIGHT
@@ -1037,7 +1034,181 @@
         }
 
         window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('resize', renderOSControls);
+
+        // ==========================================
+        // OS DETECTION & DYNAMIC CONTROLS ENGINE
+        // ==========================================
+        function detectOS() {
+            const ua = window.navigator.userAgent || '';
+            const platform = window.navigator.userAgentData?.platform || window.navigator.platform || '';
+            const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (window.innerWidth <= 820);
+
+            // iOS (iPhone / iPad)
+            if (/iPad|iPhone|iPod/.test(ua) || (platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+                return {
+                    id: 'ios',
+                    name: 'Apple iOS',
+                    icon: 'fab fa-apple',
+                    isMobile: true,
+                    controls: [
+                        { icon: 'fas fa-gamepad', label: 'Virtual Stick', desc: 'Drag bottom-left joystick to fly 360°' },
+                        { icon: 'fas fa-crosshairs', label: 'Plasma Cannon', desc: 'Tap bottom-right Fire button' },
+                        { icon: 'fas fa-bolt', label: 'Warp Dash', desc: 'Tap bottom-right Dash button' },
+                        { icon: 'fas fa-pause', label: 'Pause Flight', desc: 'Tap top Pause button in header' }
+                    ]
+                };
+            }
+
+            // Android
+            if (/Android/i.test(ua)) {
+                return {
+                    id: 'android',
+                    name: 'Android',
+                    icon: 'fab fa-android',
+                    isMobile: true,
+                    controls: [
+                        { icon: 'fas fa-gamepad', label: 'Virtual Stick', desc: 'Drag bottom-left stick to fly 360°' },
+                        { icon: 'fas fa-crosshairs', label: 'Plasma Cannon', desc: 'Tap bottom-right Fire button' },
+                        { icon: 'fas fa-bolt', label: 'Warp Dash', desc: 'Tap bottom-right Dash button' },
+                        { icon: 'fas fa-pause', label: 'Pause Flight', desc: 'Tap top Pause button in header' }
+                    ]
+                };
+            }
+
+            // macOS
+            if (/Macintosh|Mac OS X/i.test(ua) || /Mac/i.test(platform)) {
+                return {
+                    id: 'macos',
+                    name: 'macOS',
+                    icon: 'fab fa-apple',
+                    isMobile: false,
+                    controls: [
+                        { icon: 'fas fa-keyboard', label: 'WASD / Arrows', desc: 'Maneuver and fly cruiser' },
+                        { icon: 'fas fa-mouse', label: 'Space / Click', desc: 'Fire Plasma Cannons' },
+                        { icon: 'fas fa-bolt', label: 'Shift Key', desc: 'Trigger Thruster Warp Dash' },
+                        { icon: 'fas fa-pause', label: 'P / Escape', desc: 'Pause Flight Simulation' }
+                    ]
+                };
+            }
+
+            // Windows
+            if (/Win/i.test(ua) || /Win/i.test(platform)) {
+                return {
+                    id: 'windows',
+                    name: 'Windows',
+                    icon: 'fab fa-windows',
+                    isMobile: false,
+                    controls: [
+                        { icon: 'fas fa-keyboard', label: 'WASD / Arrows', desc: 'Maneuver and fly cruiser' },
+                        { icon: 'fas fa-mouse', label: 'Space / Click', desc: 'Fire Plasma Cannons' },
+                        { icon: 'fas fa-bolt', label: 'Shift Key', desc: 'Trigger Thruster Warp Dash' },
+                        { icon: 'fas fa-pause', label: 'P / Escape', desc: 'Pause Flight Simulation' }
+                    ]
+                };
+            }
+
+            // Linux / ChromeOS
+            if (/Linux/i.test(ua) || /Linux/i.test(platform)) {
+                return {
+                    id: 'linux',
+                    name: 'Linux / ChromeOS',
+                    icon: 'fab fa-linux',
+                    isMobile: isTouch,
+                    controls: isTouch ? [
+                        { icon: 'fas fa-gamepad', label: 'Virtual Stick', desc: 'Drag bottom-left joystick to fly' },
+                        { icon: 'fas fa-crosshairs', label: 'Action Buttons', desc: 'Tap bottom-right Fire & Dash' },
+                        { icon: 'fas fa-pause', label: 'Pause Flight', desc: 'Tap top Pause button in header' }
+                    ] : [
+                        { icon: 'fas fa-keyboard', label: 'WASD / Arrows', desc: 'Maneuver and fly cruiser' },
+                        { icon: 'fas fa-mouse', label: 'Space / Click', desc: 'Fire Plasma Cannons' },
+                        { icon: 'fas fa-bolt', label: 'Shift Key', desc: 'Trigger Thruster Warp Dash' },
+                        { icon: 'fas fa-pause', label: 'P / Escape', desc: 'Pause Flight Simulation' }
+                    ]
+                };
+            }
+
+            // Fallback
+            return {
+                id: isTouch ? 'mobile' : 'desktop',
+                name: isTouch ? 'Mobile Device' : 'Desktop Browser',
+                icon: isTouch ? 'fas fa-mobile-alt' : 'fas fa-desktop',
+                isMobile: isTouch,
+                controls: isTouch ? [
+                    { icon: 'fas fa-gamepad', label: 'Virtual Stick', desc: 'Drag bottom-left stick to fly' },
+                    { icon: 'fas fa-crosshairs', label: 'Action Buttons', desc: 'Tap bottom-right Fire & Dash' },
+                    { icon: 'fas fa-pause', label: 'Pause Flight', desc: 'Tap top Pause button in header' }
+                ] : [
+                    { icon: 'fas fa-keyboard', label: 'WASD / Arrows', desc: 'Maneuver and fly cruiser' },
+                    { icon: 'fas fa-mouse', label: 'Space / Click', desc: 'Fire Plasma Cannons' },
+                    { icon: 'fas fa-bolt', label: 'Shift Key', desc: 'Trigger Thruster Warp Dash' },
+                    { icon: 'fas fa-pause', label: 'P / Escape', desc: 'Pause Flight Simulation' }
+                ]
+            };
+        }
+
+        function renderOSControls() {
+            const os = detectOS();
+            const startBox = document.getElementById('controls-instructions-box');
+            const pauseBox = document.getElementById('pause-os-controls');
+
+            // Check if physical gamepad is connected
+            let hasGamepad = false;
+            let gamepadName = '';
+            if (navigator.getGamepads) {
+                const gps = navigator.getGamepads();
+                for (let i = 0; i < gps.length; i++) {
+                    if (gps[i] && gps[i].connected) {
+                        hasGamepad = true;
+                        gamepadName = gps[i].id.replace(/\(.*?\)/g, '').trim().slice(0, 24);
+                        break;
+                    }
+                }
+            }
+
+            const buildHtml = (compact = false) => {
+                const gridItems = os.controls.map(c => `
+                    <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; padding: 7px 10px; display: flex; flex-direction: column; gap: 2px;">
+                        <div style="font-weight: 800; font-size: 0.74rem; color: #fff; display: flex; align-items: center; gap: 6px;">
+                            <i class="${c.icon}" style="color: var(--cyan);"></i> ${c.label}
+                        </div>
+                        <div style="font-size: 0.68rem; color: #94a3b8; line-height: 1.2;">${c.desc}</div>
+                    </div>
+                `).join('');
+
+                const gamepadFooter = hasGamepad 
+                    ? `<div style="margin-top: 6px; font-size: 0.72rem; color: var(--emerald); display: flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 6px; padding: 4px 8px;">
+                            <i class="fas fa-gamepad"></i> <strong>Controller Connected:</strong> ${gamepadName || 'Gamepad'} (Left Stick to fly • A/R2 to Fire • B/L2 to Dash)
+                       </div>`
+                    : `<div style="margin-top: 6px; font-size: 0.68rem; color: #64748b; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas fa-gamepad"></i> USB/Bluetooth Gamepads also supported plug-and-play
+                       </div>`;
+
+                return `
+                    <div style="width: 100%; background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(56, 189, 248, 0.25); border-radius: 12px; padding: ${compact ? '8px 12px' : '10px 14px'}; text-align: left; box-sizing: border-box;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 5px;">
+                            <span style="font-family: 'Orbitron', sans-serif; font-size: 0.72rem; font-weight: 800; color: var(--cyan); letter-spacing: 1px; display: flex; align-items: center; gap: 6px;">
+                                <i class="${os.icon}"></i> ${os.name.toUpperCase()} DETECTED
+                            </span>
+                            <span style="font-size: 0.66rem; color: var(--text-muted); font-family: 'Inter', sans-serif;">Auto-Configured</span>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 6px;">
+                            ${gridItems}
+                        </div>
+                        ${gamepadFooter}
+                    </div>
+                `;
+            };
+
+            if (startBox) startBox.innerHTML = buildHtml(false);
+            if (pauseBox) pauseBox.innerHTML = buildHtml(true);
+        }
+
+        window.addEventListener('gamepadconnected', () => renderOSControls());
+        window.addEventListener('gamepaddisconnected', () => renderOSControls());
+
         resizeCanvas();
+        renderOSControls();
 
         // ==========================================
         // 3. GAME STATE & VARIABLES
