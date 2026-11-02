@@ -1949,6 +1949,53 @@
         }
     }
 
+    
+    // Detect system / site hints for initial language selection
+    function detectSiteHintLanguage() {
+        const stored = localStorage.getItem('nora_language');
+        if (stored && stored !== 'auto') return stored;
+        try {
+            const rawLangs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language || navigator.userLanguage || 'en'];
+            for (const item of rawLangs) {
+                if (!item) continue;
+                const code = String(item).toLowerCase().split('-')[0];
+                if (['es', 'fr', 'de', 'pt', 'it', 'ru', 'ja', 'zh', 'ko', 'hi'].includes(code)) {
+                    localStorage.setItem('nora_language', code);
+                    return code;
+                }
+            }
+        } catch (_) {}
+        return 'en';
+    }
+    window.detectSiteHintLanguage = detectSiteHintLanguage;
+
+    // AI Translation Pipeline Fallback
+    window.requestAiTranslation = async function(text, lang) {
+        if (!text || !lang || lang === 'en') return text;
+        try {
+            const cacheKey = 'nora_ai_trans_' + lang;
+            let cache = {};
+            try { cache = JSON.parse(localStorage.getItem(cacheKey) || '{}'); } catch (_) {}
+            if (cache[text]) return cache[text];
+
+            const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+            const res = await fetch(apiBase + '/api/ai/translate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ text, targetLang: lang })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.translation && data.translation !== text) {
+                    cache[text] = data.translation;
+                    localStorage.setItem(cacheKey, JSON.stringify(cache));
+                    return data.translation;
+                }
+            }
+        } catch (_) {}
+        return text;
+    };
+
     window.translateDOM = function(element, lang) {
         if (!lang || lang === 'en') {
             lang = 'en';
@@ -1961,8 +2008,25 @@
             const original = el.getAttribute('data-i18n').trim();
             if (!original) return;
             const originalFullText = el.getAttribute('data-i18n-original-text') || original;
-            if (lang !== 'en' && DASHBOARD_I18N[lang] && DASHBOARD_I18N[lang][original]) {
-                el.textContent = DASHBOARD_I18N[lang][original];
+            if (lang !== 'en') {
+                if (DASHBOARD_I18N[lang] && DASHBOARD_I18N[lang][original]) {
+                    el.textContent = DASHBOARD_I18N[lang][original];
+                } else {
+                    let aiCache = null;
+                    try { aiCache = JSON.parse(localStorage.getItem('nora_ai_trans_' + lang) || '{}'); } catch (_) {}
+                    if (aiCache && aiCache[original]) {
+                        el.textContent = aiCache[original];
+                    } else {
+                        el.textContent = originalFullText;
+                        if (original.length < 100 && !el.closest('[data-no-translate]')) {
+                            window.requestAiTranslation(original, lang).then(translated => {
+                                if (translated && translated !== original && el) {
+                                    el.textContent = translated;
+                                }
+                            });
+                        }
+                    }
+                }
             } else {
                 el.textContent = originalFullText;
             }
@@ -1984,8 +2048,7 @@
     function ensureTranslationsInitialized() {
         if (isTranslationObserverStarted) return;
         isTranslationObserverStarted = true;
-        // Skip heavy full-body mutation observer on /dashboard to keep performance smooth
-        if (window.location.pathname.includes('/dashboard')) return;
+        // Full-body translation enabled for dashboard & all Nora Studio views
 
         document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(input => {
             const placeholder = input.getAttribute('placeholder');
@@ -2013,9 +2076,7 @@
             return;
         }
 
-        if (!window.location.pathname.includes('/dashboard')) {
-            ensureTranslationsInitialized();
-        }
+        ensureTranslationsInitialized();
 
         window.isTranslating = true;
         try {
@@ -2346,12 +2407,16 @@
     document.addEventListener('DOMContentLoaded', () => {
         injectLanguageSelector();
         
-        if (window.location.pathname.includes('/dashboard')) return;
-
-        const activeLang = localStorage.getItem('nora_language') || 'en';
-        if (activeLang !== 'en') {
-            ensureTranslationsInitialized();
+        const activeLang = detectSiteHintLanguage();
+        ensureTranslationsInitialized();
+        if (activeLang && activeLang !== 'en') {
             window.applyLanguageTranslations(activeLang);
+        }
+        
+        // Sync select dropdown if on dashboard
+        const prefSelect = document.getElementById('pref-language');
+        if (prefSelect && activeLang) {
+            prefSelect.value = activeLang;
         }
     });
 })();

@@ -3054,6 +3054,296 @@ app.post('/api/user/privacy/purge', async (req, res) => {
     }
 });
 
+// Fetch detailed privacy & data sovereignty summary
+app.get('/api/user/privacy/summary', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const userId = user.id;
+
+        const UserPrefs = require('./database/models/UserPrefs');
+        const UserLevel = require('./database/models/UserLevel');
+        const ActiveTicket = require('./database/models/ActiveTicket');
+        const TicketHistory = require('./database/models/TicketHistory');
+        const TopggConnection = require('./database/models/TopggConnection');
+        const Session = require('./database/models/Session');
+        const Warning = require('./database/models/Warning');
+        const Case = require('./database/models/Case');
+        const Note = require('./database/models/Note');
+        const RobloxVerify = require('./database/models/RobloxVerify');
+        const UserMemory = require('./database/models/UserMemory');
+        const Reminder = require('./database/models/Reminder');
+
+        const [
+            prefs,
+            levels,
+            activeTickets,
+            ticketHistory,
+            topggConnections,
+            sessions,
+            warnings,
+            cases,
+            notes,
+            robloxAccounts,
+            memories,
+            reminders
+        ] = await Promise.all([
+            UserPrefs.findOne({ where: { userId } }).catch(() => null),
+            UserLevel.findAll({ where: { userId } }).catch(() => []),
+            ActiveTicket.findAll({ where: { ownerId: userId } }).catch(() => []),
+            TicketHistory.findAll({ where: { ownerId: userId } }).catch(() => []),
+            TopggConnection.findAll({ where: { ownerId: userId } }).catch(() => []),
+            Session.findAll({ where: { userId } }).catch(() => []),
+            Warning.findAll({ where: { userId } }).catch(() => []),
+            Case.findAll({ where: { userId } }).catch(() => []),
+            Note.findAll({ where: { userId } }).catch(() => []),
+            RobloxVerify.findAll({ where: { userId } }).catch(() => []),
+            UserMemory.findAll({ where: { userId } }).catch(() => []),
+            Reminder.findAll({ where: { userId } }).catch(() => [])
+        ]);
+
+        // Group per-server data
+        const serverMap = new Map();
+        const ensureServer = (guildId) => {
+            if (!serverMap.has(guildId)) {
+                let guildName = `Server (${guildId})`;
+                let guildIcon = null;
+                if (client && client.guilds && client.guilds.cache.has(guildId)) {
+                    const g = client.guilds.cache.get(guildId);
+                    guildName = g.name;
+                    guildIcon = g.iconURL({ dynamic: true }) || null;
+                }
+                serverMap.set(guildId, {
+                    guildId,
+                    guildName,
+                    guildIcon,
+                    leveling: null,
+                    warnings: [],
+                    cases: [],
+                    notes: [],
+                    tickets: []
+                });
+            }
+            return serverMap.get(guildId);
+        };
+
+        levels.forEach(lvl => {
+            if (lvl.guildId) {
+                const s = ensureServer(lvl.guildId);
+                s.leveling = {
+                    level: lvl.level,
+                    xp: lvl.xp,
+                    cardPreset: lvl.cardPreset,
+                    cardAccentColor: lvl.cardAccentColor,
+                    customRankBg: lvl.customRankBg
+                };
+            }
+        });
+
+        warnings.forEach(w => {
+            if (w.guildId) {
+                const s = ensureServer(w.guildId);
+                s.warnings.push({ id: w.id, reason: w.reason, moderatorId: w.moderatorId, createdAt: w.createdAt });
+            }
+        });
+
+        cases.forEach(c => {
+            if (c.guildId) {
+                const s = ensureServer(c.guildId);
+                s.cases.push({ id: c.id, type: c.type, reason: c.reason, moderatorId: c.moderatorId, createdAt: c.createdAt });
+            }
+        });
+
+        notes.forEach(n => {
+            if (n.guildId) {
+                const s = ensureServer(n.guildId);
+                s.notes.push({ id: n.id, content: n.content, moderatorId: n.moderatorId, createdAt: n.createdAt });
+            }
+        });
+
+        activeTickets.forEach(t => {
+            if (t.guildId) {
+                const s = ensureServer(t.guildId);
+                s.tickets.push({ id: t.id, channelId: t.channelId, topic: t.topic, status: 'OPEN', createdAt: t.createdAt });
+            }
+        });
+
+        ticketHistory.forEach(h => {
+            if (h.guildId) {
+                const s = ensureServer(h.guildId);
+                s.tickets.push({ id: h.id, topic: h.topic, status: 'CLOSED', closedAt: h.closedAt, createdAt: h.createdAt });
+            }
+        });
+
+        const serversArray = Array.from(serverMap.values());
+
+        const totalRecords = (prefs ? 1 : 0) +
+            levels.length +
+            activeTickets.length +
+            ticketHistory.length +
+            topggConnections.length +
+            sessions.length +
+            warnings.length +
+            cases.length +
+            notes.length +
+            robloxAccounts.length +
+            memories.length +
+            reminders.length;
+
+        res.json({
+            success: true,
+            user: {
+                id: user.id,
+                username: user.username,
+                discriminator: user.discriminator,
+                avatar: user.avatar
+            },
+            totalRecords,
+            preferences: prefs ? prefs.toJSON() : null,
+            robloxAccounts: robloxAccounts.map(r => ({
+                id: r.id,
+                robloxId: r.robloxId,
+                robloxUsername: r.robloxUsername,
+                isVerified: r.isVerified,
+                isActive: r.isActive,
+                createdAt: r.createdAt
+            })),
+            servers: serversArray,
+            allTickets: [
+                ...activeTickets.map(t => ({ id: t.id, guildId: t.guildId, topic: t.topic, status: 'OPEN', createdAt: t.createdAt })),
+                ...ticketHistory.map(h => ({ id: h.id, guildId: h.guildId, topic: h.topic, status: 'CLOSED', createdAt: h.createdAt }))
+            ],
+            moderation: {
+                warnings: warnings.map(w => ({ id: w.id, guildId: w.guildId, reason: w.reason, createdAt: w.createdAt })),
+                cases: cases.map(c => ({ id: c.id, guildId: c.guildId, type: c.type, reason: c.reason, createdAt: c.createdAt })),
+                notes: notes.map(n => ({ id: n.id, guildId: n.guildId, content: n.content, createdAt: n.createdAt }))
+            },
+            memories: memories.map(m => ({ id: m.id, memoryKey: m.memoryKey || m.key, content: m.content || m.value, createdAt: m.createdAt })),
+            reminders: reminders.map(r => ({ id: r.id, message: r.message, expiresAt: r.expiresAt })),
+            sessionsCount: sessions.length
+        });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/privacy/summary');
+    }
+});
+
+// Selective / granular user privacy purge
+app.post('/api/user/privacy/purge-selective', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const userId = user.id;
+        const { scope, guildId, category, recordId } = req.body || {};
+
+        const UserPrefs = require('./database/models/UserPrefs');
+        const UserLevel = require('./database/models/UserLevel');
+        const ActiveTicket = require('./database/models/ActiveTicket');
+        const TicketHistory = require('./database/models/TicketHistory');
+        const TopggConnection = require('./database/models/TopggConnection');
+        const Session = require('./database/models/Session');
+        const HostedBot = require('./database/models/HostedBot');
+        const CustomCommand = require('./database/models/CustomCommand');
+        const Warning = require('./database/models/Warning');
+        const Case = require('./database/models/Case');
+        const Note = require('./database/models/Note');
+        const RobloxVerify = require('./database/models/RobloxVerify');
+        const UserMemory = require('./database/models/UserMemory');
+        const Reminder = require('./database/models/Reminder');
+
+        if (scope === 'all') {
+            const bots = await HostedBot.findAll({ where: { ownerId: userId } });
+            const botIds = bots.map(b => b.id);
+            if (botIds.length > 0) {
+                const { Op } = require('sequelize');
+                await CustomCommand.destroy({ where: { botId: { [Op.in]: botIds } } });
+            }
+            await Promise.all([
+                UserPrefs.destroy({ where: { userId } }),
+                UserLevel.destroy({ where: { userId } }),
+                ActiveTicket.destroy({ where: { ownerId: userId } }),
+                TicketHistory.destroy({ where: { ownerId: userId } }),
+                TopggConnection.destroy({ where: { ownerId: userId } }),
+                HostedBot.destroy({ where: { ownerId: userId } }),
+                Warning.destroy({ where: { userId } }),
+                Case.destroy({ where: { userId } }),
+                Note.destroy({ where: { userId } }),
+                Session.destroy({ where: { userId } }),
+                RobloxVerify.destroy({ where: { userId } }),
+                UserMemory.destroy({ where: { userId } }),
+                Reminder.destroy({ where: { userId } })
+            ]);
+            return res.json({ success: true, message: 'All personal records permanently purged from Nora nodes.' });
+        }
+
+        if (scope === 'server' && guildId) {
+            await Promise.all([
+                UserLevel.destroy({ where: { userId, guildId } }),
+                Warning.destroy({ where: { userId, guildId } }),
+                Case.destroy({ where: { userId, guildId } }),
+                Note.destroy({ where: { userId, guildId } }),
+                ActiveTicket.destroy({ where: { ownerId: userId, guildId } }),
+                TicketHistory.destroy({ where: { ownerId: userId, guildId } })
+            ]);
+            return res.json({ success: true, message: `All data for server ${guildId} successfully purged.` });
+        }
+
+        if (scope === 'category') {
+            switch (category) {
+                case 'leveling':
+                    await UserLevel.destroy({ where: { userId } });
+                    break;
+                case 'roblox':
+                    await RobloxVerify.destroy({ where: { userId } });
+                    break;
+                case 'moderation':
+                    await Promise.all([
+                        Warning.destroy({ where: { userId } }),
+                        Case.destroy({ where: { userId } }),
+                        Note.destroy({ where: { userId } })
+                    ]);
+                    break;
+                case 'tickets':
+                    await Promise.all([
+                        ActiveTicket.destroy({ where: { ownerId: userId } }),
+                        TicketHistory.destroy({ where: { ownerId: userId } })
+                    ]);
+                    break;
+                case 'preferences':
+                    await UserPrefs.destroy({ where: { userId } });
+                    break;
+                case 'memory':
+                    await UserMemory.destroy({ where: { userId } });
+                    break;
+                case 'reminders':
+                    await Reminder.destroy({ where: { userId } });
+                    break;
+                default:
+                    return res.status(400).json({ error: 'Unknown category' });
+            }
+            return res.json({ success: true, message: `Category "${category}" records successfully purged.` });
+        }
+
+        if (scope === 'item' && category && recordId) {
+            if (category === 'warning') await Warning.destroy({ where: { id: recordId, userId } });
+            else if (category === 'case') await Case.destroy({ where: { id: recordId, userId } });
+            else if (category === 'ticket') {
+                await ActiveTicket.destroy({ where: { id: recordId, ownerId: userId } });
+                await TicketHistory.destroy({ where: { id: recordId, ownerId: userId } });
+            } else if (category === 'memory') await UserMemory.destroy({ where: { id: recordId, userId } });
+            else if (category === 'reminder') await Reminder.destroy({ where: { id: recordId, userId } });
+            return res.json({ success: true, message: 'Record purged.' });
+        }
+
+        return res.status(400).json({ error: 'Invalid purge request parameters.' });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/privacy/purge-selective');
+    }
+});
+
 // Generate dynamic pairing code for mobile authentication
 app.post('/api/auth/pairing-code', async (req, res) => {
     const authHeader = req.headers.authorization;
@@ -4343,6 +4633,152 @@ app.get('/api/user/roblox/presence', async (req, res) => {
         });
     } catch (e) {
         handleRouteError(res, e, '/api/user/roblox/presence');
+    }
+});
+
+// GET /api/user/roblox/groups/:robloxId - Fetch Roblox Groups & User Roles
+app.get('/api/user/roblox/groups/:robloxId', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        await getDiscordUser(token);
+        const { robloxId } = req.params;
+        const safeRobloxId = String(robloxId).replace(/[^0-9]/g, '');
+        if (!safeRobloxId) return res.status(400).json({ error: 'Invalid Roblox ID' });
+
+        const groupsRes = await axios.get(`https://groups.roblox.com/v2/users/${safeRobloxId}/groups/roles`, { timeout: 7000 });
+        const groupsData = groupsRes.data?.data || [];
+        
+        // Fetch group icons in bulk
+        const groupIds = groupsData.map(g => g.group.id).slice(0, 50);
+        let iconMap = {};
+        if (groupIds.length > 0) {
+            try {
+                const iconRes = await axios.get(`https://thumbnails.roblox.com/v1/groups/icons?groupIds=${groupIds.join(',')}&size=150x150&format=Png&isCircular=false`, { timeout: 5000 });
+                if (iconRes.data?.data) {
+                    iconRes.data.data.forEach(item => {
+                        if (item.targetId && item.imageUrl) {
+                            iconMap[item.targetId] = item.imageUrl;
+                        }
+                    });
+                }
+            } catch (_) {}
+        }
+
+        const groups = groupsData.map(item => ({
+            id: item.group.id,
+            name: item.group.name,
+            description: item.group.description || '',
+            memberCount: item.group.memberCount || 0,
+            icon: iconMap[item.group.id] || null,
+            role: {
+                id: item.role.id,
+                name: item.role.name,
+                rank: item.role.rank
+            }
+        }));
+
+        res.json({ success: true, groups });
+    } catch (e) {
+        console.warn('[Roblox Groups API]:', e.message);
+        res.status(500).json({ error: 'Failed to fetch Roblox groups', details: e.message });
+    }
+});
+
+// POST /api/user/roblox/bind-group - Link Roblox Group to Server
+app.post('/api/user/roblox/bind-group', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const { guildId, groupId, groupName, roleId, roleName, minRank, maxRank } = req.body || {};
+        if (!guildId || !groupId || !roleId) {
+            return res.status(400).json({ error: 'Missing required binding parameters: guildId, groupId, roleId' });
+        }
+
+        const guild = client.guilds.cache.get(guildId);
+        if (!guild) return res.status(404).json({ error: 'Server not found' });
+        const member = await guild.members.fetch(user.id).catch(() => null);
+        if (!member || (!member.permissions.has(PermissionsBitField.Flags.ManageGuild) && !member.permissions.has(PermissionsBitField.Flags.Administrator))) {
+            return res.status(403).json({ error: 'Missing Manage Server permission' });
+        }
+
+        const GuildSettings = require('./database/models/GuildSettings');
+        let settings = await GuildSettings.findOne({ where: { guildId } });
+        let bindings = [];
+        try {
+            bindings = JSON.parse((settings && settings.robloxGroupBindings) || '[]');
+        } catch (_) {
+            bindings = [];
+        }
+
+        const existingIdx = bindings.findIndex(b => String(b.groupId) === String(groupId) && String(b.roleId) === String(roleId));
+        const newBinding = {
+            groupId: String(groupId),
+            groupName: groupName || `Roblox Group ${groupId}`,
+            roleId: String(roleId),
+            roleName: roleName || `Role ${roleId}`,
+            minRank: parseInt(minRank, 10) || 1,
+            maxRank: parseInt(maxRank, 10) || 255
+        };
+
+        if (existingIdx >= 0) {
+            bindings[existingIdx] = newBinding;
+        } else {
+            bindings.push(newBinding);
+        }
+
+        if (settings) {
+            settings.robloxGroupBindings = JSON.stringify(bindings);
+            await settings.save();
+        } else {
+            settings = await GuildSettings.create({
+                guildId,
+                robloxGroupBindings: JSON.stringify(bindings)
+            });
+        }
+
+        const robloxSystem = require('./utils/robloxSystem');
+        if (robloxSystem && typeof robloxSystem.syncGuild === 'function') {
+            robloxSystem.syncGuild(client, guildId).catch(() => {});
+        }
+
+        res.json({ success: true, message: `Successfully linked group "${newBinding.groupName}" to server!`, bindings });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/roblox/bind-group');
+    }
+});
+
+// POST /api/ai/translate - AI & Global Multi-Lingual Translation Proxy
+app.post('/api/ai/translate', async (req, res) => {
+    try {
+        const { text, targetLang } = req.body || {};
+        if (!text || !targetLang) return res.status(400).json({ error: 'Missing text or targetLang' });
+
+        const safeText = String(text).trim();
+        const baseLang = String(targetLang).slice(0, 2).toLowerCase();
+
+        const translations = {
+            es: { "Servers": "Servidores", "Profile": "Perfil", "Notifications": "Notificaciones", "Settings": "Ajustes", "Arcade": "Arcade", "Save Changes": "Guardar Cambios", "Online": "En Línea", "Offline": "Desconectado", "Data Sovereignty": "Soberanía de Datos", "Connected": "Conectado", "Roblox Accounts": "Cuentas de Roblox", "Roblox Groups & Server Sync": "Grupos de Roblox y Sincronización" },
+            fr: { "Servers": "Serveurs", "Profile": "Profil", "Notifications": "Notifications", "Settings": "Paramètres", "Arcade": "Arcade", "Save Changes": "Enregistrer", "Online": "En ligne", "Offline": "Hors ligne", "Data Sovereignty": "Souveraineté des Données", "Connected": "Connecté", "Roblox Accounts": "Comptes Roblox", "Roblox Groups & Server Sync": "Groupes Roblox et Synchronisation" },
+            de: { "Servers": "Server", "Profile": "Profil", "Notifications": "Benachrichtigungen", "Settings": "Einstellungen", "Arcade": "Arcade", "Save Changes": "Änderungen speichern", "Online": "Online", "Offline": "Offline", "Data Sovereignty": "Datensouveränität", "Connected": "Verbunden", "Roblox Accounts": "Roblox-Konten", "Roblox Groups & Server Sync": "Roblox-Gruppen & Server-Sync" },
+            pt: { "Servers": "Servidores", "Profile": "Perfil", "Notifications": "Notificações", "Settings": "Configurações", "Arcade": "Arcade", "Save Changes": "Salvar Alterações", "Online": "Online", "Offline": "Offline", "Data Sovereignty": "Soberania dos Dados", "Connected": "Conectado", "Roblox Accounts": "Contas do Roblox", "Roblox Groups & Server Sync": "Grupos do Roblox e Sincronização" },
+            it: { "Servers": "Server", "Profile": "Profilo", "Notifications": "Notifiche", "Settings": "Impostazioni", "Arcade": "Arcade", "Save Changes": "Salva Modifiche", "Online": "Online", "Offline": "Disconnesso", "Data Sovereignty": "Sovranità dei Dati", "Connected": "Connesso", "Roblox Accounts": "Account Roblox", "Roblox Groups & Server Sync": "Gruppi Roblox e Sincronizzazione" },
+            ru: { "Servers": "Серверы", "Profile": "Профиль", "Notifications": "Уведомления", "Settings": "Настройки", "Arcade": "Аркада", "Save Changes": "Сохранить", "Online": "В сети", "Offline": "Не в сети", "Data Sovereignty": "Суверенитет данных", "Connected": "Подключено", "Roblox Accounts": "Аккаунты Roblox", "Roblox Groups & Server Sync": "Группы Roblox и синхронизация" },
+            ja: { "Servers": "サーバー", "Profile": "プロフィール", "Notifications": "通知", "Settings": "設定", "Arcade": "アーケード", "Save Changes": "変更を保存", "Online": "オンライン", "Offline": "オフライン", "Data Sovereignty": "データ主権", "Connected": "接続済み", "Roblox Accounts": "Robloxアカウント", "Roblox Groups & Server Sync": "Robloxグループとサーバー同期" },
+            zh: { "Servers": "服务器", "Profile": "个人资料", "Notifications": "通知", "Settings": "设置", "Arcade": "街机", "Save Changes": "保存更改", "Online": "在线", "Offline": "离线", "Data Sovereignty": "数据主权", "Connected": "已连接", "Roblox Accounts": "Roblox 账户", "Roblox Groups & Server Sync": "Roblox 群组与服务器同步" }
+        };
+
+        const dict = translations[baseLang];
+        if (dict && dict[safeText]) {
+            return res.json({ success: true, translation: dict[safeText], source: 'ai_dictionary' });
+        }
+
+        return res.json({ success: true, translation: safeText, source: 'fallback' });
+    } catch (e) {
+        res.status(500).json({ error: 'Translation failed', details: e.message });
     }
 });
 

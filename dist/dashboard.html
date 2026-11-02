@@ -86,6 +86,52 @@
                 document.documentElement.classList.remove('theme-light');
             } catch(e) {}
         })();
+        // INSTANT PRE-RENDER DASHBOARD BACKGROUND BOOTSTRAP (Zero-Delay Custom Background)
+        (function() {
+            try {
+                const raw = localStorage.getItem('nora_user_dashboard_bg');
+                if (raw) {
+                    const data = JSON.parse(raw);
+                    if (data && data.url) {
+                        const style = document.createElement('style');
+                        style.id = 'nora-user-dashboard-bg-early-style';
+                        const op = Math.max(5, Math.min(90, parseInt(data.opacity, 10) || 35)) / 100;
+                        const bl = Math.max(0, Math.min(24, parseInt(data.blur, 10) || 0));
+                        style.textContent = `
+                            body.has-custom-dashboard-bg { background-color: #07090e !important; }
+                            body.has-custom-dashboard-bg .app-layout { background-color: transparent !important; }
+                            #nora-user-dashboard-bg-layer {
+                                position: fixed; inset: 0; z-index: 0 !important; pointer-events: none; overflow: hidden; opacity: 1 !important;
+                            }
+                            #nora-user-dashboard-bg-media {
+                                position: absolute; inset: -12px; width: calc(100% + 24px); height: calc(100% + 24px); object-fit: cover; object-position: center; opacity: ${op}; filter: ${bl > 0 ? `blur(${bl}px)` : 'none'};
+                            }
+                            #nora-user-dashboard-bg-scrim {
+                                position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, rgba(8, 10, 18, 0.38) 0%, rgba(7, 9, 15, 0.72) 100%); pointer-events: none;
+                            }
+                        `;
+                        document.head.appendChild(style);
+                        const injectLayer = () => {
+                            document.body.classList.add('has-custom-dashboard-bg');
+                            let layer = document.getElementById('nora-user-dashboard-bg-layer');
+                            if (!layer) {
+                                layer = document.createElement('div');
+                                layer.id = 'nora-user-dashboard-bg-layer';
+                                layer.className = 'has-custom-bg';
+                                layer.innerHTML = `
+                                    <img id="nora-user-dashboard-bg-media" src="${data.url}" alt="" style="display: block; opacity: ${op}; filter: ${bl > 0 ? `blur(${bl}px)` : 'none'};">
+                                    <div id="nora-user-dashboard-bg-scrim"></div>
+                                `;
+                                document.body.insertBefore(layer, document.body.firstChild);
+                            }
+                        };
+                        if (document.body) injectLayer();
+                        else document.addEventListener('DOMContentLoaded', injectLayer);
+                    }
+                }
+            } catch(e) {}
+        })();
+
     </script>
     <style>
         @property --primary {
@@ -5871,8 +5917,8 @@
                             </div>
                         </div>
 
-                        <!-- Connected Roblox Accounts Panel -->
-                        <div class="panel" style="background: rgba(18, 22, 34, 0.5); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; backdrop-filter: blur(20px); padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);">
+                        <!-- Connected Roblox Accounts & Groups Hub Panel -->
+                        <div class="panel" style="background: rgba(14, 18, 28, 0.65); border: 1px solid rgba(255, 255, 255, 0.09); border-radius: 18px; backdrop-filter: blur(24px); padding: 22px; box-shadow: 0 12px 32px rgba(0,0,0,0.35);">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px; flex-wrap: wrap; gap: 12px;">
                                 <div>
                                     <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
@@ -5897,6 +5943,26 @@
                             <div id="roblox-accounts-container" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
                                 <div style="text-align: center; padding: 18px; color: var(--muted); font-size: 0.82rem;">
                                     <i class="fas fa-spinner fa-spin"></i> Loading linked accounts...
+                                </div>
+                            </div>
+
+                            <!-- Roblox Groups & Server Sync Hub Section -->
+                            <div id="roblox-groups-section" style="margin-bottom: 16px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 16px; overflow: hidden;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                                    <div>
+                                        <h4 style="font-size: 0.92rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                            <i class="fas fa-users-rectangle" style="color: #818cf8;"></i> Roblox Groups & Server Sync
+                                        </h4>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.76rem; color: var(--muted);">Explore your Roblox groups, view your ranks, and link groups directly to the server right here.</p>
+                                    </div>
+                                    <button type="button" class="btn-outline" onclick="loadRobloxUserGroups()" style="padding: 5px 12px; font-size: 0.74rem; border-radius: 7px; color: #cbd5e1; border: 1px solid rgba(255,255,255,0.12); cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                                        <i class="fas fa-rotate"></i> Refresh Groups
+                                    </button>
+                                </div>
+                                <div id="roblox-groups-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px;">
+                                    <div style="text-align: center; padding: 18px; color: var(--muted); font-size: 0.8rem; grid-column: 1 / -1;">
+                                        <i class="fas fa-spinner fa-spin"></i> Loading Roblox groups...
+                                    </div>
                                 </div>
                             </div>
 
@@ -6303,12 +6369,22 @@
                         </div>
 
                         <!-- 🛡️ Data Sovereignty Card -->
-                        <div class="panel" style="margin-bottom: 0; background: rgba(255, 85, 85, 0.02); border: 1px solid rgba(255, 85, 85, 0.15); border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
-                            <div>
-                                <h4 style="font-size: 0.85rem; color: #ff6b6b; margin: 0 0 2px 0; font-weight: 700;">Data Sovereignty</h4>
-                                <p style="color: var(--muted); font-size: 0.75rem; margin: 0;">Permanently purge your personal records from all active Nora nodes.</p>
+                        <div class="panel" style="margin-bottom: 0; background: linear-gradient(135deg, rgba(239, 68, 68, 0.08) 0%, rgba(185, 28, 28, 0.03) 100%); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 16px; padding: 18px 22px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);">
+                            <div style="max-width: 500px;">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                                    <span style="font-size: 0.7rem; font-weight: 800; background: rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 2px 8px; border-radius: 99px; border: 1px solid rgba(239, 68, 68, 0.35); text-transform: uppercase; letter-spacing: 0.05em;">Zero-Access Privacy</span>
+                                    <span style="font-size: 0.72rem; color: var(--muted);">User Sovereignty Directive</span>
+                                </div>
+                                <h4 style="font-size: 0.98rem; color: #fff; margin: 0 0 4px 0; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-shield-halved" style="color: #ef4444;"></i> Data Sovereignty & Inspector
+                                </h4>
+                                <p style="color: rgba(255,255,255,0.7); font-size: 0.78rem; margin: 0; line-height: 1.45;">View ABSOLUTE EVERYTHING tracked by Nora across every server and node. Live filter, inspect, and selectively or completely wipe your data on your terms.</p>
                             </div>
-                            <button class="config-btn" style="color: #ff5555; border-color: rgba(255,85,85,0.25); background: rgba(255,85,85,0.04); font-size: 0.76rem; padding: 6px 12px; border-radius: 6px; cursor: pointer;" onclick="clearGlobalData()">Purge My Global Data</button>
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; border: none; font-size: 0.82rem; font-weight: 700; padding: 9px 18px; border-radius: 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 4px 16px rgba(239,68,68,0.3);" onclick="openDataSovereigntyModal()">
+                                    <i class="fas fa-user-shield"></i> Open Data Sovereignty Hub
+                                </button>
+                            </div>
                         </div>
 
                     </div>
@@ -14568,6 +14644,32 @@
                 if (d.error) throw new Error(d.error);
                 window.currentUser = d;
                 localStorage.setItem('nora_last_user_id', d.id);
+
+                // Immediate Background Sync upon Auth
+                try {
+                    const bgUrl = d.prefs?.dashboardBgImage;
+                    const bgOp = d.prefs?.dashboardBgOpacity || 35;
+                    const bgBl = d.prefs?.dashboardBgBlur || 8;
+                    let bgFraming = null;
+                    try { bgFraming = typeof d.prefs?.dashboardBgFraming === 'string' ? JSON.parse(d.prefs.dashboardBgFraming) : d.prefs?.dashboardBgFraming; } catch (_) {}
+                    if (bgUrl) {
+                        localStorage.setItem('nora_user_dashboard_bg', JSON.stringify({ url: bgUrl, opacity: bgOp, blur: bgBl, framing: bgFraming }));
+                        if (typeof window.renderUserDashboardBackground === 'function') {
+                            window.renderUserDashboardBackground(bgUrl, bgOp, bgBl, bgFraming);
+                        }
+                    }
+                } catch (_) {}
+
+                // Immediate Language Auto-Detect Sync
+                try {
+                    const savedLang = localStorage.getItem('nora_language') || d.prefs?.language || (typeof window.detectSiteHintLanguage === 'function' ? window.detectSiteHintLanguage() : 'en');
+                    if (savedLang) {
+                        localStorage.setItem('nora_language', savedLang);
+                        const langEl = document.getElementById('pref-language');
+                        if (langEl) langEl.value = savedLang;
+                        if (typeof window.applyLanguageTranslations === 'function') window.applyLanguageTranslations(savedLang);
+                    }
+                } catch (_) {}
                 
                 const isTerminated = d.prefs && (d.prefs.isTerminated || (d.prefs.tempBlacklistExpiresAt && new Date() < new Date(d.prefs.tempBlacklistExpiresAt)));
                 if (isTerminated) {
@@ -34314,7 +34416,670 @@ try {
                 if (typeof showToast === 'function') showToast('Execution failed: ' + err.message, 'error');
             }
         }
+    </script>
 
+<!-- ========================================================================= -->
+<!-- 🛡️ NORA DATA SOVEREIGNTY INSPECTOR & PURGE MODAL -->
+<!-- ========================================================================= -->
+<div id="nora-data-sovereignty-modal" style="display: none; position: fixed; inset: 0; z-index: 100000; background: rgba(5, 7, 14, 0.85); backdrop-filter: blur(20px); align-items: center; justify-content: center; padding: 20px;">
+    <div style="max-width: 920px; width: 100%; max-height: 90vh; background: #0c0f17; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 20px; box-shadow: 0 25px 70px rgba(0,0,0,0.85); display: flex; flex-direction: column; overflow: hidden;">
+        
+        <!-- Modal Header -->
+        <div style="padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.015);">
+            <div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                    <span style="font-size: 0.68rem; font-weight: 800; background: rgba(239,68,68,0.2); color: #fca5a5; padding: 2px 8px; border-radius: 99px; border: 1px solid rgba(239,68,68,0.35); text-transform: uppercase;">Zero-Access Guarantee</span>
+                    <span style="font-size: 0.72rem; color: var(--muted);">Encrypted & Non-Persistent</span>
+                </div>
+                <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-shield-halved" style="color: #ef4444;"></i> Data Sovereignty Inspector
+                </h3>
+                <p style="font-size: 0.8rem; color: var(--muted); margin: 3px 0 0 0;">Inspect ABSOLUTE EVERYTHING tracked by Nora. Live filter, download, or purge per server or globally.</p>
+            </div>
+            <button type="button" onclick="closeDataSovereigntyModal()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); width: 34px; height: 34px; border-radius: 10px; color: #fff; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Filter & Search Controls -->
+        <div style="padding: 14px 24px; background: rgba(0,0,0,0.25); border-bottom: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="position: relative; flex: 1;">
+                    <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 0.8rem; color: var(--muted);"></i>
+                    <input type="text" id="sovereignty-search-input" oninput="filterDataSovereigntyRecords()" placeholder="Search data by server name, guild ID, category, or keyword..." style="width: 100%; box-sizing: border-box; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 9px; padding: 8px 12px 8px 36px; font-size: 0.82rem; color: #fff; outline: none;">
+                </div>
+                <div id="sovereignty-total-badge" style="font-size: 0.75rem; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #818cf8; padding: 6px 12px; border-radius: 8px; font-weight: 700; white-space: nowrap;">
+                    0 Records Tracked
+                </div>
+            </div>
+
+            <!-- Category Filter Pills -->
+            <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px;">
+                <button type="button" class="sovereignty-cat-btn active" data-cat="all" onclick="setSovereigntyCategoryFilter('all', this)" style="padding: 4px 12px; font-size: 0.74rem; border-radius: 99px; background: rgba(255,255,255,0.12); color: #fff; border: 1px solid rgba(255,255,255,0.2); cursor: pointer; font-weight: 600;">All Data</button>
+                <button type="button" class="sovereignty-cat-btn" data-cat="servers" onclick="setSovereigntyCategoryFilter('servers', this)" style="padding: 4px 12px; font-size: 0.74rem; border-radius: 99px; background: rgba(255,255,255,0.03); color: var(--muted); border: 1px solid rgba(255,255,255,0.08); cursor: pointer;">Per-Server Leveling</button>
+                <button type="button" class="sovereignty-cat-btn" data-cat="roblox" onclick="setSovereigntyCategoryFilter('roblox', this)" style="padding: 4px 12px; font-size: 0.74rem; border-radius: 99px; background: rgba(255,255,255,0.03); color: var(--muted); border: 1px solid rgba(255,255,255,0.08); cursor: pointer;">Roblox Data</button>
+                <button type="button" class="sovereignty-cat-btn" data-cat="tickets" onclick="setSovereigntyCategoryFilter('tickets', this)" style="padding: 4px 12px; font-size: 0.74rem; border-radius: 99px; background: rgba(255,255,255,0.03); color: var(--muted); border: 1px solid rgba(255,255,255,0.08); cursor: pointer;">Tickets</button>
+                <button type="button" class="sovereignty-cat-btn" data-cat="moderation" onclick="setSovereigntyCategoryFilter('moderation', this)" style="padding: 4px 12px; font-size: 0.74rem; border-radius: 99px; background: rgba(255,255,255,0.03); color: var(--muted); border: 1px solid rgba(255,255,255,0.08); cursor: pointer;">Moderation Notes</button>
+                <button type="button" class="sovereignty-cat-btn" data-cat="preferences" onclick="setSovereigntyCategoryFilter('preferences', this)" style="padding: 4px 12px; font-size: 0.74rem; border-radius: 99px; background: rgba(255,255,255,0.03); color: var(--muted); border: 1px solid rgba(255,255,255,0.08); cursor: pointer;">Preferences & Rank Cards</button>
+                <button type="button" class="sovereignty-cat-btn" data-cat="memory" onclick="setSovereigntyCategoryFilter('memory', this)" style="padding: 4px 12px; font-size: 0.74rem; border-radius: 99px; background: rgba(255,255,255,0.03); color: var(--muted); border: 1px solid rgba(255,255,255,0.08); cursor: pointer;">AI Memories</button>
+            </div>
+        </div>
+
+        <!-- Scrollable Record List Container -->
+        <div id="sovereignty-records-scroll-container" style="padding: 20px 24px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 14px;">
+            <div style="text-align: center; padding: 40px; color: var(--muted); font-size: 0.85rem;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 1.4rem; color: #6366f1; margin-bottom: 8px;"></i><br>
+                Gathering user data records across Nora nodes...
+            </div>
+        </div>
+
+        <!-- Modal Footer Actions -->
+        <div style="padding: 16px 24px; border-top: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.015); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button type="button" class="btn-outline" onclick="downloadUserPrivacyData()" style="padding: 8px 16px; font-size: 0.78rem; font-weight: 600; border-radius: 8px; border: 1px solid rgba(255,255,255,0.15); color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                    <i class="fas fa-file-download"></i> Download Full Data Pack (.json)
+                </button>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button type="button" onclick="purgeAllGlobalData()" style="padding: 8px 18px; font-size: 0.8rem; font-weight: 700; border-radius: 8px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #ef4444; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s;">
+                    <i class="fas fa-trash-can"></i> Purge Everything Globally
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- 🔗 ROBLOX GROUP BINDING MODAL -->
+<!-- ========================================================================= -->
+<div id="nora-roblox-bind-modal" style="display: none; position: fixed; inset: 0; z-index: 100000; background: rgba(5, 7, 14, 0.85); backdrop-filter: blur(20px); align-items: center; justify-content: center; padding: 20px;">
+    <div style="max-width: 480px; width: 100%; background: #0c0f17; border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 20px; box-shadow: 0 25px 70px rgba(0,0,0,0.85); padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px;">
+            <h3 style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                <i class="fas fa-link" style="color: #6366f1;"></i> Link Group to Server
+            </h3>
+            <button type="button" onclick="closeRobloxBindModal()" style="background: none; border: none; color: var(--muted); font-size: 1.1rem; cursor: pointer;">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div>
+            <div id="bind-group-preview-header" style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 12px; margin-bottom: 14px;">
+                <div id="bind-group-icon" style="width: 42px; height: 42px; border-radius: 8px; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: #6366f1;">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div>
+                    <div id="bind-group-name" style="font-weight: 700; color: #fff; font-size: 0.95rem;">Roblox Group</div>
+                    <div id="bind-group-role" style="font-size: 0.75rem; color: var(--muted);">Rank: Loading...</div>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Target Server</label>
+                <select id="bind-group-guild-select" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.82rem; outline: none;"></select>
+            </div>
+
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Discord Role to Award</label>
+                <select id="bind-group-role-select" style="width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.82rem; outline: none;"></select>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div>
+                    <label style="display: block; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Min Group Rank (1-255)</label>
+                    <input type="number" id="bind-group-min-rank" value="1" min="1" max="255" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.82rem; outline: none;">
+                </div>
+                <div>
+                    <label style="display: block; font-size: 0.75rem; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 5px;">Max Group Rank (1-255)</label>
+                    <input type="number" id="bind-group-max-rank" value="255" min="1" max="255" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); color: #fff; padding: 8px 10px; border-radius: 8px; font-size: 0.82rem; outline: none;">
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px;">
+            <button type="button" class="btn-outline" onclick="closeRobloxBindModal()" style="padding: 7px 14px; font-size: 0.8rem; border-radius: 8px; color: #cbd5e1; border: 1px solid rgba(255,255,255,0.15); cursor: pointer;">Cancel</button>
+            <button type="button" class="btn-primary" onclick="submitRobloxGroupBinding()" style="padding: 7px 18px; font-size: 0.8rem; font-weight: 700; border-radius: 8px; background: #6366f1; color: #fff; border: none; cursor: pointer;">Save Binding & Sync</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// 🛡️ DATA SOVEREIGNTY SYSTEM
+// ─────────────────────────────────────────────────────────────────────────────
+window.sovereigntyActiveData = null;
+window.sovereigntyActiveCategory = 'all';
+
+window.openDataSovereigntyModal = async function() {
+    const modal = document.getElementById('nora-data-sovereignty-modal');
+    if (!modal) return;
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+
+    const container = document.getElementById('sovereignty-records-scroll-container');
+    container.innerHTML = `
+        <div style="text-align: center; padding: 40px; color: var(--muted); font-size: 0.85rem;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 1.4rem; color: #6366f1; margin-bottom: 8px;"></i><br>
+            Connecting to Nora encrypted data nodes...
+        </div>
+    `;
+
+    try {
+        const t = sessionStorage.getItem('discord_token');
+        const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+        const res = await fetch(apiBase + '/api/user/privacy/summary', {
+            headers: { Authorization: `Bearer ${t}` }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        window.sovereigntyActiveData = data;
+        
+        const badge = document.getElementById('sovereignty-total-badge');
+        if (badge) badge.textContent = `${data.totalRecords || 0} Records Tracked`;
+        
+        renderDataSovereigntyRecords();
+    } catch (e) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 30px; color: #ef4444; font-size: 0.85rem;">
+                <i class="fas fa-triangle-exclamation" style="font-size: 1.5rem; margin-bottom: 8px;"></i><br>
+                Failed to load privacy records: ${e.message}
+            </div>
+        `;
+    }
+};
+
+window.closeDataSovereigntyModal = function() {
+    const modal = document.getElementById('nora-data-sovereignty-modal');
+    if (modal) modal.style.display = 'none';
+    document.body.style.overflow = '';
+};
+
+window.setSovereigntyCategoryFilter = function(cat, btn) {
+    window.sovereigntyActiveCategory = cat;
+    document.querySelectorAll('.sovereignty-cat-btn').forEach(b => {
+        b.style.background = 'rgba(255,255,255,0.03)';
+        b.style.color = 'var(--muted)';
+        b.style.borderColor = 'rgba(255,255,255,0.08)';
+    });
+    if (btn) {
+        btn.style.background = 'rgba(255,255,255,0.12)';
+        btn.style.color = '#fff';
+        btn.style.borderColor = 'rgba(255,255,255,0.2)';
+    }
+    renderDataSovereigntyRecords();
+};
+
+window.filterDataSovereigntyRecords = function() {
+    renderDataSovereigntyRecords();
+};
+
+window.renderDataSovereigntyRecords = function() {
+    const data = window.sovereigntyActiveData;
+    const container = document.getElementById('sovereignty-records-scroll-container');
+    if (!data || !container) return;
+
+    const query = (document.getElementById('sovereignty-search-input')?.value || '').toLowerCase().trim();
+    const cat = window.sovereigntyActiveCategory || 'all';
+
+    let html = '';
+
+    // 1. Per-Server Records
+    if (cat === 'all' || cat === 'servers') {
+        const servers = data.servers || [];
+        const matchingServers = servers.filter(s => {
+            if (!query) return true;
+            return s.guildName.toLowerCase().includes(query) || s.guildId.includes(query);
+        });
+
+        if (matchingServers.length > 0) {
+            html += `
+                <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between;">
+                    <span>Per-Server Records (${matchingServers.length} Servers)</span>
+                    <span style="font-size: 0.7rem; color: var(--muted); font-weight: 400;">Leveling XP, Warnings, Cases, Tickets</span>
+                </div>
+            `;
+
+            matchingServers.forEach(s => {
+                const hasLeveling = !!s.leveling;
+                const warnCount = s.warnings ? s.warnings.length : 0;
+                const caseCount = s.cases ? s.cases.length : 0;
+                const ticketCount = s.tickets ? s.tickets.length : 0;
+
+                html += `
+                    <div class="panel" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                ${s.guildIcon ? `<img src="${s.guildIcon}" style="width: 38px; height: 38px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">` : `<div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(99,102,241,0.15); color: #818cf8; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem;">${s.guildName.charAt(0)}</div>`}
+                                <div>
+                                    <div style="font-weight: 700; font-size: 0.95rem; color: #fff;">${s.guildName}</div>
+                                    <div style="font-size: 0.72rem; color: var(--muted); font-family: monospace;">Guild ID: ${s.guildId}</div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <button type="button" class="btn-outline" onclick="purgeServerData('${s.guildId}', '${s.guildName.replace(/'/g, "\\'")}')" style="padding: 5px 12px; font-size: 0.74rem; color: #ef4444; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.06); border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                                    <i class="fas fa-trash-can"></i> Erase Server Data
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Server stats pills -->
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                            ${hasLeveling ? `<span style="font-size: 0.72rem; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.25); color: #34d399; padding: 2px 8px; border-radius: 6px;">Level ${s.leveling.level} • ${s.leveling.xp} XP</span>` : ''}
+                            ${warnCount > 0 ? `<span style="font-size: 0.72rem; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); color: #fbbf24; padding: 2px 8px; border-radius: 6px;">${warnCount} Warnings</span>` : ''}
+                            ${caseCount > 0 ? `<span style="font-size: 0.72rem; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #f87171; padding: 2px 8px; border-radius: 6px;">${caseCount} Cases</span>` : ''}
+                            ${ticketCount > 0 ? `<span style="font-size: 0.72rem; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25); color: #38bdf8; padding: 2px 8px; border-radius: 6px;">${ticketCount} Tickets</span>` : ''}
+                            ${!hasLeveling && warnCount === 0 && caseCount === 0 && ticketCount === 0 ? '<span style="font-size: 0.72rem; color: var(--muted);">No recorded active infractions or stats</span>' : ''}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    // 2. Roblox Data Records
+    if (cat === 'all' || cat === 'roblox') {
+        const robloxList = data.robloxAccounts || [];
+        if (robloxList.length > 0) {
+            html += `
+                <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+                    <span>Linked Roblox Accounts (${robloxList.length})</span>
+                    <button type="button" class="btn-outline" onclick="purgeCategoryData('roblox')" style="padding: 3px 10px; font-size: 0.7rem; color: #ef4444; border-color: rgba(239,68,68,0.3); border-radius: 6px; cursor: pointer;">Erase All Roblox Data</button>
+                </div>
+            `;
+            robloxList.forEach(r => {
+                html += `
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div style="font-weight: 700; color: #fff; font-size: 0.88rem;">@${r.robloxUsername} <span style="font-size: 0.72rem; color: var(--muted); font-family: monospace;">(ID: ${r.robloxId})</span></div>
+                            <div style="font-size: 0.72rem; color: ${r.isVerified ? '#34d399' : '#fbbf24'};">${r.isVerified ? '✓ Verified Identity' : 'Pending Verification'} ${r.isActive ? '• Primary Account' : ''}</div>
+                        </div>
+                        <button type="button" class="btn-outline" onclick="unlinkRobloxSpecific('${r.robloxId}', '${r.robloxUsername}'); setTimeout(openDataSovereigntyModal, 800);" style="padding: 4px 10px; font-size: 0.72rem; color: #ef4444; border-color: rgba(239,68,68,0.25); border-radius: 6px; cursor: pointer;">Unlink</button>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    // 3. User Preferences & Rank Cards
+    if (cat === 'all' || cat === 'preferences') {
+        const p = data.preferences;
+        html += `
+            <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+                <span>Global Preferences & Visual Customizations</span>
+                <button type="button" class="btn-outline" onclick="purgeCategoryData('preferences')" style="padding: 3px 10px; font-size: 0.7rem; color: #ef4444; border-color: rgba(239,68,68,0.3); border-radius: 6px; cursor: pointer;">Reset Preferences</button>
+            </div>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 14px; font-size: 0.78rem; color: rgba(255,255,255,0.8); display: flex; flex-direction: column; gap: 6px;">
+                <div><strong>Theme Mode:</strong> ${p?.themeMode || 'Obsidian Dark (Default)'}</div>
+                <div><strong>System Language:</strong> ${p?.language || localStorage.getItem('nora_language') || 'en'}</div>
+                <div><strong>Custom Dashboard Background:</strong> ${p?.dashboardBgImage ? 'Active (Saved in Node)' : 'None'}</div>
+                <div><strong>Rank Card Background:</strong> ${p?.rankCardBgUrl ? 'Custom Image Bound' : 'Server Default'}</div>
+            </div>
+        `;
+    }
+
+    // 4. Nora AI Conversational Memory
+    if (cat === 'all' || cat === 'memory') {
+        const memories = data.memories || [];
+        if (memories.length > 0) {
+            html += `
+                <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+                    <span>AI Conversational Memories (${memories.length})</span>
+                    <button type="button" class="btn-outline" onclick="purgeCategoryData('memory')" style="padding: 3px 10px; font-size: 0.7rem; color: #ef4444; border-color: rgba(239,68,68,0.3); border-radius: 6px; cursor: pointer;">Clear AI Memory</button>
+                </div>
+            `;
+            memories.forEach(m => {
+                html += `
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem;">
+                        <div>
+                            <span style="color: #818cf8; font-weight: 600;">${m.memoryKey}:</span> <span style="color: rgba(255,255,255,0.85);">${m.content}</span>
+                        </div>
+                        <button type="button" onclick="purgeSingleItem('memory', '${m.id}')" style="background: none; border: none; color: var(--muted); cursor: pointer;"><i class="fas fa-trash-alt"></i></button>
+                    </div>
+                `;
+            });
+        }
+    }
+
+    if (!html) {
+        html = `
+            <div style="text-align: center; padding: 40px; color: var(--muted); font-size: 0.85rem;">
+                <i class="fas fa-filter" style="font-size: 1.5rem; margin-bottom: 8px;"></i><br>
+                No records matching your search query or filter.
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
+};
+
+window.purgeServerData = async function(guildId, guildName) {
+    if (!confirm(`⚠️ ERASE SERVER DATA?\n\nAre you sure you want to permanently erase ALL leveling, warnings, cases, and tickets for "${guildName}"?\n\nThis action cannot be undone.`)) return;
+    
+    try {
+        const t = sessionStorage.getItem('discord_token');
+        const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+        const res = await fetch(apiBase + '/api/user/privacy/purge-selective', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+            body: JSON.stringify({ scope: 'server', guildId })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            if (typeof showToast === 'function') showToast(data.message || 'Server records erased!', 'success');
+            openDataSovereigntyModal();
+        } else {
+            alert(data.error || 'Failed to erase server data');
+        }
+    } catch (e) {
+        alert('Purge error: ' + e.message);
+    }
+};
+
+window.purgeCategoryData = async function(category) {
+    if (!confirm(`⚠️ PURGE "${category.toUpperCase()}" DATA?\n\nThis will permanently delete all records under this category across Nora nodes. Proceed?`)) return;
+    try {
+        const t = sessionStorage.getItem('discord_token');
+        const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+        const res = await fetch(apiBase + '/api/user/privacy/purge-selective', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+            body: JSON.stringify({ scope: 'category', category })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            if (typeof showToast === 'function') showToast(data.message || 'Category records erased!', 'success');
+            openDataSovereigntyModal();
+        } else {
+            alert(data.error || 'Failed to erase category data');
+        }
+    } catch (e) {
+        alert('Purge error: ' + e.message);
+    }
+};
+
+window.purgeSingleItem = async function(category, recordId) {
+    try {
+        const t = sessionStorage.getItem('discord_token');
+        const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+        const res = await fetch(apiBase + '/api/user/privacy/purge-selective', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+            body: JSON.stringify({ scope: 'item', category, recordId })
+        });
+        if (res.ok) {
+            if (typeof showToast === 'function') showToast('Record erased', 'success');
+            openDataSovereigntyModal();
+        }
+    } catch (_) {}
+};
+
+window.purgeAllGlobalData = async function() {
+    if (!confirm('🚨 CRITICAL NUCLEAR DATA PURGE\n\nAre you ABSOLUTELY sure you want to permanently erase ALL user records across every server, Roblox link, leveling progress, and preferences?\n\nThis is permanent, instantaneous, and irreversible.')) return;
+    try {
+        const t = sessionStorage.getItem('discord_token');
+        const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+        const res = await fetch(apiBase + '/api/user/privacy/purge-selective', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+            body: JSON.stringify({ scope: 'all' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            alert('Your global data record has been permanently wiped from all Nora nodes.');
+            closeDataSovereigntyModal();
+            window.location.reload();
+        } else {
+            alert(data.error || 'Failed to execute global purge');
+        }
+    } catch (e) {
+        alert('Purge failed: ' + e.message);
+    }
+};
+
+window.downloadUserPrivacyData = function() {
+    const t = sessionStorage.getItem('discord_token');
+    const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+    fetch(apiBase + '/api/user/privacy/download-data', {
+        headers: { Authorization: `Bearer ${t}` }
+    }).then(r => r.blob()).then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `nora-user-data-${Date.now()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        if (typeof showToast === 'function') showToast('Data pack downloaded!', 'success');
+    }).catch(e => {
+        alert('Download failed: ' + e.message);
+    });
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 👥 ROBLOX GROUPS & SERVER BINDING ENGINE
+// ─────────────────────────────────────────────────────────────────────────────
+window.userRobloxGroups = [];
+window.selectedRobloxGroupForBinding = null;
+
+window.loadRobloxUserGroups = async function(forcedRobloxId) {
+    const container = document.getElementById('roblox-groups-container');
+    if (!container) return;
+
+    let targetRobloxId = forcedRobloxId;
+    if (!targetRobloxId && window.currentRobloxAccounts && window.currentRobloxAccounts.length > 0) {
+        const primary = window.currentRobloxAccounts.find(a => a.isActive) || window.currentRobloxAccounts[0];
+        targetRobloxId = primary.robloxId;
+    }
+
+    if (!targetRobloxId) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 18px; color: var(--muted); font-size: 0.8rem; grid-column: 1 / -1;">
+                Link your Roblox account above to inspect your Roblox groups and sync server roles.
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = `
+        <div style="text-align: center; padding: 18px; color: var(--muted); font-size: 0.8rem; grid-column: 1 / -1;">
+            <i class="fas fa-spinner fa-spin" style="color: #6366f1;"></i> Fetching Roblox groups from Roblox API...
+        </div>
+    `;
+
+    try {
+        const t = sessionStorage.getItem('discord_token');
+        const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+        const res = await fetch(`${apiBase}/api/user/roblox/groups/${encodeURIComponent(targetRobloxId)}`, {
+            headers: { Authorization: `Bearer ${t}` }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        const groups = data.groups || [];
+        window.userRobloxGroups = groups;
+        renderRobloxGroups(groups);
+    } catch (e) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 18px; color: var(--muted); font-size: 0.8rem; grid-column: 1 / -1;">
+                Unable to load Roblox groups right now (${e.message}).
+            </div>
+        `;
+    }
+};
+
+window.renderRobloxGroups = function(groups) {
+    const container = document.getElementById('roblox-groups-container');
+    if (!container) return;
+
+    if (!groups || groups.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 18px; color: var(--muted); font-size: 0.8rem; grid-column: 1 / -1;">
+                No Roblox groups found for this account.
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    groups.forEach(g => {
+        const rank = g.role ? g.role.rank : 0;
+        const roleName = g.role ? g.role.name : 'Member';
+        const isHighRank = rank >= 200;
+
+        html += `
+            <div class="panel" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; transition: 0.2s;">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    ${g.icon ? `<img src="${g.icon}" style="width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: #000; border: 1px solid rgba(255,255,255,0.1);">` : `<div style="width: 44px; height: 44px; border-radius: 8px; background: rgba(99,102,241,0.15); color: #818cf8; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;"><i class="fas fa-users"></i></div>`}
+                    <div style="flex: 1; min-width: 0;">
+                        <a href="https://www.roblox.com/groups/${g.id}" target="_blank" rel="noopener noreferrer" style="font-weight: 700; color: #fff; text-decoration: none; font-size: 0.88rem; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${g.name}">
+                            ${g.name} <i class="fas fa-arrow-up-right-from-square" style="font-size: 0.65rem; color: var(--muted);"></i>
+                        </a>
+                        <div style="font-size: 0.72rem; color: var(--muted); display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                            <span>${(g.memberCount || 0).toLocaleString()} Members</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: flex; align-items: center; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+                    <div style="font-size: 0.72rem;">
+                        <span style="background: ${isHighRank ? 'rgba(245,158,11,0.15)' : 'rgba(99,102,241,0.15)'}; color: ${isHighRank ? '#fbbf24' : '#818cf8'}; border: 1px solid ${isHighRank ? 'rgba(245,158,11,0.3)' : 'rgba(99,102,241,0.3)'}; padding: 1px 7px; border-radius: 99px; font-weight: 700;">
+                            Rank ${rank}: ${roleName}
+                        </span>
+                    </div>
+                    <button type="button" class="btn-primary" onclick="openRobloxBindModal('${g.id}', '${g.name.replace(/'/g, "\\'")}', '${rank}', '${g.icon || ''}')" style="padding: 4px 10px; font-size: 0.72rem; font-weight: 700; border-radius: 6px; background: #6366f1; color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;">
+                        <i class="fas fa-link"></i> Link to Server
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+
+    container.innerHTML = html;
+};
+
+window.openRobloxBindModal = function(groupId, groupName, userRank, iconUrl) {
+    window.selectedRobloxGroupForBinding = { groupId, groupName, userRank, iconUrl };
+    const modal = document.getElementById('nora-roblox-bind-modal');
+    if (!modal) return;
+
+    document.getElementById('bind-group-name').textContent = groupName;
+    document.getElementById('bind-group-role').textContent = `Group ID: ${groupId} • Your Rank: ${userRank}`;
+    
+    const iconContainer = document.getElementById('bind-group-icon');
+    if (iconUrl) {
+        iconContainer.innerHTML = `<img src="${iconUrl}" style="width: 100%; height: 100%; object-fit: cover;">`;
+    } else {
+        iconContainer.innerHTML = '<i class="fas fa-users"></i>';
+    }
+
+    // Populate guild select
+    const guildSelect = document.getElementById('bind-group-guild-select');
+    guildSelect.innerHTML = '';
+    const guilds = Array.isArray(window.guildsData) ? window.guildsData : (Array.isArray(window.lastLoadedGuilds) ? window.lastLoadedGuilds : []);
+    
+    guilds.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g.id;
+        opt.textContent = g.name;
+        if (window.currentGuildId && window.currentGuildId === g.id) opt.selected = true;
+        guildSelect.appendChild(opt);
+    });
+
+    // Populate roles
+    populateBindModalRoles();
+    guildSelect.onchange = populateBindModalRoles;
+
+    modal.style.display = 'flex';
+};
+
+function populateBindModalRoles() {
+    const roleSelect = document.getElementById('bind-group-role-select');
+    roleSelect.innerHTML = '<option value="">Select a Discord role...</option>';
+    
+    const roles = Array.isArray(window.currentGuildRoles) ? window.currentGuildRoles : (Array.isArray(window.guildRoles) ? window.guildRoles : []);
+    roles.forEach(r => {
+        if (r.name !== '@everyone') {
+            const opt = document.createElement('option');
+            opt.value = r.id;
+            opt.textContent = `@${r.name}`;
+            roleSelect.appendChild(opt);
+        }
+    });
+}
+
+window.closeRobloxBindModal = function() {
+    const modal = document.getElementById('nora-roblox-bind-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.submitRobloxGroupBinding = async function() {
+    const g = window.selectedRobloxGroupForBinding;
+    if (!g) return;
+
+    const guildSelect = document.getElementById('bind-group-guild-select');
+    const roleSelect = document.getElementById('bind-group-role-select');
+    const minRank = parseInt(document.getElementById('bind-group-min-rank').value, 10) || 1;
+    const maxRank = parseInt(document.getElementById('bind-group-max-rank').value, 10) || 255;
+
+    const guildId = guildSelect.value;
+    const roleId = roleSelect.value;
+    const roleName = roleSelect.options[roleSelect.selectedIndex]?.textContent || 'Selected Role';
+
+    if (!guildId || !roleId) {
+        alert('Please choose a server and a Discord role.');
+        return;
+    }
+
+    try {
+        const t = sessionStorage.getItem('discord_token');
+        const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+        const res = await fetch(apiBase + '/api/user/roblox/bind-group', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${t}` },
+            body: JSON.stringify({
+                guildId,
+                groupId: g.groupId,
+                groupName: g.groupName,
+                roleId,
+                roleName,
+                minRank,
+                maxRank
+            })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+            if (typeof showToast === 'function') showToast(data.message || 'Group linked successfully!', 'success');
+            closeRobloxBindModal();
+            // Sync server settings if currently viewing this guild
+            if (window.currentGuildId === guildId) {
+                const hidden = document.getElementById('setting-robloxGroupBindings');
+                if (hidden && data.bindings) {
+                    hidden.value = JSON.stringify(data.bindings);
+                    if (typeof window.renderRobloxGroupBindings === 'function') window.renderRobloxGroupBindings();
+                }
+            }
+        } else {
+            alert(data.error || 'Failed to bind Roblox group');
+        }
+    } catch (e) {
+        alert('Binding error: ' + e.message);
+    }
+};
+
+// Hook into fetchRobloxStatus to load groups automatically
+const origFetchRobloxStatus = window.fetchRobloxStatus;
+window.fetchRobloxStatus = async function(t) {
+    if (typeof origFetchRobloxStatus === 'function') {
+        await origFetchRobloxStatus(t);
+    }
+    setTimeout(() => {
+        if (typeof window.loadRobloxUserGroups === 'function') {
+            window.loadRobloxUserGroups();
+        }
+    }, 400);
+};
+</script>
 </script>
 </body>
 </html>
