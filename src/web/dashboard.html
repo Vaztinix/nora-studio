@@ -16736,6 +16736,18 @@
                     if (blEl) blEl.value = res.blur;
                     if (opLbl) opLbl.textContent = res.opacity + '%';
                     if (blLbl) blLbl.textContent = res.blur + 'px';
+                    try {
+                        const saved = JSON.parse(localStorage.getItem('nora_user_dashboard_bg') || '{}');
+                        saved.url = url;
+                        saved.opacity = res.opacity;
+                        saved.blur = res.blur;
+                        localStorage.setItem('nora_user_dashboard_bg', JSON.stringify(saved));
+                    } catch (_) {}
+                    if (window.currentUser) {
+                        if (!window.currentUser.prefs) window.currentUser.prefs = {};
+                        window.currentUser.prefs.dashboardBgOpacity = res.opacity;
+                        window.currentUser.prefs.dashboardBgBlur = res.blur;
+                    }
                     window.renderUserDashboardBackground(url, res.opacity, res.blur);
                     if (typeof showToast === 'function') showToast('Auto-adjusted blur (' + res.blur + 'px) and opacity (' + res.opacity + '%) for optimal text readability!', 'success');
                 });
@@ -17421,6 +17433,82 @@
             };
         }
 
+        
+        // ─────────────────────────────────────────────────────────────────
+        // 🎨 SERVER ICON AMBIENT COLOR EXTRACTOR (Dominant Icon Palette)
+        // ─────────────────────────────────────────────────────────────────
+        window.serverIconColorCache = {};
+        try {
+            window.serverIconColorCache = JSON.parse(localStorage.getItem('nora_server_icon_colors') || '{}');
+        } catch (_) {}
+
+        window.extractServerIconColors = function(iconSrc, callback) {
+            if (!iconSrc) return;
+            if (window.serverIconColorCache[iconSrc]) {
+                callback(window.serverIconColorCache[iconSrc]);
+                return;
+            }
+
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = function() {
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 32;
+                    canvas.height = 32;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, 32, 32);
+                    const p = ctx.getImageData(0, 0, 32, 32).data;
+
+                    const buckets = {};
+                    for (let i = 0; i < p.length; i += 4) {
+                        const a = p[i + 3];
+                        if (a < 70) continue;
+                        const r = p[i];
+                        const g = p[i + 1];
+                        const b = p[i + 2];
+                        const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+                        if (lum < 15 || lum > 245) continue;
+
+                        const qr = Math.round(r / 24) * 24;
+                        const qg = Math.round(g / 24) * 24;
+                        const qb = Math.round(b / 24) * 24;
+                        const key = qr + ',' + qg + ',' + qb;
+                        buckets[key] = (buckets[key] || 0) + 1;
+                    }
+
+                    const sorted = Object.entries(buckets).sort((a, b) => b[1] - a[1]);
+                    let c1 = sorted[0] ? sorted[0][0].split(',').map(Number) : [99, 102, 241];
+                    let c2 = sorted[1] ? sorted[1][0].split(',').map(Number) : [Math.min(255, c1[0] + 45), Math.max(0, c1[1] - 30), Math.min(255, c1[2] + 45)];
+                    let c3 = sorted[2] ? sorted[2][0].split(',').map(Number) : [Math.max(0, c1[0] - 40), Math.min(255, c1[1] + 50), Math.max(0, c1[2] - 30)];
+
+                    const amb1 = 'rgba(' + c1[0] + ', ' + c1[1] + ', ' + c1[2] + ', 0.45)';
+                    const amb2 = 'rgba(' + c2[0] + ', ' + c2[1] + ', ' + c2[2] + ', 0.35)';
+                    const amb3 = 'rgba(' + c3[0] + ', ' + c3[1] + ', ' + c3[2] + ', 0.25)';
+
+                    const colors = { amb1, amb2, amb3 };
+                    window.serverIconColorCache[iconSrc] = colors;
+                    try {
+                        localStorage.setItem('nora_server_icon_colors', JSON.stringify(window.serverIconColorCache));
+                    } catch (_) {}
+                    callback(colors);
+                } catch (e) {
+                    console.warn('[Server Icon Color Extractor]:', e.message);
+                }
+            };
+            img.onerror = function() {};
+            img.src = iconSrc;
+        };
+
+        window.applyServerIconAmbientColors = function(cardEl, iconSrc) {
+            if (!cardEl || !iconSrc) return;
+            const ambient = cardEl.querySelector('.server-card-ambient');
+            if (!ambient) return;
+            window.extractServerIconColors(iconSrc, (c) => {
+                ambient.style.background = 'radial-gradient(circle at 18% 22%, ' + c.amb1 + ' 0%, transparent 60%), radial-gradient(circle at 82% 28%, ' + c.amb2 + ' 0%, transparent 58%), radial-gradient(circle at 50% 88%, ' + c.amb3 + ' 0%, transparent 62%)';
+            });
+        };
+
         function renderGuilds(guilds, containerId = 'guilds-container', appendAddBtn = true) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -17438,19 +17526,15 @@
                     card.classList.add('configured');
                 }
 
-                // 🎨 3-Color Ambient Colors for Server Card Blur
-                const rawId = String(g.id || '0');
-                let hCode = 0;
-                for (let i = 0; i < rawId.length; i++) {
-                    hCode = (hCode << 5) - hCode + rawId.charCodeAt(i);
-                    hCode |= 0;
-                }
-                const h1 = Math.abs(hCode) % 360;
-                const h2 = (h1 + 65) % 360;
-                const h3 = (h1 + 175) % 360;
-                const amb1 = `hsla(${h1}, 78%, 62%, 0.32)`;
-                const amb2 = `hsla(${h2}, 85%, 58%, 0.25)`;
-                const amb3 = `hsla(${h3}, 72%, 52%, 0.20)`;
+                // 🎨 Server Icon Ambient Colors (Directly Extracted from Server Icon)
+                const iconSrc = (g.icon && typeof g.icon === 'string' && g.icon.startsWith('http')) 
+                    ? g.icon 
+                    : (g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/0.png');
+                
+                const cachedColors = window.serverIconColorCache?.[iconSrc];
+                const amb1 = cachedColors ? cachedColors.amb1 : 'rgba(99, 102, 241, 0.35)';
+                const amb2 = cachedColors ? cachedColors.amb2 : 'rgba(168, 85, 247, 0.25)';
+                const amb3 = cachedColors ? cachedColors.amb3 : 'rgba(56, 189, 248, 0.20)';
 
                 card.style.background = 'rgba(16, 18, 26, 0.72)';
                 card.style.backdropFilter = 'blur(20px)';
@@ -17531,6 +17615,11 @@
                         ${btn}
                     </div>
                 `;
+
+                // Asynchronously extract and apply actual icon colors
+                if (typeof window.applyServerIconAmbientColors === 'function') {
+                    window.applyServerIconAmbientColors(card, iconSrc);
+                }
                 
                 if (g.hasNora) {
                     card.onclick = () => {
@@ -20918,9 +21007,13 @@
                         fetchSessions();
                         startPairedDevicesPolling();
                         if (typeof window.injectDashboardBackgroundStudioUI === 'function') window.injectDashboardBackgroundStudioUI();
-                        const bgUrl = document.getElementById('user-pref-dashboardBgImage')?.value;
+                        const savedBg = JSON.parse(localStorage.getItem('nora_user_dashboard_bg') || 'null');
+                        const bgUrl = savedBg?.url || document.getElementById('user-pref-dashboardBgImage')?.value;
+                        const bgOp = savedBg?.opacity ?? window.currentUser?.prefs?.dashboardBgOpacity ?? 35;
+                        const bgBl = savedBg?.blur ?? window.currentUser?.prefs?.dashboardBgBlur ?? 8;
+                        const bgFraming = savedBg?.framing || null;
                         if (bgUrl && typeof window.renderUserDashboardBackground === 'function') {
-                            window.renderUserDashboardBackground(bgUrl);
+                            window.renderUserDashboardBackground(bgUrl, bgOp, bgBl, bgFraming);
                         }
                     }
                 }
@@ -24496,15 +24589,41 @@
                 const url = document.getElementById('user-pref-dashboardBgImage')?.value || '';
                 const op = parseInt(document.getElementById('user-pref-dashboardBgOpacity')?.value || '35', 10);
                 const bl = parseInt(document.getElementById('user-pref-dashboardBgBlur')?.value || '8', 10);
+                const opLbl = document.getElementById('user-pref-dashboardBgOpacity-lbl');
+                const blLbl = document.getElementById('user-pref-dashboardBgBlur-lbl');
+                if (opLbl) opLbl.textContent = op + '%';
+                if (blLbl) blLbl.textContent = bl + 'px';
+
+                try {
+                    const saved = JSON.parse(localStorage.getItem('nora_user_dashboard_bg') || '{}');
+                    saved.url = url;
+                    saved.opacity = op;
+                    saved.blur = bl;
+                    localStorage.setItem('nora_user_dashboard_bg', JSON.stringify(saved));
+                } catch (_) {}
+
+                if (window.currentUser) {
+                    if (!window.currentUser.prefs) window.currentUser.prefs = {};
+                    window.currentUser.prefs.dashboardBgImage = url;
+                    window.currentUser.prefs.dashboardBgOpacity = op;
+                    window.currentUser.prefs.dashboardBgBlur = bl;
+                }
+
                 window.renderUserDashboardBackground(url, op, bl);
             };
 
-            window.renderUserDashboardBackground = function(url, opacity = 35, blur = 8, framing = null) {
+            window.renderUserDashboardBackground = function(url, opacity = null, blur = null, framing = null) {
                 const layer = ensureDashboardBackgroundLayer();
                 const mediaEl = document.getElementById('nora-user-dashboard-bg-media');
                 const prev = document.getElementById('settings-dash-bg-preview');
                 const prevImg = document.getElementById('settings-dash-bg-preview-img');
                 if (!layer || !mediaEl) return;
+
+                let savedLocal = null;
+                try { savedLocal = JSON.parse(localStorage.getItem('nora_user_dashboard_bg') || 'null'); } catch (_) {}
+                const effectiveOp = opacity !== null ? opacity : (savedLocal?.opacity ?? 35);
+                const effectiveBl = blur !== null ? blur : (savedLocal?.blur ?? 8);
+                const effectiveFraming = framing !== null ? framing : (savedLocal?.framing || null);
 
                 const cleanUrl = String(url || '').trim();
                 if (!cleanUrl) {
@@ -24521,8 +24640,8 @@
                     return;
                 }
 
-                const op = Math.max(5, Math.min(90, parseInt(opacity, 10) || 35)) / 100;
-                const bl = Math.max(0, Math.min(24, parseInt(blur, 10) || 0));
+                const op = Math.max(5, Math.min(90, parseInt(effectiveOp, 10) || 35)) / 100;
+                const bl = Math.max(0, Math.min(24, parseInt(effectiveBl, 10) || 0));
 
                 mediaEl.src = cleanUrl;
                 mediaEl.style.display = 'block';
@@ -24582,18 +24701,35 @@
 
                 window.renderUserDashboardBackground(cleanUrl, opacity, blur, activeFraming);
 
+                if (window.currentUser) {
+                    if (!window.currentUser.prefs) window.currentUser.prefs = {};
+                    window.currentUser.prefs.dashboardBgImage = cleanUrl || null;
+                    window.currentUser.prefs.dashboardBgType = bgType || 'image';
+                    window.currentUser.prefs.dashboardBgOpacity = opacity;
+                    window.currentUser.prefs.dashboardBgBlur = blur;
+                    window.currentUser.prefs.dashboardBgFraming = activeFraming;
+                }
+
                 const token = sessionStorage.getItem('discord_token');
                 if (token) {
+                    const payload = {
+                        dashboardBgImage: cleanUrl || null,
+                        dashboardBgType: cleanUrl ? bgType : 'default',
+                        dashboardBgOpacity: opacity,
+                        dashboardBgBlur: blur,
+                        dashboardBgFraming: activeFraming ? JSON.stringify(activeFraming) : null
+                    };
                     try {
-                        await safeFetch('/api/user/prefs', {
+                        const apiBase = (typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '');
+                        await fetch(apiBase + '/api/user/prefs', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
-                            body: JSON.stringify({
-                                dashboardBgImage: cleanUrl || null,
-                                dashboardBgType: cleanUrl ? bgType : 'default',
-                                dashboardBgOpacity: opacity,
-                                dashboardBgBlur: blur
-                            })
+                            body: JSON.stringify(payload)
+                        });
+                        await fetch(apiBase + '/api/user/profile', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+                            body: JSON.stringify(payload)
                         });
                     } catch (_) {}
                 }
@@ -24735,9 +24871,9 @@
                 try {
                     const savedLocal = JSON.parse(localStorage.getItem('nora_user_dashboard_bg') || 'null');
                     const prefs = window.currentUser?.prefs || {};
-                    const url = prefs.dashboardBgImage || savedLocal?.url || '';
-                    const opacity = prefs.dashboardBgOpacity ?? savedLocal?.opacity ?? 35;
-                    const blur = prefs.dashboardBgBlur ?? savedLocal?.blur ?? 8;
+                    const url = (savedLocal && savedLocal.url !== undefined) ? savedLocal.url : (prefs.dashboardBgImage || '');
+                    const opacity = (savedLocal && savedLocal.opacity !== undefined) ? savedLocal.opacity : (prefs.dashboardBgOpacity ?? 35);
+                    const blur = (savedLocal && savedLocal.blur !== undefined) ? savedLocal.blur : (prefs.dashboardBgBlur ?? 8);
                     const framing = savedLocal?.framing || null;
 
                     const imgEl = document.getElementById('user-pref-dashboardBgImage');
