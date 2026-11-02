@@ -27,6 +27,18 @@ module.exports = {
         const commands = client.commands.map(cmd => cmd.data.toJSON());
 
         try {
+            // Preserve Discord Activity / App Launcher Entry Point commands (Type 4) to avoid DiscordAPIError[50240]
+            const existing = await client.rest.get(Routes.applicationCommands(client.user.id)).catch(() => []);
+            const entryPointCmd = existing.find(c => c.type === 4 || c.handler === 2);
+            if (entryPointCmd && !commands.some(c => c.name === entryPointCmd.name || c.type === 4)) {
+                commands.push({
+                    name: entryPointCmd.name,
+                    description: entryPointCmd.description || 'Launch Nora Activity',
+                    type: entryPointCmd.type,
+                    handler: entryPointCmd.handler
+                });
+            }
+
             await client.rest.put(
                 Routes.applicationCommands(client.user.id),
                 { body: commands },
