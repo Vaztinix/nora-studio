@@ -215,6 +215,26 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             payload.afkRoleId = normalizeRoleIds(payload.afkRoleId, 1);
         }
 
+        // Sanitize Status Promoter Booster Settings
+        if (payload.promoterRoleId !== undefined) {
+            payload.promoterRoleId = normalizeRoleIds(payload.promoterRoleId, 1);
+        }
+        if (payload.promoterMatchMode !== undefined) {
+            payload.promoterMatchMode = ['contains', 'exact'].includes(payload.promoterMatchMode) ? payload.promoterMatchMode : 'contains';
+        }
+        if (payload.promoterCaseFilter !== undefined) {
+            payload.promoterCaseFilter = ['mixed', 'caps', 'lowercase', 'exact'].includes(payload.promoterCaseFilter) ? payload.promoterCaseFilter : 'mixed';
+        }
+        if (payload.promoterNotifyOptIn !== undefined) {
+            payload.promoterNotifyOptIn = Boolean(payload.promoterNotifyOptIn);
+        }
+        if (payload.promoterNotifyOptOut !== undefined) {
+            payload.promoterNotifyOptOut = Boolean(payload.promoterNotifyOptOut);
+        }
+        if (payload.promoterCustomStatus !== undefined && typeof payload.promoterCustomStatus === 'string') {
+            payload.promoterCustomStatus = payload.promoterCustomStatus.trim().substring(0, 255);
+        }
+
         // Sanitize & validate starboardRoleRewards
         if (payload.starboardRoleRewards !== undefined) {
             if (!payload.starboardRoleRewards) {

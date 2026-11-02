@@ -301,6 +301,31 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         allowNull: true
     },
+    promoterCustomStatus: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: 'vaztinix.dev'
+    },
+    promoterMatchMode: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'contains' // contains, exact
+    },
+    promoterCaseFilter: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'mixed' // mixed, caps, lowercase, exact
+    },
+    promoterNotifyOptIn: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
+    promoterNotifyOptOut: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false
+    },
     ageVerifiedRoleId: {
         type: DataTypes.STRING,
         allowNull: true
