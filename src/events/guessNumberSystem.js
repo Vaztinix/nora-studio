@@ -66,6 +66,35 @@ function queueSave() {
 }
 
 /**
+ * Starts or resets a game round for a guild, ensuring clean state, bounds, and a new target.
+ */
+async function startOrResetGame(guildId, settings) {
+    const min = Math.max(0, parseInt(settings?.guessGameMin, 10) || 0);
+    const max = Math.min(100000, Math.max(min + 1, parseInt(settings?.guessGameMax, 10) || 100));
+    const range = max - min + 1;
+    const configuredLimit = parseInt(settings?.guessNumberGuessLimit, 10) || 6;
+    const guessLimit = Math.min(range, Math.max(1, configuredLimit));
+
+    const allData = await loadGuessData();
+    const currentState = allData[guildId];
+
+    const state = {
+        min,
+        max,
+        guessLimit,
+        target: Math.floor(Math.random() * range) + min,
+        guessesRemaining: guessLimit,
+        attempts: 0,
+        totalWins: currentState?.totalWins || 0,
+        round: (currentState?.round || 0) + 1
+    };
+
+    allData[guildId] = state;
+    queueSave();
+    return state;
+}
+
+/**
  * Automatically states in the configured channel that Guess the Number is set up and starts the game.
  */
 async function announceAndStartGame(guild, settings) {
