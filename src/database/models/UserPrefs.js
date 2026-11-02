@@ -237,6 +237,24 @@ const UserPrefs = sequelize.define('UserPrefs', {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: null
+    },
+    // ---- Per-User Custom Dashboard Background (Images & Animated GIFs) ----
+    dashboardBgImage: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    dashboardBgType: {
+        type: DataTypes.STRING,
+        defaultValue: 'default'
+    },
+    dashboardBgOpacity: {
+        type: DataTypes.INTEGER,
+        defaultValue: 35
+    },
+    dashboardBgBlur: {
+        type: DataTypes.INTEGER,
+        defaultValue: 8
     }
 });
 

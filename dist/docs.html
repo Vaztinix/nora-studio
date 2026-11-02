@@ -1211,6 +1211,9 @@
                 <a href="#verification" class="toc-link"><i class="fas fa-user-shield"></i> Verification Gatekeeper</a>
                 <a href="#premium" class="toc-link"><i class="fas fa-crown"></i> Premium Subscriptions</a>
                 <a href="#commands" class="toc-link"><i class="fas fa-terminal"></i> Command Reference</a>
+                <a href="#webhooks-v2" class="toc-link"><i class="fas fa-paper-plane"></i> Saved Webhooks & Embeds V2</a>
+                <a href="#sharding" class="toc-link"><i class="fas fa-network-wired"></i> Dynamic Sharding (<2,500 Safe Zone)</a>
+                <a href="#dashboard-studio" class="toc-link"><i class="fas fa-sliders-h"></i> Dashboard Background & Drafts</a>
                 <a href="#api-ref" class="toc-link"><i class="fas fa-code"></i> REST API & Webhooks</a>
             </div>
         </aside>
@@ -1219,7 +1222,7 @@
         <div class="docs-content" id="docs-content-root">
             <!-- Documentation Hero Header -->
             <div class="doc-hero-header">
-                <div class="doc-badge"><i class="fas fa-book-open"></i> Technical Reference v3.2</div>
+                <div class="doc-badge"><i class="fas fa-book-open"></i> Technical Reference v3.5</div>
                 <h1>System Documentation & Engineering Manual</h1>
                 <p>Comprehensive operational documentation for Nora Studio: Next-Gen Roblox group synchronization, multi-bot Top.gg vote pipelines, sub-4ms AutoMod gateway defense, Starboard v3.0, and leveling progression.</p>
             </div>
@@ -1459,6 +1462,15 @@
 
                     <h3 style="color: #fff; margin: 24px 0 10px;">Math Counting Game</h3>
                     <p>Sequential collaborative counting channel with strict anti-double-count checks and full math expression evaluation (e.g. <code>10^2</code>, <code>50*2</code>, <code>sqrt(144)</code>).</p>
+
+                    <h3 style="color: #fff; margin: 24px 0 10px;">Channel-Based Guess the Number Game</h3>
+                    <p>Dedicated channel-based number guessing engine with real-time emoji hints. Configurable range from <code>0</code> up to <code>100,000</code> with customizable guess limits (defaults to 6, bounded by range). Always restarts automatically upon win or expiration:</p>
+                    <ul>
+                        <li><code>⏫</code> (Higher): Secret number is higher than your guess.</li>
+                        <li><code>⏬</code> (Lower): Secret number is lower than your guess.</li>
+                        <li><code>✅</code> (Winner): Correct! Awards XP, congratulates the winner, chooses a new number, and restarts.</li>
+                        <li><code>❌</code> (Expired): Out of guesses! Reveals the answer, selects a fresh number, and restarts.</li>
+                    </ul>
                 </div>
             </section>
 
@@ -1680,11 +1692,103 @@
                 </div>
             </section>
 
-            <!-- 9. REST API & Webhooks -->
+            <!-- 11. Saved Webhooks, Staff-Sponsored Premium & Embeds V2 -->
+            <section class="doc-section" id="webhooks-v2">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #818CF8; background: rgba(129, 140, 248, 0.15); border-color: rgba(129, 140, 248, 0.3);"><i class="fas fa-paper-plane"></i></div>
+                    <h2>11. Saved Webhooks, Staff-Sponsored Premium &amp; Embeds V2 Engine</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Nora Studio features a next-generation <strong>Embeds V2 (Discord Components V2)</strong> engine enabled by default across all servers, paired with collaborative <strong>Saved Webhooks</strong> and automatic <strong>Staff-Sponsored Server Premium</strong>:</p>
+                    
+                    <ul>
+                        <li><strong>Embeds V2 Default + Per-Module V1/V2 Selector:</strong> Every server module that dispatches embeds (Welcomer, Leveling, Starboard, Tickets, AutoMod, Verification, Top.gg Votes, and Webhook Builder) defaults to <code>Embeds V2 (Components V2 Containers)</code> and includes an instant selector to toggle between <strong>Embeds V2</strong> and <strong>Classic Embeds V1</strong>.</li>
+                        <li><strong>Saved Webhooks (3 Free / 10 Premium Presets):</strong> Server staff with <code>Manage Guild</code> or <code>Administrator</code> permissions can save named webhook presets accessible by all fellow staff in that server.</li>
+                        <li><strong>Staff-Sponsored Server Premium Inheritance:</strong> As long as <strong>one staff member</strong> in a server holds Nora Studio Plus (Premium) or Team access, the entire server dashboard unlocks <strong>Premium status (10 Saved Webhooks &amp; Pro modules)</strong> for all staff members in that server, displaying a header credit badge honoring the sponsoring member(s). If all sponsoring staff leave the server or lose Premium access, the server cleanly reverts to the <strong>Free tier (3 Saved Webhooks)</strong>.</li>
+                        <li><strong>Dual Image Uploader + URL &amp; Modern Hex Swatch:</strong> Every image, thumbnail, avatar, and banner field across the dashboard provides both a direct URL input and a 1-click file uploader, alongside interactive hex color swatches with preset palettes.</li>
+                    </ul>
+
+                    <h3 style="color: #fff; margin: 24px 0 10px;">Sticky Messages &amp; Persistent Notices (<code>/sticky</code>)</h3>
+                    <p>Keep guidelines, rules, or announcements pinned to the bottom of active channels. Nora automatically tracks message count, deletes the prior sticky message, and reposts it according to your configured message frequency, fully supporting modern Components V2 containers:</p>
+                    <ul>
+                        <li><code>/sticky set &lt;channel&gt; &lt;message&gt; [frequency] [embed_title] [embed_description]</code>: Deploy or update a sticky message.</li>
+                        <li><code>/sticky remove &lt;channel&gt;</code>: Deactivate and remove a channel's sticky message.</li>
+                        <li><code>/sticky list</code>: Display all active sticky messages and repost frequencies across the server.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 12. Dynamic Sharding & Pre-2,500 Safe Zone Balancer -->
+            <section class="doc-section" id="sharding">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #10B981; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3);"><i class="fas fa-network-wired"></i></div>
+                    <h2>12. Dynamic Sharding &amp; Pre-2,500 Safe Zone Architecture</h2>
+                </div>
+                <div class="doc-body">
+                    <p>Discord enforces a hard ceiling of 2,500 guilds per WebSocket shard. Nora's <strong>Dynamic Sharding Engine</strong> (<code>src/utils/shardManager.js</code> &amp; <code>src/shard.js</code>) proactively separates and balances clusters well before reaching 2,500 servers based on four real-time telemetry factors, viewable live at <a href="/status" style="color: var(--cyan); font-weight: 700;">vaztinix.dev/status</a>:</p>
+
+                    <div class="table-responsive">
+                        <table class="docs-table">
+                            <thead>
+                                <tr>
+                                    <th>Separation Vector</th>
+                                    <th>Soft Split / Warning Threshold</th>
+                                    <th>Hard Safe Ceiling</th>
+                                    <th>Balancer Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>1. Guild Capacity (Pre-2,500 Safe Zone)</strong></td>
+                                    <td><code>1,800 Servers / Shard</code> (72% of Discord Max)</td>
+                                    <td><code>2,200 Servers / Shard</code> (Hard Safe Limit vs 2,500 Max)</td>
+                                    <td>Pre-allocates &amp; spawns additional shards so no shard ever approaches 2,500 servers.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>2. Shard Resource Usage (RAM &amp; CPU)</strong></td>
+                                    <td><code>70% V8 Heap</code> / <code>420 MB RSS</code> / <code>68% CPU</code></td>
+                                    <td><code>85% V8 Heap</code> / <code>580 MB RSS</code> / <code>85% CPU</code></td>
+                                    <td>Triggers memory pressure alerts and isolates high-utilization shards.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>3. Gateway Ping &amp; Event Loop Lag</strong></td>
+                                    <td><code>180ms WS Ping</code> / <code>45ms Loop Lag</code></td>
+                                    <td><code>350ms WS Ping</code> / <code>120ms Loop Lag</code></td>
+                                    <td>Monitors <code>perf_hooks.monitorEventLoopDelay</code> and flags degraded gateway pipes.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>4. Member Density &amp; Voice Load</strong></td>
+                                    <td><code>150,000 Members / Shard</code></td>
+                                    <td><code>250,000 Members / Shard</code></td>
+                                    <td>Factors large community density and active voice states into composite Shard Health (0–100%).</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 13. Personal Dashboard Background Studio & Announcement Draft Bar -->
+            <section class="doc-section" id="dashboard-studio">
+                <div class="doc-section-header">
+                    <div class="section-icon-badge" style="color: #EC4899; background: rgba(236, 72, 153, 0.15); border-color: rgba(236, 72, 153, 0.3);"><i class="fas fa-sliders-h"></i></div>
+                    <h2>13. Personal Dashboard Background Studio &amp; Live Draft System</h2>
+                </div>
+                <div class="doc-body">
+                    <p>The Nora Studio Web Dashboard combines hardware-accelerated announcement animations with per-user visual customization:</p>
+                    <ul>
+                        <li><strong>Per-User Custom Dashboard Background (Images &amp; Animated GIFs):</strong> Any logged-in user can upload an image or animated GIF (or paste a direct URL) in <strong>Profile</strong> or <strong>Settings</strong>. Static images open in the interactive <strong>16:9 Widescreen Auto-Cropper</strong> (similar to Rank Cards), while animated GIFs can be applied with full looping preservation alongside customizable <strong>Dim Opacity (20%–92%)</strong> and <strong>Glass Blur (0px–24px)</strong> sliders.</li>
+                        <li><strong>Announcement-Inspired Save Data Draft Bar:</strong> Whenever server settings are modified, Nora displays an announcement-style floating draft notification with a pulsing status dot, word-animated summary, collapsible <code>Old &rarr; New</code> diff inspector, and 1-click <strong>Save Data</strong> or <strong>Discard</strong> controls.</li>
+                        <li><strong>Clickable Breadcrumb Navigation &amp; Searchable Comboboxes:</strong> Every breadcrumb segment in the top bar (<code>Server / Category / Section</code>) is interactive, and all channel, role, and preset selectors feature instant search filtering.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 14. REST API & Webhooks -->
             <section class="doc-section" id="api-ref">
                 <div class="doc-section-header">
                     <div class="section-icon-badge" style="color: #60A5FA; background: rgba(96, 165, 250, 0.15); border-color: rgba(96, 165, 250, 0.3);"><i class="fas fa-code"></i></div>
-                    <h2>11. REST API & Webhook Specifications</h2>
+                    <h2>14. REST API &amp; Sharding Telemetry Specifications</h2>
                 </div>
                 <div class="doc-body">
                     <p>Integrate your external dashboards and custom Discord applications with Nora's official HTTP telemetry:</p>
@@ -1696,12 +1800,34 @@
                         </div>
                         <pre class="code-content">{
   "status": "operational",
-  "version": "3.2.0",
+  "version": "3.5.0",
   "pingMs": 18,
-  "serverCount": 65,
+  "serverCount": 99,
   "userCount": 42500,
+  "shardingSummary": {
+    "mode": "Dynamic Multi-Factor Pre-2500 Safe Balancer",
+    "totalShards": 1,
+    "recommendedShards": 1,
+    "overallState": "OPTIMAL",
+    "averageHealthScore": 98,
+    "limits": {
+      "DISCORD_HARD_MAX_GUILDS": 2500,
+      "SAFE_HARD_MAX_GUILDS": 2200,
+      "SOFT_SPLIT_GUILDS": 1800
+    }
+  },
   "shards": [
-    { "id": 0, "status": "ready", "ping": 18 }
+    {
+      "id": 0,
+      "status": "ONLINE",
+      "ping": 18,
+      "guilds": 99,
+      "maxSafeGuilds": 2200,
+      "discordMaxGuilds": 2500,
+      "guildCapacityPct": 4.5,
+      "healthScore": 98,
+      "separationState": "OPTIMAL"
+    }
   ]
 }</pre>
                     </div>

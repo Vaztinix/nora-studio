@@ -4,7 +4,7 @@ const sharp = require('sharp');
  * Fast, non-blocking image buffer fetcher using native fetch and AbortController timeout.
  * Completely eliminates axios socket hanging/blocking on avatar or media fetches.
  */
-async function fetchImageBuffer(url, timeoutMs = 1500) {
+async function fetchImageBuffer(url, timeoutMs = 5000) {
     if (!url || typeof url !== 'string') return null;
     if (url.startsWith('data:image')) {
         try {
@@ -137,8 +137,7 @@ async function generateRankCard({
 }) {
     const finalNextLevelXp = Number(nextLevelXp || requiredXp) || 100;
     const finalCurrentXp = Number(currentXp) || 0;
-    // Member changes ALWAYS overwrite server changes
-    const finalBgImage = userCustomBg || serverCustomBg || null;
+    // Member shape takes priority over server shape
     const rawShape = (userShape && userShape !== 'default') ? userShape : (serverShape || 'rounded-rect');
     const shape = ['rounded-rect', 'capsule', 'hexagon', 'diamond', 'classic'].includes(rawShape) ? rawShape : 'rounded-rect';
 
@@ -169,15 +168,45 @@ async function generateRankCard({
     let customBgBase64 = '';
     let isAnimatedGif = false;
     let animatedBgBuffer = null;
+    let rawBuffer = null;
+    let activeMediaUrl = null;
 
-    if (finalBgImage) {
+    // Robust 3-Tier Fallback Chain: User Custom Background -> Server Default Background -> Final Default Theme
+    if (userCustomBg) {
         try {
-            const resolvedUrl = await Promise.race([
-                resolveDirectMediaUrl(finalBgImage, 1500),
-                new Promise((r) => setTimeout(() => r(finalBgImage), 1500))
+            const resolvedUserUrl = await Promise.race([
+                resolveDirectMediaUrl(userCustomBg, 1500),
+                new Promise((r) => setTimeout(() => r(userCustomBg), 1500))
             ]);
+            rawBuffer = await fetchImageBuffer(resolvedUserUrl, 6500);
+            if (rawBuffer) {
+                activeMediaUrl = resolvedUserUrl;
+            }
+        } catch (e) {
+            console.warn('[Rank Generator] User custom bg failed, falling back to server default:', e.message);
+            rawBuffer = null;
+        }
+    }
 
-            let rawBuffer = await fetchImageBuffer(resolvedUrl, 2500);
+    if (!rawBuffer && serverCustomBg) {
+        try {
+            const resolvedServerUrl = await Promise.race([
+                resolveDirectMediaUrl(serverCustomBg, 1500),
+                new Promise((r) => setTimeout(() => r(serverCustomBg), 1500))
+            ]);
+            rawBuffer = await fetchImageBuffer(resolvedServerUrl, 6500);
+            if (rawBuffer) {
+                activeMediaUrl = resolvedServerUrl;
+            }
+        } catch (e) {
+            console.warn('[Rank Generator] Server custom bg failed, falling back to default theme:', e.message);
+            rawBuffer = null;
+        }
+    }
+
+    if (rawBuffer) {
+        try {
+            const resolvedUrl = activeMediaUrl || userCustomBg || serverCustomBg;
             if (rawBuffer) {
                 let meta = null;
                 try {

@@ -201,7 +201,7 @@ function createMockInteraction(message, commandName, subcommand, parsedOptions) 
                 const s = String(val).toLowerCase();
                 return ['true', 'yes', '1', 'on', 'enable'].includes(s);
             },
-            getAttachment: () => null,
+            getAttachment: () => (message.attachments && message.attachments.size > 0) ? message.attachments.first() : null,
             getMentionable: (name, required = false) => {
                 return parsedOptions[name.toLowerCase()] || null;
             }
@@ -217,24 +217,61 @@ function createMockInteraction(message, commandName, subcommand, parsedOptions) 
         reply: async (payload) => {
             isReplied = true;
             isDeferred = false;
-            const normalized = typeof payload === 'string' ? { content: payload } : { ...payload };
+            let normalized = typeof payload === 'string' ? { content: payload } : { ...payload };
             normalized.allowedMentions = normalized.allowedMentions || { repliedUser: false };
+            
+            // Modern Components V2 Auto-formatting
+            if (normalized.embeds && Array.isArray(normalized.embeds) && normalized.embeds.length > 0) {
+                try {
+                    const { buildEmbedV2Container } = require('./embeds');
+                    const v2 = buildEmbedV2Container(normalized.embeds[0], normalized.components || [], normalized.content || '');
+                    normalized = {
+                        ...normalized,
+                        embeds: [],
+                        content: undefined,
+                        components: v2.components,
+                        flags: (normalized.flags || 0) | 32768
+                    };
+                } catch (e) {}
+            }
+
             try {
                 repliedMessage = await message.reply(normalized);
                 return repliedMessage;
             } catch (err) {
-                repliedMessage = await message.channel.send(normalized).catch(() => null);
+                const classic = typeof payload === 'string' ? { content: payload } : { ...payload };
+                classic.allowedMentions = classic.allowedMentions || { repliedUser: false };
+                repliedMessage = await message.reply(classic).catch(() => null) || await message.channel.send(classic).catch(() => null);
                 return repliedMessage;
             }
         },
 
         editReply: async (payload) => {
-            const normalized = typeof payload === 'string' ? { content: payload } : { ...payload };
+            let normalized = typeof payload === 'string' ? { content: payload } : { ...payload };
             normalized.allowedMentions = normalized.allowedMentions || { repliedUser: false };
+
+            if (normalized.embeds && Array.isArray(normalized.embeds) && normalized.embeds.length > 0) {
+                try {
+                    const { buildEmbedV2Container } = require('./embeds');
+                    const v2 = buildEmbedV2Container(normalized.embeds[0], normalized.components || [], normalized.content || '');
+                    normalized = {
+                        ...normalized,
+                        embeds: [],
+                        content: undefined,
+                        components: v2.components,
+                        flags: (normalized.flags || 0) | 32768
+                    };
+                } catch (e) {}
+            }
+
             if (repliedMessage) {
                 try {
                     return await repliedMessage.edit(normalized);
-                } catch (e) {}
+                } catch (e) {
+                    const classic = typeof payload === 'string' ? { content: payload } : { ...payload };
+                    classic.allowedMentions = classic.allowedMentions || { repliedUser: false };
+                    try { return await repliedMessage.edit(classic); } catch (e2) {}
+                }
             }
             isReplied = true;
             isDeferred = false;
@@ -242,15 +279,34 @@ function createMockInteraction(message, commandName, subcommand, parsedOptions) 
                 repliedMessage = await message.reply(normalized);
                 return repliedMessage;
             } catch (err) {
-                repliedMessage = await message.channel.send(normalized).catch(() => null);
+                const classic = typeof payload === 'string' ? { content: payload } : { ...payload };
+                classic.allowedMentions = classic.allowedMentions || { repliedUser: false };
+                repliedMessage = await message.channel.send(classic).catch(() => null);
                 return repliedMessage;
             }
         },
 
         followUp: async (payload) => {
-            const normalized = typeof payload === 'string' ? { content: payload } : { ...payload };
+            let normalized = typeof payload === 'string' ? { content: payload } : { ...payload };
             normalized.allowedMentions = normalized.allowedMentions || { repliedUser: false };
-            return await message.channel.send(normalized).catch(() => null);
+            if (normalized.embeds && Array.isArray(normalized.embeds) && normalized.embeds.length > 0) {
+                try {
+                    const { buildEmbedV2Container } = require('./embeds');
+                    const v2 = buildEmbedV2Container(normalized.embeds[0], normalized.components || [], normalized.content || '');
+                    normalized = {
+                        ...normalized,
+                        embeds: [],
+                        content: undefined,
+                        components: v2.components,
+                        flags: (normalized.flags || 0) | 32768
+                    };
+                } catch (e) {}
+            }
+            return await message.channel.send(normalized).catch(async () => {
+                const classic = typeof payload === 'string' ? { content: payload } : { ...payload };
+                classic.allowedMentions = classic.allowedMentions || { repliedUser: false };
+                return await message.channel.send(classic).catch(() => null);
+            });
         },
 
         deleteReply: async () => {
@@ -563,14 +619,18 @@ async function handlePrefixCommand(message, client) {
     const parsedOptions = {};
     const missingRequired = [];
 
-    // Special handling for AFK prefix command: combine all arguments into the status text
+    // Special handling for AFK prefix command: preserve raw text & URLs without quote/markdown mangling
     if (commandName === 'afk') {
-        parsedOptions['status'] = args.join(' ');
+        const rawAfkText = rawCommandText.slice(tokens[0].length).trim();
+        parsedOptions['status'] = rawAfkText || args.join(' ');
         const mockInteraction = createMockInteraction(message, commandName, chosenSubcommand, parsedOptions);
         try {
-            await command.execute(mockInteraction);
+            const afkPath = require.resolve('../commands/utility/afk.js');
+            delete require.cache[afkPath];
+            const freshAfkCmd = require(afkPath);
+            await freshAfkCmd.execute(mockInteraction);
         } catch (execErr) {
-            console.error(`[Prefix Command] Error executing ${commandName}:`, execErr);
+            console.error('[Prefix Command] Error executing afk:', execErr);
         }
         return true;
     }

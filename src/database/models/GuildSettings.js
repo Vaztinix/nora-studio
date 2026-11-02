@@ -870,6 +870,14 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.INTEGER,
         defaultValue: 100
     },
+    guessNumberChannelId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    guessNumberGuessLimit: {
+        type: DataTypes.INTEGER,
+        defaultValue: 6
+    },
     rpsMinBet: {
         type: DataTypes.INTEGER,
         defaultValue: 0
@@ -1344,6 +1352,66 @@ const GuildSettings = sequelize.define('GuildSettings', {
     activityVcStrict: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
+    },
+
+    // ---- Saved Webhook Presets Suite ----
+    savedWebhooks: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]' // Array of saved webhook presets shared across server staff (3 Free / 10 Premium)
+    },
+
+    // ---- Embeds V2 Engine Suite (Defaulted to v2 for all servers) ----
+    embedVersion: {
+        type: DataTypes.STRING,
+        defaultValue: 'v2'
+    },
+    webhookEmbedVersion: {
+        type: DataTypes.STRING,
+        defaultValue: 'v2'
+    },
+    welcomeEmbedVersion: {
+        type: DataTypes.STRING,
+        defaultValue: 'v2'
+    },
+    ticketEmbedVersion: {
+        type: DataTypes.STRING,
+        defaultValue: 'v2'
+    },
+    verifyEmbedVersion: {
+        type: DataTypes.STRING,
+        defaultValue: 'v2'
+    },
+    rrEmbedVersion: {
+        type: DataTypes.STRING,
+        defaultValue: 'v2'
+    },
+    starboardEmbedVersion: {
+        type: DataTypes.STRING,
+        defaultValue: 'v2'
+    },
+    autoresponderEmbedVersion: {
+        type: DataTypes.STRING,
+        defaultValue: 'v2'
+    },
+    topggEmbedVersion: {
+        type: DataTypes.STRING,
+        defaultValue: 'v2'
+    },
+    levelingEmbedVersion: {
+        type: DataTypes.STRING,
+        defaultValue: 'v2'
+    },
+    loggingEmbedVersion: {
+        type: DataTypes.STRING,
+        defaultValue: 'v2'
+    },
+    embedsVersion: {
+        type: DataTypes.STRING,
+        defaultValue: 'v2'
+    },
+    stickyMessages: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
     }
 });
 

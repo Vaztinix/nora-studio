@@ -1120,6 +1120,28 @@
                     <li><strong>Management & Refunds:</strong> You can manage or cancel subscriptions inside Discord at <code>User Settings &rarr; Subscriptions</code>. Refunds are governed strictly by <a href="https://support.discord.com/" target="_blank" rel="noopener" style="color: var(--blurple);">Discord's Refund Policy</a>.</li>
                 </ul>
 
+                <h3>8b. Saved Webhooks, Staff-Sponsored Server Premium & Embeds V2</h3>
+                <p>Nora's Web Dashboard includes a unified <strong>Webhook &amp; Embeds V2 Studio</strong> and shared <strong>Saved Webhooks</strong> system for server staff:</p>
+                <ul>
+                    <li><strong>Free vs. Staff-Sponsored Server Premium Slots:</strong> Every server receives up to <strong>3 Free</strong> Saved Webhook preset slots shared across all staff with <code>Manage Server</code> or <code>Administrator</code> permissions. If <strong>at least one active staff member</strong> in the server holds an active Nora Studio Plus (Premium) access tier or official Team/Developer status, the entire server dashboard automatically unlocks <strong>10 Premium Saved Webhook slots</strong> and full server-wide Premium dashboard features for all staff in that server, displaying credit to the sponsoring member(s) at the top of the dashboard.</li>
+                    <li><strong>Automatic Reversion on Departure or Expiry:</strong> If all sponsoring Premium staff members leave the Discord server, lose staff permissions, or allow their Premium subscription to expire, the server dashboard automatically reverts to the Free tier (3 Saved Webhook slots). Existing presets beyond slot 3 remain safely stored but cannot be overwritten or expanded until Premium sponsorship is restored or excess presets are removed.</li>
+                    <li><strong>Embeds V2 (Discord Components V2) &amp; Classic Embeds V1:</strong> By default, all server modules utilize Nora's modern <strong>Embeds V2</strong> container architecture (accented rich containers, media galleries, and structured dividers), with per-module selectors allowing administrators to switch between <code>Embeds V2 (Default)</code> and <code>Classic Embeds V1</code> at any time.</li>
+                </ul>
+
+                <h3>8c. Personal Dashboard Backgrounds & Media Uploads</h3>
+                <p>Users logged into <code>vaztinix.dev/dashboard</code> may customize their personal dashboard experience with a custom background image or animated GIF:</p>
+                <ul>
+                    <li><strong>Per-User Sovereignty &amp; 16:9 Auto-Cropper:</strong> Custom dashboard backgrounds (including static images and looping animated GIFs) are scoped strictly to the individual user's account and automatically framed via Nora's interactive 16:9 widescreen cropper.</li>
+                    <li><strong>Acceptable Media Content:</strong> Uploaded backgrounds and direct media URLs must comply with Discord's Community Guidelines. Uploading NSFW, gore, harassment, or malicious payloads is strictly prohibited and will result in immediate asset purge and account restriction.</li>
+                </ul>
+
+                <h3>8d. Dynamic Sharding & Pre-2,500 Safe Zone Architecture</h3>
+                <p>To guarantee sub-second gateway responsiveness and keep every community inside Discord's safe operational envelope well before the 2,500-server hard limit per shard, Nora operates an autonomous <strong>Dynamic Sharding &amp; Multi-Factor Load Balancer</strong>:</p>
+                <ul>
+                    <li><strong>Pre-2,500 Safe Zone Thresholds:</strong> Nora proactively initiates shard preparation at <strong>1,800 servers</strong> (Soft Split Threshold) and enforces a strict <strong>2,200-server Hard Safe Limit</strong> per shard—never allowing any shard to hit Discord's 2,500-guild wall.</li>
+                    <li><strong>Multi-Factor Separation:</strong> Shard separation and rebalancing are dynamically evaluated across four real-time telemetry vectors: (1) Server count per shard, (2) Shard resource utilization (V8 Heap %, RSS memory ceiling, and CPU load %), (3) Gateway WebSocket ping and Node.js event loop lag (ms), and (4) Total member density &amp; active voice sessions. Live shard health scores and Safe Zone capacities are publicly verifiable at <a href="https://vaztinix.dev/status" target="_blank" rel="noopener" style="color: var(--cyan);">vaztinix.dev/status</a>.</li>
+                </ul>
+
                 <h3>9. Service Availability, Disclaimers & Limitation of Liability</h3>
                 <p>Nora and all related services are provided on an <strong>"as is"</strong> and <strong>"as available"</strong> basis without warranties of any kind. While we maintain resilient hosting infrastructure, Nora Studio shall not be held liable for server downtime, Discord API interruptions, data loss resulting from server misconfigurations, or actions taken by server moderators.</p>
 
@@ -1205,6 +1227,36 @@
                                 <td>10-second sliding window message count & anonymous author IDs in RAM.</td>
                                 <td>To compute real-time chat speed and clamp slowmode against flood attacks.</td>
                                 <td><strong>Purely ephemeral.</strong> Pruned every 10 seconds in volatile memory; never written to database.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Saved Webhook Presets &amp; Sponsor Credits</strong></td>
+                                <td>Preset name, embed V1/V2 payload structure, target channel ID, and creator/sponsor Discord User ID &amp; display tag.</td>
+                                <td>To allow authorized server staff to save, load, and share up to 3 Free (or 10 Staff-Sponsored Premium) webhook templates and display sponsor attribution.</td>
+                                <td>Scoped to the guild. Instantly deleted when a staff member deletes the preset or when server data is wiped via <code>/settings data-delete</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Personal Dashboard Background &amp; UI Preferences</strong></td>
+                                <td>User-uploaded 16:9 cropped background image/GIF data URI or URL, dim opacity %, glass blur px, and theme preferences in <code>UserPrefs</code>.</td>
+                                <td>To render your personal custom background across the Nora Studio Web Dashboard.</td>
+                                <td>Scoped strictly to your Discord User ID. Can be cleared in 1 click via the <strong>Reset Default</strong> button in Settings/Profile or wiped via <code>/mycard</code> &rarr; <strong>Erase Data</strong>.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Sticky Messages &amp; Persistent Notices</strong></td>
+                                <td>Target channel ID, configured message text or Components V2 embed structure, repost frequency, and ephemeral <code>lastMessageId</code>.</td>
+                                <td>To automatically delete and repost sticky notices at the bottom of designated channels according to staff rules.</td>
+                                <td>Retained in guild settings only while the sticky message is active. Deleted immediately when removed by staff or purged via <code>/settings data-delete</code>.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Channel Guess the Number Engine</strong></td>
+                                <td>Channel ID, current random target integer (0–100,000), attempts count, and total guild round wins.</td>
+                                <td>To operate real-time channel number guessing games and award leveling XP.</td>
+                                <td>Stored in volatile JSON cache partitioned by guild ID. Zero message text logged; only integer guesses evaluated.</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dynamic Sharding &amp; Cluster Health Telemetry</strong></td>
+                                <td>Aggregate per-shard guild count, member count, V8 heap/RSS memory, CPU %, event loop lag (ms), and WebSocket ping displayed on <code>vaztinix.dev/status</code>.</td>
+                                <td>To proactively split and rebalance shards before 2,200/2,500 servers and publish real-time system health transparency.</td>
+                                <td><strong>Purely aggregate &amp; non-personal.</strong> Computed in real-time memory with zero user identifiers or message contents ever included.</td>
                             </tr>
                             <tr>
                                 <td><strong>Support Ticket Transcripts</strong></td>

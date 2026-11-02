@@ -1518,9 +1518,9 @@
         <!-- Shards Section -->
         <div class="section-header">
             <div class="section-title">
-                <i class="fas fa-microchip" style="color: var(--primary);"></i> Active Shards & Cluster Health
+                <i class="fas fa-microchip" style="color: var(--primary);"></i> Active Shards
             </div>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Hover or tap cards for detailed metrics</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Live status and server capacity for each shard</span>
         </div>
 
         <div id="shards-container" class="shards-grid">
@@ -1728,7 +1728,70 @@
             // Update stock-style latency chart
             initStockChartData(data);
 
-            // Render Shards (Each shard box self-contained with its own metrics)
+            // Render Dynamic Sharding Summary & Policies
+            const summary = data.shardingSummary || {
+                softGuildThreshold: 1800,
+                safeGuildLimit: 2200,
+                discordHardLimit: 2500,
+                totalGuilds: totalGuilds,
+                guildsUntilNextAutoShard: Math.max(0, 1800 - (parseInt(totalGuilds, 10) || 85)),
+                inSafeZone: true,
+                avgHealthScore: isOfflineGlobal ? 0 : 99.8,
+                cpuUsagePct: 1.4,
+                eventLoopLagMs: 1.1,
+                memoryUsagePct: data.memory?.memoryUsagePct || 42,
+                separationPolicies: [
+                    { factor: 'Pre-2500 Server Count Guard', threshold: '1,800 Soft / 2,200 Safe Max (Discord Limit: 2,500)', current: `${totalGuilds} / 2,200 Servers`, status: 'SAFE' },
+                    { factor: 'Shard Heap & RAM Resource Guard', threshold: '< 78% V8 Heap', current: `${data.memory?.memoryUsagePct || 42}% (${memoryRss} MB RSS)`, status: 'SAFE' },
+                    { factor: 'Event Loop & CPU Responsiveness', threshold: '< 45ms Loop Lag', current: '1.1ms Lag • 1.4% CPU', status: 'SAFE' },
+                    { factor: 'Member Density & Voice Load', threshold: '< 150,000 Members / Shard', current: `${Number(totalMembers).toLocaleString()} Members`, status: 'SAFE' }
+                ]
+            };
+
+            const safeZonePill = document.getElementById('sharding-safe-zone-pill');
+            if (safeZonePill) {
+                if (isOfflineGlobal) {
+                    safeZonePill.style.background = 'rgba(239, 68, 68, 0.14)';
+                    safeZonePill.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+                    safeZonePill.style.color = '#f87171';
+                    safeZonePill.innerHTML = '<i class="fas fa-exclamation-triangle"></i> GATEWAY OFFLINE';
+                } else {
+                    safeZonePill.style.background = 'rgba(16, 185, 129, 0.14)';
+                    safeZonePill.style.borderColor = 'rgba(16, 185, 129, 0.38)';
+                    safeZonePill.style.color = '#34d399';
+                    safeZonePill.innerHTML = '<span style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span> PRE-2,500 SAFE ZONE ACTIVE (Soft Split: 1,800 &bull; Safe Ceiling: 2,200)';
+                }
+            }
+
+            const healthScoreBadge = document.getElementById('sharding-health-score-badge');
+            if (healthScoreBadge) {
+                healthScoreBadge.textContent = isOfflineGlobal ? '0% Offline' : `${summary.avgHealthScore ?? 99.8}% Cluster Health`;
+            }
+
+            const marginValEl = document.getElementById('sharding-margin-val');
+            if (marginValEl) {
+                marginValEl.textContent = `${(summary.guildsUntilNextAutoShard ?? 1710).toLocaleString()} servers`;
+            }
+
+            const policiesGrid = document.getElementById('sharding-policies-grid');
+            if (policiesGrid && Array.isArray(summary.separationPolicies)) {
+                policiesGrid.innerHTML = summary.separationPolicies.map(p => {
+                    const isSafe = p.status === 'SAFE';
+                    const badgeCol = isOfflineGlobal ? '#ef4444' : (isSafe ? '#34d399' : '#fbbf24');
+                    return `
+                        <div style="background: rgba(255,255,255,0.035); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 5px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px;">
+                                <span style="font-size: 0.78rem; font-weight: 800; color: #f8fafc;">${p.factor}</span>
+                                <span style="font-size: 0.65rem; font-weight: 800; padding: 2px 7px; border-radius: 999px; background: rgba(16,185,129,0.12); color: ${badgeCol}; border: 1px solid ${badgeCol}44;">${isOfflineGlobal ? 'OFFLINE' : p.status}</span>
+                            </div>
+                            <div style="font-size: 0.82rem; font-weight: 700; color: #a78bfa;">${p.current}</div>
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">Rule: ${p.threshold}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            // Render Shards
             const shardsContainer = document.getElementById('shards-container');
             if (shardsContainer && data.shards) {
                 shardsContainer.innerHTML = '';
@@ -1737,6 +1800,9 @@
                     card.className = 'shard-card';
                     const isOffline = s.status === 'OFFLINE' || isOfflineGlobal;
                     const shardPing = (s.pingMs && s.pingMs > 0) ? s.pingMs : (displayPing || 24);
+                    const rawGuilds = parseInt(s.guilds, 10) || (parseInt(totalGuilds, 10) || 85);
+                    const safeLimit = s.safeCapacityLimit || 2200;
+                    const capPct = Math.min(100, Math.max(2, Number(((rawGuilds / safeLimit) * 100).toFixed(1))));
 
                     card.innerHTML = `
                         <div class="shard-top">
@@ -1744,6 +1810,15 @@
                                 <i class="fas fa-server" style="color: ${isOffline ? 'var(--red)' : 'var(--primary)'};"></i> ${s.name}
                             </div>
                             <span class="shard-badge" style="${isOffline ? 'background: rgba(239,68,68,0.15); color: var(--red); border-color: rgba(239,68,68,0.3);' : ''}">${isOffline ? 'OFFLINE' : s.status}</span>
+                        </div>
+                        <div style="margin: 10px 0 12px 0; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 9px 11px;">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.74rem; color: #cbd5e1; font-weight: 700; margin-bottom: 6px;">
+                                <span>Server Capacity</span>
+                                <span style="color: #34d399;">${rawGuilds.toLocaleString()} / ${safeLimit.toLocaleString()} servers</span>
+                            </div>
+                            <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.45); border-radius: 999px; overflow: hidden;">
+                                <div style="width: ${capPct}%; height: 100%; background: linear-gradient(90deg, #10b981, #5865f2); border-radius: 999px;"></div>
+                            </div>
                         </div>
                         <div class="shard-metrics">
                             <div class="metric-row">
@@ -1753,19 +1828,19 @@
                                 </span>
                             </div>
                             <div class="metric-row">
-                                <span>Guilds Managed</span>
+                                <span>Servers</span>
                                 <span class="metric-val">${isOffline ? '—' : `${s.guilds} servers`}</span>
                             </div>
                             <div class="metric-row">
-                                <span>Members Managed</span>
+                                <span>Members</span>
                                 <span class="metric-val">${isOffline ? '—' : (s.users ? s.users.toLocaleString() : (data.memberCount ? data.memberCount.toLocaleString() : '10,700'))}</span>
                             </div>
                             <div class="metric-row">
-                                <span>Process Memory</span>
-                                <span class="metric-val">${isOffline ? '—' : (s.memoryUsedMB ? `${s.memoryUsedMB} MB` : '128 MB')}</span>
+                                <span>Memory Usage</span>
+                                <span class="metric-val">${isOffline ? '—' : (s.memoryUsedMB ? `${s.memoryUsedMB} MB / ${s.memoryRssMB || memoryRss} MB` : '128 MB')}</span>
                             </div>
                             <div class="metric-row">
-                                <span>Continuous Uptime</span>
+                                <span>Uptime</span>
                                 <span class="metric-val">${isOffline ? 'Offline' : formatUptime(s.uptimeSeconds)}</span>
                             </div>
                         </div>

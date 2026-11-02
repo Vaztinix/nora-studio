@@ -134,7 +134,19 @@ module.exports = {
                                 const timeTag = `<t:${Math.floor(targetAfk.timestamp / 1000)}:R>`;
                                 const backTag = targetAfk.expiresAt ? ` *(Back <t:${Math.floor(targetAfk.expiresAt / 1000)}:R>)*` : '';
 
-                                const noticeContent = `**${displayName}** is AFK: ${targetAfk.status} — Away ${timeTag}${backTag}`;
+                                let cleanStatusText = String(targetAfk.status || 'AFK').replace(/(?:\*{1,3}|_{1,2}|~{2}|<)+(https?:\/\/[^\s<>"'`]+?)(?:\*{1,3}|_{1,2}|~{2}|>)+/gi, '$1');
+                                let resolvedGifUrl = targetAfk.gifUrl ? String(targetAfk.gifUrl).replace(/^[\*_~<>`'"]+|[\*_~<>`'"]+$/g, '').trim() : null;
+                                const inlineUrlMatch = cleanStatusText.match(/(https?:\/\/[^\s<>*"'`]+)/i);
+                                if (!resolvedGifUrl && inlineUrlMatch) {
+                                    resolvedGifUrl = inlineUrlMatch[1].replace(/[\*_~<>`'"]+$/, '');
+                                    cleanStatusText = cleanStatusText.replace(inlineUrlMatch[0], '');
+                                }
+                                cleanStatusText = cleanStatusText.replace(/\*{2,}/g, '').replace(/\s+/g, ' ').trim() || 'AFK';
+                                const gifSuffix = resolvedGifUrl ? `\n${resolvedGifUrl}` : '';
+                                const hasDetail = cleanStatusText && cleanStatusText !== 'AFK';
+                                const noticeContent = hasDetail
+                                    ? `**${displayName}** is AFK: **${cleanStatusText}** — Away ${timeTag}${backTag}${gifSuffix}`
+                                    : `**${displayName}** is AFK — Away ${timeTag}${backTag}${gifSuffix}`;
 
                                 const noticeMsg = await message.reply({
                                     content: noticeContent,

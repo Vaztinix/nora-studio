@@ -16,6 +16,34 @@ function parseDurationMs(input) {
     return null;
 }
 
+async function resolveMediaUrl(rawUrl) {
+    if (!rawUrl || typeof rawUrl !== 'string') return null;
+    let clean = rawUrl.trim().replace(/^[\*_~<>`'"]+|[\*_~<>`'"]+$/g, '').trim();
+    if (!clean) return null;
+    try {
+        const parsed = new URL(clean);
+        if (parsed.hostname === 'klipy.com' || parsed.hostname.endsWith('.klipy.com')) {
+            const slugMatch = clean.match(/klipy\.com\/(?:gifs|watch|clips|stickers|media)\/([a-zA-Z0-9_-]+)/i);
+            if (slugMatch && slugMatch[1]) {
+                const slug = slugMatch[1];
+                const res = await fetch(`https://api.klipy.com/api/v1/gifs/${slug}`, {
+                    headers: { 'User-Agent': 'Mozilla/5.0 NoraBot/1.0' },
+                    signal: AbortSignal.timeout(3000)
+                }).catch(() => null);
+                if (res && res.ok) {
+                    const data = await res.json().catch(() => null);
+                    const direct = data?.data?.file?.hd?.gif?.url ||
+                                   data?.data?.file?.md?.gif?.url ||
+                                   data?.data?.file?.sm?.gif?.url ||
+                                   data?.data?.file?.hd?.webp?.url;
+                    if (direct) return direct;
+                }
+            }
+        }
+    } catch (_) {}
+    return clean;
+}
+
 module.exports = {
     category: 'utility',
     ephemeral: false,
@@ -82,12 +110,21 @@ module.exports = {
         const rawGif = interaction.options.getString('gif');
         const rawMedia = interaction.options.getAttachment('media');
 
+        // Helper to strip markdown wrappers (**bold**, <angle>, etc.) from a URL while preserving underscores inside the URL path
+        const cleanUrlForEmbed = (u) => {
+            if (!u || typeof u !== 'string') return null;
+            return u.trim()
+                .replace(/^[\*_~<>`'"]+/, '')
+                .replace(/[\*_~<>`'"]+$/, '')
+                .trim();
+        };
+
         // Extract GIF / image url if provided via option or attachment or inside status
         let gifUrl = null;
         if (rawMedia && (rawMedia.contentType?.startsWith('image/') || rawMedia.url)) {
-            gifUrl = rawMedia.url;
-        } else if (rawGif && /^https?:\/\//i.test(rawGif.trim())) {
-            gifUrl = rawGif.trim();
+            gifUrl = cleanUrlForEmbed(rawMedia.url);
+        } else if (rawGif && /https?:\/\//i.test(rawGif.trim())) {
+            gifUrl = cleanUrlForEmbed(rawGif);
         }
 
         // Combine preset and status intelligently
@@ -102,19 +139,30 @@ module.exports = {
             combinedStatus = 'AFK';
         }
 
-        // Also check if status text contains a direct GIF / image link
-        const urlRegex = /(https?:\/\/[^\s]+)/gi;
-        const matchedUrls = combinedStatus.match(urlRegex);
-        if (!gifUrl && matchedUrls) {
-            const potentialGif = matchedUrls.find(u => 
-                /\.(gif|png|jpe?g|webp)(\?.*)?$/i.test(u) || 
-                /tenor\.com|giphy\.com|imgur\.com/i.test(u)
-            );
-            if (potentialGif) {
-                gifUrl = potentialGif;
-                // Clean the URL out of status text for cleaner presentation
-                combinedStatus = combinedStatus.replace(potentialGif, '').replace(/\s+/g, ' ').trim() || 'AFK';
+        // Unwrap any markdown bold/italic/spoiler/angle-brackets surrounding URLs (preserving underscores in URLs)
+        combinedStatus = combinedStatus.replace(/(?:\*{1,3}|_{1,2}|~{2}|<)+(https?:\/\/[^\s<>"'`]+?)(?:\*{1,3}|_{1,2}|~{2}|>)+/gi, '$1');
+
+        // Also check if status text contains a direct GIF / image / Tenor / Giphy / Discord link
+        const urlRegex = /(https?:\/\/[^\s<>*"'`]+)/gi;
+        const matchedUrls = [...combinedStatus.matchAll(urlRegex)];
+        if (!gifUrl && matchedUrls.length > 0) {
+            const potentialMatch = matchedUrls.find(m => 
+                /\.(gif|png|jpe?g|webp|mp4|webm)(\?.*)?$/i.test(m[1]) || 
+                /tenor\.com|giphy\.com|imgur\.com|discordapp\.com|discordapp\.net|klipy\.com|catbox\.moe|gyazo\.com/i.test(m[1])
+            ) || matchedUrls[0];
+            if (potentialMatch) {
+                gifUrl = cleanUrlForEmbed(potentialMatch[1]);
+                // Remove the URL and any leftover empty markdown symbols from status text
+                combinedStatus = combinedStatus
+                    .replace(potentialMatch[0], '')
+                    .replace(/\*{2,}/g, '')
+                    .replace(/\s+/g, ' ')
+                    .trim() || 'AFK';
             }
+        }
+
+        if (gifUrl) {
+            gifUrl = await resolveMediaUrl(gifUrl);
         }
 
         // Calculate expiresAt if duration provided
@@ -155,7 +203,8 @@ module.exports = {
             combinedStatus,
             originalNickname,
             autoNicknameChanged,
-            expiresAt
+            expiresAt,
+            gifUrl
         );
 
         // Assign AFK role if configured
@@ -166,9 +215,13 @@ module.exports = {
 
         const timeSuffix = expiresAt ? ` *(Back <t:${Math.floor(expiresAt / 1000)}:R>)*` : '';
         const roleSuffix = roleAssigned ? ' • 🏷️ *Role assigned*' : '';
+        const hasCustomText = combinedStatus && combinedStatus !== 'AFK';
+        const replyBody = gifUrl
+            ? (hasCustomText ? `Set your AFK: **${combinedStatus}**${timeSuffix}${roleSuffix}\n${gifUrl}` : `Set your AFK:${timeSuffix}${roleSuffix}\n${gifUrl}`)
+            : `Set your AFK: **${combinedStatus}**${timeSuffix}${roleSuffix}`;
 
         return await interaction.reply({
-            content: `Set your AFK: **${combinedStatus}**${timeSuffix}${roleSuffix}`,
+            content: replyBody,
             allowedMentions: { repliedUser: false }
         });
     }

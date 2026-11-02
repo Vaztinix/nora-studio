@@ -10,6 +10,7 @@ node_modules/
 *.db*
 countingData.json
 oneWordStoryData.json
+guessNumberData.json
 scratch/
 .nora_neural_weights/
 .gemini/

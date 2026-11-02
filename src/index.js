@@ -435,6 +435,11 @@ async function runPreSyncMigrations() {
     try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `teamCardTextColor` VARCHAR(255) NULL;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `teamCardGlowColor` VARCHAR(255) NULL;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `serverCardShape` VARCHAR(255) DEFAULT 'rounded-rect';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `savedWebhooks` TEXT DEFAULT '[]';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `guessNumberChannelId` VARCHAR(255) NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `guessNumberGuessLimit` INTEGER DEFAULT 6;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `embedsVersion` VARCHAR(50) DEFAULT 'v2';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `stickyMessages` TEXT DEFAULT '[]';"); } catch (e) { }
 }
 
 runPreSyncMigrations().then(() => {
@@ -657,6 +662,10 @@ runPreSyncMigrations().then(() => {
     } catch (e) { }
     try {
         await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `tempBlacklistExpiresAt` DATETIME DEFAULT NULL;");
+        try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dashboardBgImage` TEXT DEFAULT NULL;"); } catch (e) {}
+        try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dashboardBgType` VARCHAR(255) DEFAULT 'default';"); } catch (e) {}
+        try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dashboardBgOpacity` INTEGER DEFAULT 35;"); } catch (e) {}
+        try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `dashboardBgBlur` INTEGER DEFAULT 8;"); } catch (e) {}
     } catch (e) { }
 
 
@@ -1496,6 +1505,10 @@ app.use('/api/modules', (req, res, next) => {
     req.client = client;
     next();
 }, modulesRouter);
+
+// 🎮 Nora Arcade & Game Engine Router
+const arcadeRouter = require('./api/routes/arcade');
+app.use('/api/arcade', arcadeRouter);
 
 // 📺 Roku Smart TV Controls Router (Whitelisted Headquarters Servers Only)
 try {
@@ -2864,8 +2877,12 @@ app.post('/api/user/profile', async (req, res) => {
             prefs.customTheme = language;
         }
         if (dashboardSettings !== undefined) {
-            prefs.dashboardSettings = dashboardSettings;
+            prefs.dashboardSettings = typeof dashboardSettings === 'object' ? JSON.stringify(dashboardSettings) : dashboardSettings;
         }
+        if (req.body.dashboardBgImage !== undefined) prefs.dashboardBgImage = req.body.dashboardBgImage;
+        if (req.body.dashboardBgType !== undefined) prefs.dashboardBgType = req.body.dashboardBgType;
+        if (req.body.dashboardBgOpacity !== undefined) prefs.dashboardBgOpacity = parseInt(req.body.dashboardBgOpacity, 10) || 35;
+        if (req.body.dashboardBgBlur !== undefined) prefs.dashboardBgBlur = parseInt(req.body.dashboardBgBlur, 10) || 0;
         await prefs.save();
         res.json({ success: true, prefs });
     } catch (e) {
@@ -2883,8 +2900,13 @@ app.post('/api/user/prefs', async (req, res) => {
         const UserPrefs = require('./database/models/UserPrefs');
         const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
 
-        const { sessionHardened } = req.body;
+        const { sessionHardened, dashboardBgImage, dashboardBgType, dashboardBgOpacity, dashboardBgBlur, dashboardSettings } = req.body;
         if (sessionHardened !== undefined) prefs.sessionHardened = sessionHardened;
+        if (dashboardBgImage !== undefined) prefs.dashboardBgImage = dashboardBgImage;
+        if (dashboardBgType !== undefined) prefs.dashboardBgType = dashboardBgType;
+        if (dashboardBgOpacity !== undefined) prefs.dashboardBgOpacity = parseInt(dashboardBgOpacity, 10) || 35;
+        if (dashboardBgBlur !== undefined) prefs.dashboardBgBlur = parseInt(dashboardBgBlur, 10) || 0;
+        if (dashboardSettings !== undefined) prefs.dashboardSettings = typeof dashboardSettings === 'object' ? JSON.stringify(dashboardSettings) : dashboardSettings;
         await prefs.save();
         res.json({ success: true, prefs });
     } catch (e) {
@@ -3356,19 +3378,9 @@ app.get('/api/user/guilds', async (req, res) => {
             }
             const settings = settingsMap.get(g.id);
 
-            const isPremiumSettings = settings ? (!!settings.isPremium || !!settings.isManualPremium) : false;
-
-            let isOwnerPremium = false;
-            if (liveGuild) {
-                if (liveGuild.ownerId === '1214048435632603137' || liveGuild.ownerId === '1366229304257544213') {
-                    isOwnerPremium = true;
-                }
-            }
-            if (isUserBotOwner) {
-                isOwnerPremium = true;
-            }
-
-            const isPremium = isPremiumSettings || isOwnerPremium || (settings && settings.paidExpiresAt && (new Date(settings.paidExpiresAt).getTime() + (settings.expandedTimeMs ? Number(settings.expandedTimeMs) : 0) > Date.now()));
+            const premiumManager = require('./utils/premiumManager');
+            const premiumStatus = await premiumManager.resolveGuildPremiumStatus(liveGuild, settings, user);
+            const isPremium = premiumStatus.isPremium || isUserBotOwner;
 
             let onlineCount = 0;
             if (liveGuild && liveGuild.presences && liveGuild.presences.cache) {
@@ -3387,6 +3399,9 @@ app.get('/api/user/guilds', async (req, res) => {
                 topggBotId: null,
                 topggLegacyOwnerId: null,
                 isPremium,
+                tierTag: isPremium ? 'PREMIUM' : 'FREE',
+                maxSavedWebhooks: isPremium ? 10 : 3,
+                premiumSponsors: premiumStatus.sponsors || [],
                 isManaged
             };
         }));
@@ -4328,6 +4343,11 @@ const getWebFilePath = (filename) => {
 // Serve index.html (Vaztinix Bio landing page) at root '/'
 app.get('/', ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('index.html'));
+});
+
+// Clean URLs for Nora Arcade
+app.get(['/arcade', '/game', '/play', '/arcade.html'], ipRateLimiter, (req, res) => {
+    res.sendFile(getWebFilePath('arcade.html'));
 });
 
 // Clean URLs for other subpages

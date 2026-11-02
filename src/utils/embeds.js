@@ -56,6 +56,54 @@ module.exports = {
         return embed;
     },
 
+    // Send Embed Response with automatic Components V2 or classic V1 fallback
+    sendEmbedResponse: async function(interaction, embed, { ephemeral = false, components = [], files = [] } = {}) {
+        let useV2 = true;
+        try {
+            if (interaction.guildId) {
+                const settingsCache = require('./settingsCache');
+                const settings = await settingsCache.get(interaction.guildId).catch(() => null);
+                if (settings && settings.embedsVersion === 'v1') {
+                    useV2 = false;
+                }
+            }
+        } catch (e) {
+            useV2 = true;
+        }
+
+        if (useV2) {
+            try {
+                const v2Payload = module.exports.buildEmbedV2Container(embed, components);
+                const payload = {
+                    components: v2Payload.components,
+                    flags: v2Payload.flags,
+                    files
+                };
+                if (ephemeral) payload.ephemeral = true;
+
+                if (interaction.replied || interaction.deferred) {
+                    return await interaction.editReply(payload);
+                } else {
+                    return await interaction.reply(payload);
+                }
+            } catch (err) {
+                // Graceful fallback to V1 if V2 payload encounters API rejection
+            }
+        }
+
+        const v1Payload = { embeds: [embed], components, files };
+        if (ephemeral) v1Payload.ephemeral = true;
+        try {
+            if (interaction.replied || interaction.deferred) {
+                return await interaction.editReply(v1Payload).catch(() => {});
+            } else {
+                return await interaction.reply(v1Payload).catch(() => {});
+            }
+        } catch (e) {
+            console.error('[Embed Trace] Failed to send embed response:', e);
+        }
+    },
+
     // 🚫 Casual Access/Error Embed
     handleError: async function(interaction, title, description, components = []) {
         const safeTitle = (typeof title === 'string' && title.trim().length > 0) ? title : 'Action Unsuccessful';
@@ -68,15 +116,7 @@ module.exports = {
             footerText: 'System Alert'
         });
 
-        try {
-            if (interaction.replied || interaction.deferred) {
-                await interaction.editReply({ embeds: [embed], components, files: [] }).catch(() => {});
-            } else {
-                await interaction.reply({ embeds: [embed], components, ephemeral: true }).catch(() => {});
-            }
-        } catch (e) {
-            console.error('[Embed Trace] Failed to send error embed:', e);
-        }
+        return await module.exports.sendEmbedResponse(interaction, embed, { ephemeral: true, components, files: [] });
     },
     
     // Standard Success Embed
@@ -91,15 +131,7 @@ module.exports = {
             footerText: 'Operation Verified'
         });
 
-        try {
-            if (interaction.replied || interaction.deferred) {
-                await interaction.editReply({ embeds: [embed], components, files: [] }).catch(() => {});
-            } else {
-                await interaction.reply({ embeds: [embed], components, ephemeral }).catch(() => {});
-            }
-        } catch (e) {
-            console.error('[Embed Trace] Failed to send success embed:', e);
-        }
+        return await module.exports.sendEmbedResponse(interaction, embed, { ephemeral, components, files: [] });
     },
 
     // Sleek Info Card Embed
@@ -112,15 +144,143 @@ module.exports = {
             footerText: 'Information Hub'
         });
 
-        try {
-            if (interaction.replied || interaction.deferred) {
-                await interaction.editReply({ embeds: [embed], components, files: [] }).catch(() => {});
-            } else {
-                await interaction.reply({ embeds: [embed], components, ephemeral }).catch(() => {});
-            }
-        } catch (e) {
-            console.error('[Embed Trace] Failed to send info embed:', e);
+        return await module.exports.sendEmbedResponse(interaction, embed, { ephemeral, fields, components, files: [] });
+    }
+,
+    /**
+     * Converts an EmbedBuilder or raw embed options into a Discord Components V2 Container payload (IS_COMPONENTS_V2 = 32768)
+     * or returns classic V1 embed payload when version === 'v1'.
+     */
+    buildEmbedV2Container: function(embedOrOptions, extraActionRows = [], contentPrefix = '') {
+        const data = (embedOrOptions && typeof embedOrOptions.toJSON === 'function')
+            ? embedOrOptions.toJSON()
+            : (embedOrOptions?.data || embedOrOptions || {});
+
+        let accentColor = 0x5865f2;
+        if (typeof data.color === 'number') {
+            accentColor = data.color;
+        } else if (typeof data.color === 'string') {
+            const parsed = parseInt(data.color.replace('#', ''), 16);
+            if (!isNaN(parsed)) accentColor = parsed;
         }
+
+        const innerComponents = [];
+
+        // 1. Optional Ping / Content Prefix at top of container
+        if (contentPrefix && String(contentPrefix).trim()) {
+            innerComponents.push({
+                type: 10, // TextDisplay
+                content: String(contentPrefix).trim()
+            });
+            innerComponents.push({
+                type: 14, // Separator
+                divider: true,
+                spacing: 1
+            });
+        }
+
+        // 2. Author + Title + Description block (with Thumbnail accessory if valid http(s) URL)
+        const headerLines = [];
+        if (data.author && data.author.name) {
+            headerLines.push(`**${data.author.name}**`);
+        }
+        if (data.title) {
+            headerLines.push(`## ${data.title}`);
+        }
+        if (data.description) {
+            headerLines.push(String(data.description));
+        }
+
+        const headerMarkdown = headerLines.join('\n') || '​';
+        const thumbUrl = data.thumbnail?.url || (typeof data.thumbnail === 'string' ? data.thumbnail : null);
+        const isHttpThumb = thumbUrl && /^https?:\/\//i.test(thumbUrl);
+
+        if (isHttpThumb) {
+            innerComponents.push({
+                type: 9, // Section
+                components: [{ type: 10, content: headerMarkdown }],
+                accessory: {
+                    type: 11, // Thumbnail
+                    media: { url: thumbUrl }
+                }
+            });
+        } else if (headerLines.length > 0) {
+            innerComponents.push({
+                type: 10, // TextDisplay
+                content: headerMarkdown
+            });
+        }
+
+        // 3. Embed Fields
+        if (Array.isArray(data.fields) && data.fields.length > 0) {
+            innerComponents.push({
+                type: 14, // Separator
+                divider: true,
+                spacing: 1
+            });
+            const fieldsMarkdown = data.fields
+                .filter(f => f && (f.name || f.value))
+                .map(f => `**${f.name || 'Field'}**\n${f.value || ''}`)
+                .join('\n\n');
+            if (fieldsMarkdown) {
+                innerComponents.push({
+                    type: 10,
+                    content: fieldsMarkdown
+                });
+            }
+        }
+
+        // 4. Banner Image (MediaGallery type: 12)
+        const imgUrl = data.image?.url || (typeof data.image === 'string' ? data.image : null);
+        if (imgUrl && /^https?:\/\//i.test(imgUrl)) {
+            innerComponents.push({
+                type: 12, // MediaGallery
+                items: [{ media: { url: imgUrl } }]
+            });
+        }
+
+        // 5. Footer & Timestamp subtext
+        const footerParts = [];
+        if (data.footer && data.footer.text) {
+            footerParts.push(data.footer.text);
+        }
+        if (data.timestamp) {
+            const tsSec = Math.floor(new Date(data.timestamp).getTime() / 1000);
+            if (!isNaN(tsSec)) footerParts.push(`<t:${tsSec}:f>`);
+        }
+        if (footerParts.length > 0) {
+            innerComponents.push({
+                type: 14,
+                divider: true,
+                spacing: 1
+            });
+            innerComponents.push({
+                type: 10,
+                content: `-# ${footerParts.join(' • ')}`
+            });
+        }
+
+        // 6. Action Rows (Buttons / Selects) inside the V2 container
+        if (Array.isArray(extraActionRows) && extraActionRows.length > 0) {
+            extraActionRows.forEach(row => {
+                const rowJson = (row && typeof row.toJSON === 'function') ? row.toJSON() : row;
+                if (rowJson) innerComponents.push(rowJson);
+            });
+        }
+
+        if (innerComponents.length === 0) {
+            innerComponents.push({ type: 10, content: '​' });
+        }
+
+        return {
+            flags: 32768, // MessageFlags.IsComponentsV2 (1 << 15)
+            components: [
+                {
+                    type: 17, // Container
+                    accent_color: accentColor,
+                    components: innerComponents
+                }
+            ]
+        };
     }
 };
-

@@ -150,12 +150,22 @@ router.get('/full-dashboard-data', async (req, res) => {
             roleCount: guild.roles.cache.size || 0
         };
 
+        const premiumManager = require('../../utils/premiumManager');
+        const premiumStatus = await premiumManager.resolveGuildPremiumStatus(guild, settings, req.user);
+        const settingsObj = settings ? (typeof settings.toJSON === 'function' ? settings.toJSON() : { ...settings }) : {};
+        settingsObj.isPremium = premiumStatus.isPremium;
+        settingsObj.tierTag = premiumStatus.tierTag;
+        settingsObj.maxSavedWebhooks = premiumStatus.maxSavedWebhooks;
+        settingsObj.premiumSponsors = premiumStatus.sponsors || [];
+        settingsObj.directServerPremium = premiumStatus.directServerPremium;
+
         const responsePayload = {
             success: true,
             channels,
             roles,
             emojis,
-            settings: settings ? (typeof settings.toJSON === 'function' ? settings.toJSON() : settings) : {},
+            settings: settingsObj,
+            premiumStatus,
             contentFeeds,
             autoresponders,
             adaptiveSlowmodeStatus,
@@ -965,7 +975,9 @@ router.post('/webhook-send', async (req, res) => {
             if (embedFields && Array.isArray(embedFields)) {
                 const GuildSettings = require('../../database/models/GuildSettings');
                 const settings = await GuildSettings.findOne({ where: { guildId } }).catch(() => null);
-                const isPremium = settings?.isPremium || false;
+                const premiumManager = require('../../utils/premiumManager');
+                const premStatus = await premiumManager.resolveGuildPremiumStatus(guild, settings, req.user);
+                const isPremium = premStatus.isPremium;
                 const maxFields = isPremium ? 10 : 5;
                 const validFields = embedFields.filter(f => f.name && f.name.trim() !== '' && f.value && f.value.trim() !== '').slice(0, maxFields);
                 validFields.forEach(f => {
@@ -1016,7 +1028,31 @@ router.post('/webhook-send', async (req, res) => {
 
         
 
-        await webhook.send(webhookPayload);
+        const GuildSettingsModel = require('../../database/models/GuildSettings');
+        const gsForEmbed = await GuildSettingsModel.findOne({ where: { guildId } }).catch(() => null);
+        const requestedVersion = req.body.embedVersion || gsForEmbed?.webhookEmbedVersion || gsForEmbed?.embedVersion || 'v2';
+
+        if (requestedVersion === 'v2' && webhookPayload.embeds && webhookPayload.embeds.length > 0 && (!webhookPayload.files || webhookPayload.files.length === 0)) {
+            try {
+                const { buildEmbedV2Container } = require('../../utils/embeds');
+                const v2Payload = buildEmbedV2Container(
+                    webhookPayload.embeds[0],
+                    webhookPayload.components || [],
+                    webhookPayload.content || ''
+                );
+                await webhook.send({
+                    username: webhookPayload.username,
+                    avatarURL: webhookPayload.avatarURL,
+                    allowedMentions: webhookPayload.allowedMentions,
+                    withComponents: true,
+                    ...v2Payload
+                });
+            } catch (v2Err) {
+                await webhook.send(webhookPayload);
+            }
+        } else {
+            await webhook.send(webhookPayload);
+        }
 
 
 
@@ -1071,6 +1107,310 @@ router.post('/webhook-send', async (req, res) => {
 });
 
 
+/**
+ * Helper to safely parse savedWebhooks JSON array from GuildSettings
+ */
+function parseSavedWebhooks(raw) {
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    try {
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+let __savedWebhooksColVerified = false;
+async function ensureSavedWebhooksColumn() {
+    if (__savedWebhooksColVerified) return;
+    __savedWebhooksColVerified = true;
+    try {
+        const sequelize = require('../../database/db');
+        await sequelize.query("ALTER TABLE GuildSettings ADD COLUMN savedWebhooks TEXT DEFAULT '[]';").catch(() => {});
+    } catch (e) {}
+}
+
+/**
+ * GET /api/guilds/:guildId/saved-webhooks
+ * Fetch all saved webhook presets for this server, along with server tier & staff sponsor attribution.
+ */
+router.get('/saved-webhooks', async (req, res) => {
+    try {
+        await ensureSavedWebhooksColumn();
+        const { guildId } = req.params;
+        const guild = req.client.guilds.cache.get(guildId) || await req.client.guilds.fetch(guildId).catch(() => null);
+        const [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
+
+        const premiumManager = require('../../utils/premiumManager');
+        const premiumStatus = await premiumManager.resolveGuildPremiumStatus(guild, settings, req.user);
+        const rawList = parseSavedWebhooks(settings.savedWebhooks);
+
+        // Annotate each preset with lock status if the server reverted from Premium (10) to Free (3)
+        const savedWebhooks = rawList.map((preset, idx) => ({
+            ...preset,
+            slotNumber: idx + 1,
+            tierTag: idx >= 3 ? 'PREMIUM' : (preset.tierTag || 'FREE'),
+            isLocked: !premiumStatus.isPremium && idx >= 3
+        }));
+
+        res.json({
+            success: true,
+            savedWebhooks,
+            isPremium: premiumStatus.isPremium,
+            tierTag: premiumStatus.tierTag,
+            maxSavedWebhooks: premiumStatus.maxSavedWebhooks,
+            directServerPremium: premiumStatus.directServerPremium,
+            sponsors: premiumStatus.sponsors || []
+        });
+    } catch (e) {
+        console.error('Error fetching saved webhooks:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/saved-webhooks
+ * Create or update a Saved Webhook preset (3 max on Free tier, 10 max on Staff/Server Premium tier).
+ * Accessible by all staff members with proper permissions in the server.
+ */
+router.post('/saved-webhooks', async (req, res) => {
+    try {
+        await ensureSavedWebhooksColumn();
+        const { guildId } = req.params;
+        const guild = req.client.guilds.cache.get(guildId) || await req.client.guilds.fetch(guildId).catch(() => null);
+        const [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
+
+        const premiumManager = require('../../utils/premiumManager');
+        const premiumStatus = await premiumManager.resolveGuildPremiumStatus(guild, settings, req.user);
+        const maxPresets = premiumStatus.maxSavedWebhooks; // 10 if Premium, 3 if Free
+
+        const {
+            id,
+            presetName,
+            channelId,
+            name,
+            avatar,
+            content,
+            pings,
+            embedTitle,
+            embedDesc,
+            embedColor,
+            embedImage,
+            embedThumbnail,
+            embedFooter,
+            embedFooterIcon,
+            embedAuthorName,
+            embedAuthorIcon,
+            embedAuthorUrl,
+            embedTimestamp,
+            embedFields
+        } = req.body || {};
+
+        const cleanPresetName = String(presetName || '').trim().slice(0, 60);
+        if (!cleanPresetName) {
+            return res.status(400).json({ error: 'Please provide a custom name for your Saved Webhook preset.' });
+        }
+
+        const list = parseSavedWebhooks(settings.savedWebhooks);
+        const existingIdx = id ? list.findIndex(p => String(p.id) === String(id)) : -1;
+
+        if (existingIdx === -1 && list.length >= maxPresets) {
+            return res.status(403).json({
+                error: premiumStatus.isPremium
+                    ? `Maximum of ${maxPresets} Saved Webhook presets reached for this Premium server.`
+                    : `Free tier allows up to 3 Saved Webhook presets (${list.length}/3 used). If any staff member in this server has Nora Premium, all staff unlock up to 10 presets!`,
+                tierTag: premiumStatus.tierTag,
+                maxSavedWebhooks: maxPresets
+            });
+        }
+
+        if (existingIdx !== -1 && !premiumStatus.isPremium && existingIdx >= 3) {
+            return res.status(403).json({
+                error: 'This preset is in a Premium slot (Slots 4–10). Restore Staff or Server Premium to edit it, or delete it.'
+            });
+        }
+
+        // Resolve creator / editor staff member attribution
+        let callerUser = req.user || null;
+        if (!callerUser) {
+            const authHeader = req.headers.authorization;
+            const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+            if (token) callerUser = await getDiscordUser(token).catch(() => null);
+        }
+
+        let callerMember = null;
+        if (guild && callerUser && callerUser.id) {
+            callerMember = guild.members?.cache?.get(callerUser.id) || await guild.members.fetch(callerUser.id).catch(() => null);
+        }
+
+        const staffUserId = callerUser ? String(callerUser.id) : 'unknown';
+        const staffUsername = callerMember?.user?.username || callerUser?.username || 'Server Staff';
+        const staffDisplayName = callerMember?.displayName || callerUser?.global_name || staffUsername;
+        const staffAvatar = (callerMember?.user && typeof callerMember.user.displayAvatarURL === 'function')
+            ? callerMember.user.displayAvatarURL({ extension: 'png', size: 64 })
+            : (callerUser?.avatar ? `https://cdn.discordapp.com/avatars/${staffUserId}/${callerUser.avatar}.png?size=64` : null);
+
+        const maxFields = premiumStatus.isPremium ? 10 : 5;
+        const sanitizedFields = Array.isArray(embedFields)
+            ? embedFields
+                .filter(f => f && ((f.name && String(f.name).trim()) || (f.value && String(f.value).trim())))
+                .slice(0, maxFields)
+                .map(f => ({
+                    name: String(f.name || '').slice(0, 256),
+                    value: String(f.value || '').slice(0, 1024),
+                    inline: !!f.inline
+                }))
+            : [];
+
+        const targetSlotIndex = existingIdx !== -1 ? existingIdx : list.length;
+        const presetTierTag = (targetSlotIndex >= 3 || premiumStatus.isPremium) ? 'PREMIUM' : 'FREE';
+        const sponsorCredits = (premiumStatus.sponsors || []).map(s => ({
+            id: s.id,
+            username: s.username,
+            displayName: s.displayName,
+            avatar: s.avatar
+        }));
+
+        const nowIso = new Date().toISOString();
+        const existingPreset = existingIdx !== -1 ? list[existingIdx] : null;
+
+        // Track all staff contributors who created/updated this preset
+        const contributors = Array.isArray(existingPreset?.contributors) ? [...existingPreset.contributors] : [];
+        if (staffUserId !== 'unknown' && !contributors.some(c => String(c.id) === staffUserId)) {
+            contributors.push({
+                id: staffUserId,
+                username: staffUsername,
+                displayName: staffDisplayName,
+                avatar: staffAvatar
+            });
+        }
+
+        const presetRecord = {
+            id: existingPreset ? existingPreset.id : ('wh_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7)),
+            presetName: cleanPresetName,
+            channelId: channelId ? String(channelId) : '',
+            name: name ? String(name).slice(0, 80) : '',
+            avatar: avatar ? String(avatar).slice(0, 1000) : '',
+            content: content ? String(content).slice(0, 2000) : '',
+            pings: pings ? String(pings) : 'none',
+            embedTitle: embedTitle ? String(embedTitle).slice(0, 256) : '',
+            embedDesc: embedDesc ? String(embedDesc).slice(0, 4096) : '',
+            embedColor: embedColor ? String(embedColor).slice(0, 20) : '#5865f2',
+            embedImage: embedImage ? String(embedImage).slice(0, 1000) : '',
+            embedThumbnail: embedThumbnail ? String(embedThumbnail).slice(0, 1000) : '',
+            embedFooter: embedFooter ? String(embedFooter).slice(0, 2048) : '',
+            embedFooterIcon: embedFooterIcon ? String(embedFooterIcon).slice(0, 1000) : '',
+            embedAuthorName: embedAuthorName ? String(embedAuthorName).slice(0, 256) : '',
+            embedAuthorIcon: embedAuthorIcon ? String(embedAuthorIcon).slice(0, 1000) : '',
+            embedAuthorUrl: embedAuthorUrl ? String(embedAuthorUrl).slice(0, 1000) : '',
+            embedTimestamp: !!embedTimestamp,
+            embedFields: sanitizedFields,
+            tierTag: presetTierTag,
+            createdByUserId: existingPreset?.createdByUserId || staffUserId,
+            createdByUsername: existingPreset?.createdByUsername || staffUsername,
+            createdByDisplayName: existingPreset?.createdByDisplayName || staffDisplayName,
+            createdByAvatar: existingPreset?.createdByAvatar || staffAvatar,
+            updatedByUserId: staffUserId,
+            updatedByUsername: staffUsername,
+            updatedByDisplayName: staffDisplayName,
+            contributors,
+            sponsorCredits,
+            createdAt: existingPreset?.createdAt || nowIso,
+            updatedAt: nowIso
+        };
+
+        if (existingIdx !== -1) {
+            list[existingIdx] = presetRecord;
+        } else {
+            list.push(presetRecord);
+        }
+
+        settings.savedWebhooks = JSON.stringify(list);
+        await settings.save();
+        settingsCache.invalidate(guildId);
+        dashboardDataCache.delete(guildId);
+
+        if (typeof logServerAction === 'function') {
+            await logServerAction(
+                guildId,
+                callerUser || { id: staffUserId, username: staffUsername },
+                existingIdx !== -1 ? 'WEBHOOK_PRESET_UPDATED' : 'WEBHOOK_PRESET_SAVED',
+                `${existingIdx !== -1 ? 'Updated' : 'Saved'} webhook preset "${cleanPresetName}" (${list.length}/${maxPresets} ${premiumStatus.tierTag})`
+            ).catch(() => {});
+        }
+
+        const annotated = list.map((p, idx) => ({
+            ...p,
+            slotNumber: idx + 1,
+            tierTag: idx >= 3 ? 'PREMIUM' : (p.tierTag || 'FREE'),
+            isLocked: !premiumStatus.isPremium && idx >= 3
+        }));
+
+        res.json({
+            success: true,
+            preset: presetRecord,
+            savedWebhooks: annotated,
+            isPremium: premiumStatus.isPremium,
+            tierTag: premiumStatus.tierTag,
+            maxSavedWebhooks: maxPresets,
+            sponsors: premiumStatus.sponsors || []
+        });
+    } catch (e) {
+        console.error('Error saving webhook preset:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * DELETE /api/guilds/:guildId/saved-webhooks/:presetId
+ * Delete a Saved Webhook preset by ID.
+ */
+router.delete('/saved-webhooks/:presetId', async (req, res) => {
+    try {
+        await ensureSavedWebhooksColumn();
+        const { guildId, presetId } = req.params;
+        const guild = req.client.guilds.cache.get(guildId) || await req.client.guilds.fetch(guildId).catch(() => null);
+        const [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
+
+        const list = parseSavedWebhooks(settings.savedWebhooks);
+        const target = list.find(p => String(p.id) === String(presetId));
+        if (!target) {
+            return res.status(404).json({ error: 'Saved webhook preset not found.' });
+        }
+
+        const updatedList = list.filter(p => String(p.id) !== String(presetId));
+        settings.savedWebhooks = JSON.stringify(updatedList);
+        await settings.save();
+        settingsCache.invalidate(guildId);
+        dashboardDataCache.delete(guildId);
+
+        const premiumManager = require('../../utils/premiumManager');
+        const premiumStatus = await premiumManager.resolveGuildPremiumStatus(guild, settings, req.user);
+
+        const annotated = updatedList.map((p, idx) => ({
+            ...p,
+            slotNumber: idx + 1,
+            tierTag: idx >= 3 ? 'PREMIUM' : (p.tierTag || 'FREE'),
+            isLocked: !premiumStatus.isPremium && idx >= 3
+        }));
+
+        res.json({
+            success: true,
+            savedWebhooks: annotated,
+            isPremium: premiumStatus.isPremium,
+            tierTag: premiumStatus.tierTag,
+            maxSavedWebhooks: premiumStatus.maxSavedWebhooks,
+            sponsors: premiumStatus.sponsors || []
+        });
+    } catch (e) {
+        console.error('Error deleting webhook preset:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+
+
 
 /**
 
@@ -1113,6 +1453,68 @@ router.post('/action', async (req, res) => {
 
 
         // ─── Utility Spawn Actions (no userId required) ───
+
+        if (action === 'start_guess_number') {
+            const GuildSettings = require('../../database/models/GuildSettings');
+            let [settings] = await GuildSettings.findOrCreate({ where: { guildId } });
+
+            const updates = {};
+            if (req.body.channelId) {
+                updates.guessNumberChannelId = String(req.body.channelId).trim();
+                updates.guessGameEnabled = true;
+            }
+            if (req.body.min !== undefined && req.body.min !== '' && !isNaN(parseInt(req.body.min, 10))) {
+                updates.guessGameMin = Math.max(0, parseInt(req.body.min, 10));
+            }
+            if (req.body.max !== undefined && req.body.max !== '' && !isNaN(parseInt(req.body.max, 10))) {
+                updates.guessGameMax = Math.min(100000, parseInt(req.body.max, 10));
+            }
+            if (req.body.guessLimit !== undefined && req.body.guessLimit !== '' && !isNaN(parseInt(req.body.guessLimit, 10))) {
+                updates.guessNumberGuessLimit = Math.max(1, parseInt(req.body.guessLimit, 10));
+            }
+            if (req.body.xpReward !== undefined && req.body.xpReward !== '' && !isNaN(parseInt(req.body.xpReward, 10))) {
+                updates.guessGameXpReward = Math.max(10, parseInt(req.body.xpReward, 10));
+            }
+
+            if (Object.keys(updates).length > 0) {
+                await settings.update(updates);
+                const settingsCache = require('../../utils/settingsCache');
+                settingsCache.invalidate(guildId);
+            }
+
+            if (!settings.guessNumberChannelId) {
+                return res.status(400).json({ error: 'Please select a dedicated Guess the Number channel first in the dropdown.' });
+            }
+
+            let resolvedGuild = guild;
+            if (!resolvedGuild && req.client?.guilds) {
+                resolvedGuild = req.client.guilds.cache.get(guildId) || await req.client.guilds.fetch(guildId).catch(() => null);
+            }
+
+            if (!resolvedGuild) {
+                return res.status(404).json({ error: 'Guild not found on this bot cluster or shard.' });
+            }
+
+            const { announceAndStartGame } = require('../../events/guessNumberSystem');
+            const state = await announceAndStartGame(resolvedGuild, settings);
+            if (!state) {
+                return res.status(400).json({ error: 'Failed to announce and start game. Please verify Nora has Send Messages and View Channel permissions in the designated channel.' });
+            }
+
+            const logger = require('../../utils/logger');
+            logger.logDashboardOrCommandAction(
+                resolvedGuild,
+                'Dashboard Action - Started Guess The Number',
+                [
+                    { name: 'Administrator', value: userTag, inline: true },
+                    { name: 'Channel', value: `<#${settings.guessNumberChannelId}>`, inline: true },
+                    { name: 'Round', value: `#${state.round}`, inline: true }
+                ],
+                0x5865F2
+            ).catch(() => null);
+
+            return res.json({ success: true, message: `Guess the Number game started in <#${settings.guessNumberChannelId}>!`, round: state.round });
+        }
 
         if (action === 'spawn_tickets') {
 
@@ -2825,25 +3227,10 @@ router.post('/autoresponders', async (req, res) => {
 
         }
 
-        let isPremium = !!settings.isPremium || !!settings.isManualPremium;
-
         const guild = req.client ? req.client.guilds.cache.get(guildId) : null;
-
-        if (guild && (guild.ownerId === '1214048435632603137' || guild.ownerId === '1366229304257544213')) {
-
-            isPremium = true;
-
-        }
-
-        const paidTime = settings.paidExpiresAt ? new Date(settings.paidExpiresAt).getTime() : 0;
-
-        const expandedMs = settings.expandedTimeMs ? Number(settings.expandedTimeMs) : 0;
-
-        if (paidTime + expandedMs > Date.now()) {
-
-            isPremium = true;
-
-        }
+        const premiumManager = require('../../utils/premiumManager');
+        const premStatus = await premiumManager.resolveGuildPremiumStatus(guild, settings, req.user);
+        const isPremium = premStatus.isPremium;
 
 
 
@@ -2969,25 +3356,10 @@ router.put('/autoresponders/:id', async (req, res) => {
 
         }
 
-        let isPremium = !!settings.isPremium || !!settings.isManualPremium;
-
         const guild = req.client ? req.client.guilds.cache.get(guildId) : null;
-
-        if (guild && (guild.ownerId === '1214048435632603137' || guild.ownerId === '1366229304257544213')) {
-
-            isPremium = true;
-
-        }
-
-        const paidTime = settings.paidExpiresAt ? new Date(settings.paidExpiresAt).getTime() : 0;
-
-        const expandedMs = settings.expandedTimeMs ? Number(settings.expandedTimeMs) : 0;
-
-        if (paidTime + expandedMs > Date.now()) {
-
-            isPremium = true;
-
-        }
+        const premiumManager = require('../../utils/premiumManager');
+        const premStatus = await premiumManager.resolveGuildPremiumStatus(guild, settings, req.user);
+        const isPremium = premStatus.isPremium;
 
 
 

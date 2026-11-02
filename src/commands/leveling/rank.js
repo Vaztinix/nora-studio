@@ -117,35 +117,33 @@ module.exports = {
 
             // Determine custom avatar & theme settings
             const userShowAvatar = targetPrefs ? targetPrefs.showAvatarInRankCard !== false : true;
+            const finalShowPfp = Boolean(showPfp && userShowAvatar);
+
             const { APP_OWNER_IDS } = require('../../utils/premiumManager');
             const isTargetUserPrem = APP_OWNER_IDS.includes(target.id) ||
                 Boolean(targetPrefs && (targetPrefs.isPremium || targetPrefs.isManualPremium || (targetPrefs.paidExpiresAt && new Date(targetPrefs.paidExpiresAt).getTime() > Date.now())));
             const isGuildPrem = Boolean(settings && (settings.isPremium || settings.isManualPremium || (settings.paidExpiresAt && new Date(settings.paidExpiresAt).getTime() > Date.now())));
             const hasStudioPlus = isTargetUserPrem || isGuildPrem;
 
-            const themeMode = targetPrefs?.rankCardThemeMode || 'preset';
-
             let cardAccent = settings?.levelingCardAccentColor || '#7c3aed';
             let cardBgColor = settings?.levelingCardBgColor || '#111217';
             let cardBorder = settings?.levelingCardBorderColor || '#23252e';
             let cardUserBg = null;
 
-            // Custom GIF rank cards and custom HEX color builder are exclusive to Studio Plus
-            if (hasStudioPlus && themeMode === 'image') {
-                cardUserBg = targetPrefs?.rankCardBackgroundImage || null;
-                if (targetPrefs?.rankCardCustomColor) cardAccent = targetPrefs.rankCardCustomColor;
-            } else if (hasStudioPlus && themeMode === 'custom') {
-                cardUserBg = null;
-                if (targetPrefs?.rankCardCustomColor) cardAccent = targetPrefs.rankCardCustomColor;
-            } else {
-                // Free tier or preset mode: adhere strictly to server theme
-                cardUserBg = null;
-                cardAccent = settings?.levelingCardAccentColor || '#7c3aed';
-                cardBgColor = settings?.levelingCardBgColor || '#111217';
-                cardBorder = settings?.levelingCardBorderColor || '#23252e';
+            // User custom rank card background takes highest priority
+            if (targetPrefs?.rankCardBackgroundImage) {
+                cardUserBg = targetPrefs.rankCardBackgroundImage;
+            } else if (targetPrefs?.customRankCardBg) {
+                cardUserBg = targetPrefs.customRankCardBg;
+            }
+
+            if (targetPrefs?.rankCardCustomColor) {
+                cardAccent = targetPrefs.rankCardCustomColor;
             }
 
             const { generateRankCard } = require('../../utils/rankCardGenerator');
+            const avatarUrl = target.displayAvatarURL ? target.displayAvatarURL({ extension: 'png', size: 256 }) : null;
+
             const imageBuffer = await Promise.race([
                 generateRankCard({
                     username: target.username,
@@ -153,30 +151,31 @@ module.exports = {
                     currentXp: xpProgressInLevel,
                     nextLevelXp: xpStepForLevelIncrement,
                     rank: rankIndex,
-                    avatarUrl: target.displayAvatarURL({ extension: 'png', size: 256 }),
+                    avatarUrl,
                     showPfp: finalShowPfp,
                     bgColor: cardBgColor,
                     accentColor: cardAccent,
                     borderColor: cardBorder,
-                    isPremium: hasStudioPlus, // Strictly gated by Studio Plus entitlement
+                    isPremium: hasStudioPlus,
                     userCustomBg: cardUserBg,
+                    userShape: targetPrefs?.rankCardShape || null,
                     serverCustomBg: settings?.levelingCardBackgroundImage || null
                 }),
                 new Promise((_, reject) => setTimeout(() => reject(new Error('Card generation timed out')), 25000))
             ]);
 
-            const isGifBuffer = imageBuffer.slice(0, 3).toString() === 'GIF';
+            const isGifBuffer = imageBuffer && imageBuffer.slice(0, 3).toString() === 'GIF';
             const fileName = isGifBuffer ? 'rank-card.gif' : 'rank-card.png';
             const { AttachmentBuilder } = require('discord.js');
             const attachment = new AttachmentBuilder(imageBuffer, { name: fileName });
 
             await interaction.editReply({ 
-                content: null,
+                content: '',
                 embeds: [],
                 files: [attachment] 
             });
         } catch (err) {
-            console.error('Error generating rank card:', err);
+            console.error('[Rank Command Error]:', err?.stack || err);
             // Fallback: send simple text reply if generation fails
             await interaction.editReply({ 
                 content: `👋 **${target.username}** | Level **${currentLevel}** | Rank **#${rankIndex}** | XP **${xpProgressInLevel.toLocaleString()} / ${xpStepForLevelIncrement.toLocaleString()}**`,

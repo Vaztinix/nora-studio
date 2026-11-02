@@ -432,16 +432,23 @@ module.exports = {
                         { name: 'Tier Status', value: isPremium ? '**Studio Plus** (Up to 10x XP & 25 Roles)' : '**Free Tier** (Up to 2x XP & 5 Roles)', inline: true }
                     );
 
-                const rowA = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_leveling_toggle').setLabel(settings.levelingEnabled ? 'Disable Leveling' : 'Enable Leveling').setStyle(settings.levelingEnabled ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_levelalert_toggle').setLabel(settings.levelUpNotificationsEnabled !== false ? 'Disable Alerts' : 'Enable Alerts').setStyle(settings.levelUpNotificationsEnabled !== false ? ButtonStyle.Danger : ButtonStyle.Success),
-                    new ButtonBuilder().setCustomId('action_leveldm_toggle').setLabel(settings.levelUpDmEnabled ? 'Disable DM Alerts' : 'Enable DM Alerts').setStyle(settings.levelUpDmEnabled ? ButtonStyle.Danger : ButtonStyle.Secondary)
-                );
+                let currentIgnored = [];
+                if (Array.isArray(settings.levelingIgnoredChannels)) currentIgnored = settings.levelingIgnoredChannels;
+                else if (typeof settings.levelingIgnoredChannels === 'string') {
+                    try { currentIgnored = JSON.parse(settings.levelingIgnoredChannels); } catch(e) { currentIgnored = []; }
+                }
+                const ignoredDisplay = currentIgnored.length > 0 
+                    ? (currentIgnored.length <= 5 ? currentIgnored.map(id => `<#${id}>`).join(', ') : `${currentIgnored.slice(0, 5).map(id => `<#${id}>`).join(', ')} + ${currentIgnored.length - 5} more`)
+                    : '*None (All channels earn XP)*';
 
-                const rowA2 = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_leveling_ai_toggle').setLabel(settings.levelingAiEnabled !== false ? 'AI Enhance: ON' : 'AI Enhance: OFF').setStyle(settings.levelingAiEnabled !== false ? ButtonStyle.Success : ButtonStyle.Secondary),
-                    new ButtonBuilder().setCustomId('action_rolestack_toggle').setLabel(settings.roleRewardsStack !== false ? 'Stack Roles: ON' : 'Stack Roles: OFF').setStyle(ButtonStyle.Secondary),
-                    new ButtonBuilder().setCustomId('action_levelpfp_toggle').setLabel(settings.levelingPfpEnabled !== false ? 'Card Avatars: ON' : 'Card Avatars: OFF').setStyle(settings.levelingPfpEnabled !== false ? ButtonStyle.Success : ButtonStyle.Secondary)
+                embed.addFields({ name: 'Channel Exceptions (No XP)', value: ignoredDisplay, inline: false });
+
+                const rowButtons = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder().setCustomId('action_leveling_toggle').setLabel(settings.levelingEnabled ? 'Leveling: ON' : 'Leveling: OFF').setStyle(settings.levelingEnabled ? ButtonStyle.Success : ButtonStyle.Danger),
+                    new ButtonBuilder().setCustomId('action_levelalert_toggle').setLabel(settings.levelUpNotificationsEnabled !== false ? 'Alerts: ON' : 'Alerts: OFF').setStyle(settings.levelUpNotificationsEnabled !== false ? ButtonStyle.Success : ButtonStyle.Danger),
+                    new ButtonBuilder().setCustomId('action_leveldm_toggle').setLabel(settings.levelUpDmEnabled ? 'DM Alerts: ON' : 'DM Alerts: OFF').setStyle(settings.levelUpDmEnabled ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_rolestack_toggle').setLabel(settings.roleRewardsStack !== false ? 'Stack: ON' : 'Stack: OFF').setStyle(ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_levelpfp_toggle').setLabel(settings.levelingPfpEnabled !== false ? 'Avatars: ON' : 'Avatars: OFF').setStyle(settings.levelingPfpEnabled !== false ? ButtonStyle.Success : ButtonStyle.Secondary)
                 );
 
                 const rowB = new ActionRowBuilder().addComponents(
@@ -460,7 +467,16 @@ module.exports = {
                     new ChannelSelectMenuBuilder().setCustomId('action_levelalert_channel').setPlaceholder('Select Dedicated Level-Up Channel...').setChannelTypes(ChannelType.GuildText)
                 );
 
-                return { embeds: [embed], components: [rowA, rowA2, rowB, rowC, backRow] };
+                const rowExceptions = new ActionRowBuilder().addComponents(
+                    new ChannelSelectMenuBuilder()
+                        .setCustomId('action_leveling_exceptions')
+                        .setPlaceholder('Select Channel Exceptions (No XP)...')
+                        .setMinValues(0)
+                        .setMaxValues(25)
+                        .setChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
+                );
+
+                return { embeds: [embed], components: [rowButtons, rowB, rowC, rowExceptions, backRow] };
             }
 
             // ==========================================
@@ -1356,6 +1372,7 @@ module.exports = {
                 if (i.customId === 'action_levelpfp_toggle') { settings.levelingPfpEnabled = settings.levelingPfpEnabled === false ? true : false; update = true; }
                 if (i.customId === 'action_leveling_cooldown') { settings.levelingCooldownSec = parseInt(i.values[0], 10); update = true; }
                 if (i.customId === 'action_levelalert_channel') { settings.levelUpChannelId = i.values[0]; update = true; }
+                if (i.customId === 'action_leveling_exceptions') { settings.levelingIgnoredChannels = i.values || []; update = true; }
 
                 // Games, Starboard & AFK Navigation
                 if (i.customId === 'action_goto_starboard') { state.currentView = 'view_starboard'; return i.update(buildDashboard('view_starboard')); }

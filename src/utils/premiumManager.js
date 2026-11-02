@@ -99,7 +99,138 @@ module.exports = {
 
             // 🛟 6. SLA & Official Badges
             hasEarlyAccess: !!isPremium,
-            hasBadge: !!isPremium
+            hasBadge: !!isPremium,
+
+            // 🪝 7. Saved Webhook Presets: Free 3, Studio Plus 10
+            savedWebhookLimit: isPremium ? 10 : 3
+        };
+    },
+
+    /**
+     * Resolve whether a guild has active Premium (either directly or via Staff Premium Sponsorship),
+     * and return the list of staff members whose Premium is sponsoring the server.
+     * If all sponsoring staff members leave the server or lose staff permissions/premium,
+     * the server automatically reverts to the Free tier.
+     * @param {Object} guild - Discord.js Guild instance (optional)
+     * @param {Object} settings - GuildSettings instance or plain object (optional)
+     * @param {Object} currentUser - Currently authenticated Discord user from OAuth (optional)
+     * @returns {Promise<{ isPremium: boolean, tierTag: string, maxSavedWebhooks: number, directServerPremium: boolean, sponsors: Array }>}
+     */
+    resolveGuildPremiumStatus: async (guild, settings = null, currentUser = null) => {
+        const now = Date.now();
+        const guildId = guild ? String(guild.id) : (settings && settings.guildId ? String(settings.guildId) : null);
+
+        // 1. Direct server-level subscription / manual grant on GuildSettings
+        const directServerPremium = Boolean(
+            settings && (
+                settings.isPremium ||
+                settings.isManualPremium ||
+                (settings.paidExpiresAt && (new Date(settings.paidExpiresAt).getTime() + (settings.expandedTimeMs ? Number(settings.expandedTimeMs) : 0) > now))
+            )
+        );
+
+        // 2. Parse any dashboard-whitelisted staff roles for this guild
+        const whitelistedRoleIds = new Set();
+        if (settings && settings.whitelistedRoles) {
+            try {
+                const parsed = typeof settings.whitelistedRoles === 'string'
+                    ? JSON.parse(settings.whitelistedRoles)
+                    : settings.whitelistedRoles;
+                if (Array.isArray(parsed)) {
+                    for (const item of parsed) {
+                        if (typeof item === 'string') whitelistedRoleIds.add(item);
+                        else if (item && item.roleId) whitelistedRoleIds.add(String(item.roleId));
+                        else if (item && item.id) whitelistedRoleIds.add(String(item.id));
+                    }
+                }
+            } catch (e) {}
+        }
+
+        // 3. Gather all users with active personal premium (UserPrefs + APP_OWNER_IDS)
+        const UserPrefs = require('../database/models/UserPrefs');
+        const allPrefs = await UserPrefs.findAll().catch(() => []);
+        const prefsByUserId = new Map();
+        const candidateUserIds = new Set(APP_OWNER_IDS);
+
+        for (const p of allPrefs) {
+            if (!p || !p.userId) continue;
+            prefsByUserId.set(String(p.userId), p);
+            const activePaid = p.paidExpiresAt && (new Date(p.paidExpiresAt).getTime() + (p.expandedTimeMs ? Number(p.expandedTimeMs) : 0) > now);
+            const activeLegacy = p.premiumExpiresAt && (new Date(p.premiumExpiresAt).getTime() > now);
+            if (p.isPremium || p.isManualPremium || activePaid || activeLegacy) {
+                candidateUserIds.add(String(p.userId));
+            }
+        }
+
+        const sponsors = [];
+        const seenSponsorIds = new Set();
+
+        if (guild) {
+            for (const uid of candidateUserIds) {
+                let member = guild.members?.cache?.get(uid) || null;
+                if (!member && guild.members && typeof guild.members.fetch === 'function') {
+                    member = await guild.members.fetch(uid).catch(() => null);
+                }
+                // If the user is not in the server (left the server), they cannot sponsor it
+                if (!member) continue;
+
+                const isOwner = String(guild.ownerId) === String(uid);
+                const perms = member.permissions;
+                const hasDiscordStaffPerm = Boolean(perms && (
+                    perms.has('Administrator') ||
+                    perms.has('ManageGuild') ||
+                    perms.has('ManageWebhooks') ||
+                    perms.has('ManageChannels') ||
+                    perms.has('ManageRoles') ||
+                    perms.has('ModerateMembers') ||
+                    perms.has('KickMembers') ||
+                    perms.has('BanMembers')
+                ));
+                const hasWhitelistedStaffRole = Boolean(
+                    whitelistedRoleIds.size > 0 &&
+                    member.roles?.cache?.some(r => whitelistedRoleIds.has(String(r.id)))
+                );
+                const userPref = prefsByUserId.get(String(uid));
+                const isBoundToThisGuild = Boolean(userPref && guildId && String(userPref.boundGuildId) === String(guildId));
+
+                // Must be a current staff member in the server (or bound while in the server)
+                if (isOwner || hasDiscordStaffPerm || hasWhitelistedStaffRole || isBoundToThisGuild) {
+                    if (!seenSponsorIds.has(uid)) {
+                        seenSponsorIds.add(uid);
+                        const username = member.user?.username || userPref?.displayName || ('User ' + uid.slice(-4));
+                        const displayName = member.displayName || member.user?.globalName || username;
+                        const avatar = (member.user && typeof member.user.displayAvatarURL === 'function')
+                            ? member.user.displayAvatarURL({ extension: 'png', size: 64 })
+                            : null;
+                        sponsors.push({
+                            id: String(uid),
+                            username,
+                            displayName,
+                            avatar,
+                            roleLabel: isOwner ? 'Server Owner' : 'Server Staff'
+                        });
+                    }
+                }
+            }
+        } else if (currentUser && currentUser.id && candidateUserIds.has(String(currentUser.id))) {
+            const uid = String(currentUser.id);
+            seenSponsorIds.add(uid);
+            sponsors.push({
+                id: uid,
+                username: currentUser.username || 'Staff',
+                displayName: currentUser.global_name || currentUser.username || 'Staff',
+                avatar: currentUser.avatar ? ('https://cdn.discordapp.com/avatars/' + uid + '/' + currentUser.avatar + '.png?size=64') : null,
+                roleLabel: 'Server Staff'
+            });
+        }
+
+        const isPremium = Boolean(directServerPremium || sponsors.length > 0);
+        return {
+            isPremium,
+            tierTag: isPremium ? 'PREMIUM' : 'FREE',
+            maxSavedWebhooks: isPremium ? 10 : 3,
+            directServerPremium,
+            sponsors
         };
     }
 };

@@ -44,39 +44,13 @@ router.get('/', settingsRateLimiter, async (req, res) => {
             ? Math.max(0, Math.round(req.client.ws.ping)) 
             : 15; // default fallback if ws is offline/not connected yet
 
-        // Calculate Premium status for the guild
-        let isPremium = !!settings.isPremium || !!settings.isManualPremium;
+                // Calculate Premium status for the guild (including Staff Premium Sponsorship)
         const guild = (req.client && req.client.guilds && req.client.guilds.cache) 
             ? req.client.guilds.cache.get(guildId) 
             : null;
-        if (guild && (guild.ownerId === '1214048435632603137' || guild.ownerId === '1366229304257544213')) {
-            isPremium = true;
-        }
-        const paidTime = settings.paidExpiresAt ? new Date(settings.paidExpiresAt).getTime() : 0;
-        const expandedMs = settings.expandedTimeMs ? Number(settings.expandedTimeMs) : 0;
-        if (paidTime + expandedMs > Date.now()) {
-            isPremium = true;
-        }
-
-        // Check if any active subscriber has bound their personal premium slot to this guild
-        if (!isPremium) {
-            try {
-                const UserPrefs = require('../../database/models/UserPrefs');
-                const boundPref = await UserPrefs.findOne({
-                    where: {
-                        boundGuildId: guildId,
-                        [Op.or]: [
-                            { isPremium: true },
-                            { isManualPremium: true },
-                            { paidExpiresAt: { [Op.gt]: new Date() } }
-                        ]
-                    }
-                });
-                if (boundPref) {
-                    isPremium = true;
-                }
-            } catch (e) {}
-        }
+        const premiumManager = require('../../utils/premiumManager');
+        const premiumStatus = await premiumManager.resolveGuildPremiumStatus(guild, settings, req.user);
+        const isPremium = premiumStatus.isPremium;
 
         const settingsData = typeof settings.toJSON === 'function' 
             ? settings.toJSON() 
@@ -85,6 +59,10 @@ router.get('/', settingsRateLimiter, async (req, res) => {
         res.json({
             ...settingsData,
             isPremium,
+            tierTag: premiumStatus.tierTag,
+            maxSavedWebhooks: premiumStatus.maxSavedWebhooks,
+            premiumSponsors: premiumStatus.sponsors || [],
+            directServerPremium: premiumStatus.directServerPremium,
             heartbeat,
             dbSync: 1
         });
@@ -364,6 +342,34 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             await syncAllAutoModRules(guild, settings).catch(err => {
                 console.error('AutoMod Sync failed for guild %s on settings update:', guildId, err);
             });
+        }
+
+        // Automatically state that Guess the Number is set up and start the game if configured in the dashboard
+        const isGuessEnabled = payload.guessGameEnabled !== undefined ? Boolean(payload.guessGameEnabled) : Boolean(settings.guessGameEnabled);
+        const targetGuessChannel = payload.guessNumberChannelId !== undefined ? payload.guessNumberChannelId : settings.guessNumberChannelId;
+
+        const guessWasConfiguredOrUpdated = isGuessEnabled && targetGuessChannel && (
+            payload.guessNumberChannelId !== undefined ||
+            payload.guessGameEnabled !== undefined ||
+            payload.guessGameMin !== undefined ||
+            payload.guessGameMax !== undefined ||
+            payload.guessNumberGuessLimit !== undefined
+        );
+
+        let resolvedGuild = guild;
+        if (!resolvedGuild && req.client && req.client.guilds) {
+            resolvedGuild = req.client.guilds.cache.get(guildId) || await req.client.guilds.fetch(guildId).catch(() => null);
+        }
+
+        if (resolvedGuild && guessWasConfiguredOrUpdated) {
+            try {
+                const { announceAndStartGame } = require('../../events/guessNumberSystem');
+                announceAndStartGame(resolvedGuild, settings).catch(err => {
+                    console.error('[Guess Game Auto-Setup Error]:', err.message);
+                });
+            } catch (guessErr) {
+                console.error('[Guess Game Auto-Setup Module Error]:', guessErr);
+            }
         }
 
         const changedKeys = Object.keys(payload);

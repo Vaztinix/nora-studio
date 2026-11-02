@@ -1403,13 +1403,88 @@ module.exports = {
                 ).catch(() => null);
             }
 
+            // 🚀 Components V2 Auto-Upgrade: Automatically format all embeds into modern Components V2 Containers
+            if (settings?.embedsVersion !== 'v1') {
+                const { buildEmbedV2Container } = require('../utils/embeds');
+                const wrapPayload = (payload) => {
+                    if (!payload || typeof payload !== 'object' || payload.isComponentsV2Converted) return payload;
+                    if (payload.embeds && Array.isArray(payload.embeds) && payload.embeds.length > 0) {
+                        try {
+                            const v2 = buildEmbedV2Container(payload.embeds[0], payload.components || [], payload.content || '');
+                            return {
+                                ...payload,
+                                isComponentsV2Converted: true,
+                                embeds: [],
+                                content: undefined,
+                                components: v2.components,
+                                flags: (payload.flags || 0) | 32768
+                            };
+                        } catch (e) {
+                            return payload;
+                        }
+                    }
+                    return payload;
+                };
+
+                const origReply = interaction.reply;
+                if (typeof origReply === 'function') {
+                    interaction.reply = async function(options) {
+                        const v2Options = wrapPayload(options);
+                        try {
+                            return await origReply.call(this, v2Options);
+                        } catch (err) {
+                            return await origReply.call(this, options);
+                        }
+                    };
+                }
+
+                const origEditReply = interaction.editReply;
+                if (typeof origEditReply === 'function') {
+                    interaction.editReply = async function(options) {
+                        const v2Options = wrapPayload(options);
+                        try {
+                            return await origEditReply.call(this, v2Options);
+                        } catch (err) {
+                            return await origEditReply.call(this, options);
+                        }
+                    };
+                }
+
+                const origFollowUp = interaction.followUp;
+                if (typeof origFollowUp === 'function') {
+                    interaction.followUp = async function(options) {
+                        const v2Options = wrapPayload(options);
+                        try {
+                            return await origFollowUp.call(this, v2Options);
+                        } catch (err) {
+                            return await origFollowUp.call(this, options);
+                        }
+                    };
+                }
+            }
+
+            // Dynamically reload command module from disk to ensure latest version is always executed
+            let activeCommand = command;
             try {
-                await command.execute(interaction, settings);
+                let cmdPath = command.filePath;
+                if (!cmdPath) {
+                    const candidate = path.join(__dirname, '..', 'commands', command.category || '', `${interaction.commandName}.js`);
+                    if (fs.existsSync(candidate)) cmdPath = candidate;
+                }
+                if (cmdPath && fs.existsSync(cmdPath)) {
+                    delete require.cache[require.resolve(cmdPath)];
+                    activeCommand = require(cmdPath);
+                    activeCommand.filePath = cmdPath;
+                }
+            } catch (_) {}
+
+            try {
+                await activeCommand.execute(interaction, settings);
             } catch (error) {
                 if (error.code === 'UND_ERR_SOCKET' || error.message?.includes('other side closed') || error.code === 'ECONNRESET') {
                     console.warn('[System Network] Retrying command execution after socket reset...');
                     try {
-                        await command.execute(interaction, settings);
+                        await activeCommand.execute(interaction, settings);
                         return;
                     } catch (retryErr) {
                         error = retryErr;

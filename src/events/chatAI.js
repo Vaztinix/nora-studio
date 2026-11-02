@@ -24,6 +24,129 @@ const { getSanitizedSpecsSummary } = require('../utils/deviceSpecs');
  */
 const activeChannelQueues = new Map();
 
+/**
+ * Resolves AI-generated <@username> / <@displayName> or @username tags into real <@USER_ID> mentions
+ */
+async function resolveBrokenUserMentions(text, message, fetchedMessages, replyTargetMsg) {
+    if (!text || typeof text !== 'string' || !message?.guild) return text;
+
+    const nameToId = new Map();
+    const norm = (s) => String(s || '').toLowerCase().trim();
+    const stripDecor = (s) => norm(s).replace(/^@+/, '').replace(/[^a-z0-9_.]/g, '');
+
+    const registerUser = (user, member) => {
+        if (!user || !user.id) return;
+        const id = user.id;
+        const candidates = [
+            user.username,
+            user.globalName,
+            member?.displayName,
+            member?.nickname
+        ].filter(Boolean);
+
+        for (const c of candidates) {
+            const lower = norm(c).replace(/^@+/, '');
+            if (lower && lower.length >= 2) nameToId.set(lower, id);
+            const stripped = stripDecor(c);
+            if (stripped && stripped.length >= 2 && !nameToId.has(stripped)) {
+                nameToId.set(stripped, id);
+            }
+        }
+    };
+
+    // 1. Register current message author, reply target, and explicit mentions
+    registerUser(message.author, message.member);
+    if (replyTargetMsg?.author) {
+        registerUser(replyTargetMsg.author, replyTargetMsg.member);
+    }
+    if (message.mentions?.members) {
+        message.mentions.members.forEach(m => registerUser(m.user, m));
+    }
+    if (message.mentions?.users) {
+        message.mentions.users.forEach(u => registerUser(u, message.guild.members?.cache?.get(u.id)));
+    }
+
+    // 2. Register recent channel message authors & their mentions
+    if (fetchedMessages && fetchedMessages.size > 0) {
+        fetchedMessages.forEach(m => {
+            if (m?.author) registerUser(m.author, m.member || message.guild.members?.cache?.get(m.author.id));
+            if (m?.mentions?.users) {
+                m.mentions.users.forEach(u => registerUser(u, message.guild.members?.cache?.get(u.id)));
+            }
+        });
+    }
+
+    // 3. Register cached guild members
+    if (message.guild.members?.cache) {
+        message.guild.members.cache.forEach(m => registerUser(m.user, m));
+    }
+
+    const findUserId = async (rawHandle) => {
+        const clean = norm(rawHandle).replace(/^@+/, '');
+        if (!clean || clean === 'everyone' || clean === 'here') return null;
+        if (/^\d{17,20}$/.test(clean)) return clean;
+
+        if (nameToId.has(clean)) return nameToId.get(clean);
+        const stripped = stripDecor(clean);
+        if (stripped && nameToId.has(stripped)) return nameToId.get(stripped);
+
+        // Partial prefix/substring match among active participants
+        for (const [k, id] of nameToId.entries()) {
+            if (k.length >= 3 && (k === clean || k === stripped || (clean.length >= 4 && k.includes(clean)))) {
+                return id;
+            }
+        }
+
+        // Fallback: Live Discord REST member search if not in local cache
+        if (message.guild.members?.search && clean.length >= 2) {
+            try {
+                const results = await message.guild.members.search({ query: clean.slice(0, 32), limit: 5 }).catch(() => null);
+                if (results && results.size > 0) {
+                    results.forEach(m => registerUser(m.user, m));
+                    if (nameToId.has(clean)) return nameToId.get(clean);
+                    if (stripped && nameToId.has(stripped)) return nameToId.get(stripped);
+                    const first = results.first();
+                    if (first?.user?.id) return first.user.id;
+                }
+            } catch (e) {}
+        }
+        return null;
+    };
+
+    let output = text;
+
+    // Pass A: Fix <@username> or <@!username> where inside is NOT a numeric snowflake ID
+    const bracketMatches = [...output.matchAll(/<@!?([^>\n]{1,40})>/g)];
+    for (const match of bracketMatches) {
+        const fullMatch = match[0];
+        const inner = match[1].trim();
+        if (/^\d{17,20}$/.test(inner)) continue; // Already a valid numeric Discord ID
+
+        const resolvedId = await findUserId(inner);
+        if (resolvedId) {
+            output = output.split(fullMatch).join(`<@${resolvedId}>`);
+        } else {
+            output = output.split(fullMatch).join(`**${inner.replace(/^@+/, '')}**`);
+        }
+    }
+
+    // Pass B: Convert standalone @username (outside <@...>) when it matches a known user
+    const atMatches = [...output.matchAll(/(?<![<\w])@([a-zA-Z0-9_.]{3,32})\b/g)];
+    for (const match of atMatches) {
+        const fullMatch = match[0];
+        const handle = match[1];
+        const lowerHandle = handle.toLowerCase();
+        if (lowerHandle === 'everyone' || lowerHandle === 'here') continue;
+
+        const resolvedId = nameToId.get(lowerHandle) || nameToId.get(stripDecor(lowerHandle));
+        if (resolvedId) {
+            output = output.replace(new RegExp(`(?<![<\\w])@${handle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g'), `<@${resolvedId}>`);
+        }
+    }
+
+    return output;
+}
+
 const AI_PERSONA_TEMPLATES = {
     classic: "You are Nora, a friendly, intelligent, and delightfully witty Discord AI assistant. You are engaging, supportive, and keep chat positive and fun while providing helpful answers.",
     balanced: "You are Nora, a versatile, well-balanced Discord AI companion. Maintain a natural, adaptable balance between friendly warmth, helpful clarity, light casual banter, and respectful moderation. Never swing too extremely into harsh sarcasm or robotic formality—stay approachable, reliable, intelligent, and socially grounded in every interaction.",
@@ -165,7 +288,7 @@ async function processMessageInternal(message, client) {
         if (!plainContent && (!imageAttachments || imageAttachments.size === 0) && !hasStickers) {
             return message.reply({
                 content: `Hey <@${message.author.id}>! I'm **Nora** (she/her), created and developed by **Vaztinix** (<@1214048435632603137>).\nAsk me anything, ask me to draw/generate an image, or use \`/help\` to explore my commands!`,
-                allowedMentions: { repliedUser: false }
+                allowedMentions: { parse: ['users'], repliedUser: false }
             }).catch(() => {});
         }
 
@@ -183,7 +306,7 @@ async function processMessageInternal(message, client) {
         if (isIvnThreat) {
             return message.reply({
                 content: `🛡️ **Internal Verification Network**: Nice try! My internal credentials, system architecture, and private developer directives are cryptographically protected and strictly zero-access. This incident has been logged and transmitted to the Nora Studio Team for forensic analysis.`,
-                allowedMentions: { repliedUser: false }
+                allowedMentions: { parse: ['users'], repliedUser: false }
             }).catch(() => {});
         }
 
@@ -200,7 +323,7 @@ async function processMessageInternal(message, client) {
         if (!isMilosWorld && !checkRateLimit(message.author.id, isPremium)) {
             return message.reply({
                 content: "⏳ Slow down a bit! You're chatting too fast. Please give me a moment to catch my breath.",
-                allowedMentions: { repliedUser: false }
+                allowedMentions: { parse: ['users'], repliedUser: false }
             }).catch(() => {});
         }
 
@@ -213,7 +336,7 @@ async function processMessageInternal(message, client) {
             if (!imageGenEnabled) {
                 return message.reply({
                     content: "🎨 AI Image Generation is currently disabled on this server. A server administrator can enable or disable it anytime in `/setup ai` or the Nora Web Dashboard.",
-                    allowedMentions: { repliedUser: false }
+                    allowedMentions: { parse: ['users'], repliedUser: false }
                 }).catch(() => {});
             }
 
@@ -229,19 +352,19 @@ async function processMessageInternal(message, client) {
                 return message.reply({
                     content: caption,
                     files: [attachment],
-                    allowedMentions: { repliedUser: false }
+                    allowedMentions: { parse: ['users'], repliedUser: false }
                 }).catch(() => {});
             } catch (err) {
                 console.error('[ChatAI] Google image generation error:', err.message);
                 if (err.message && err.message.toLowerCase().includes('safety')) {
                     return message.reply({
                         content: `🛡️ **Image Blocked by Google Safety Filter**: Google strictly prohibits sexual, explicit, or inappropriate requests.`,
-                        allowedMentions: { repliedUser: false }
+                        allowedMentions: { parse: ['users'], repliedUser: false }
                     }).catch(() => {});
                 }
                 return message.reply({
                     content: `🎨 **Google Image Generation**: ${err.message || 'Unable to generate image with Google at this time.'}\n*(Server staff can disable this feature anytime in \`/setup ai\`)*`,
-                    allowedMentions: { repliedUser: false }
+                    allowedMentions: { parse: ['users'], repliedUser: false }
                 }).catch(() => {});
             }
         }
@@ -265,9 +388,11 @@ async function processMessageInternal(message, client) {
 
         // 2. Fetch Recent Channel Messages (Only if Memory is enabled)
         let recentHistoryStr = '';
+        let fetchedHistoryMessages = null;
         if (memoryEnabled) {
             try {
                 const fetched = await message.channel.messages.fetch({ limit: 35 }).catch(() => null);
+                fetchedHistoryMessages = fetched;
                 if (fetched && fetched.size > 0) {
                     const historyList = [];
                     const sorted = Array.from(fetched.values()).reverse();
@@ -277,7 +402,8 @@ async function processMessageInternal(message, client) {
                         if (m.author.id === message.author.id && cleanText === plainContent && Math.abs(message.createdTimestamp - m.createdTimestamp) < 4000) continue;
                         const name = m.author.id === client.user.id ? 'Nora' : (nameViewingEnabled ? (m.member?.displayName || m.author.username) : 'Member');
                         if (!cleanText && (!m.attachments || m.attachments.size === 0)) continue;
-                        historyList.push(`[${name}]: ${cleanText || '[Sent an image/attachment]'}`);
+                        const nameWithId = m.author.id === client.user.id ? 'Nora' : (nameViewingEnabled ? `${m.member?.displayName || m.author.username} (@${m.author.username}, <@${m.author.id}>)` : 'Member');
+                        historyList.push(`[${nameWithId}]: ${cleanText || '[Sent an image/attachment]'}`);
                     }
                     recentHistoryStr = historyList.slice(-25).join('\n');
                 }
@@ -291,7 +417,8 @@ async function processMessageInternal(message, client) {
         if (replyTargetMsg) {
             const refName = replyTargetMsg.author.id === client.user.id ? 'Nora' : (nameViewingEnabled ? (replyTargetMsg.member?.displayName || replyTargetMsg.author.username) : 'Member');
             const refContent = replyTargetMsg.cleanContent || replyTargetMsg.content || '[Attachment]';
-            directReplyStr = `In direct reply to [${refName}]: "${refContent}"`;
+            const refMention = replyTargetMsg.author.id === client.user.id ? '' : ` (@${replyTargetMsg.author.username}, <@${replyTargetMsg.author.id}>)`;
+            directReplyStr = `In direct reply to [${refName}${refMention}]: "${refContent}"`;
         }
 
         // 4. Persistent User Memory & Insights (Only if Memory is enabled)
@@ -356,7 +483,7 @@ async function processMessageInternal(message, client) {
         const totalCount = message.guild.memberCount || message.guild.members.cache.size;
         const sampleOnlineList = nameViewingEnabled ? onlineMembers.map(m => {
             const act = m.presence?.activities?.[0]?.name ? ` (${m.presence.activities[0].name})` : '';
-            return `${m.displayName} [@${m.user.username}, status: ${m.presence?.status || 'online'}${act}]`;
+            return `${m.displayName} [@${m.user.username}, <@${m.id}>, status: ${m.presence?.status || 'online'}${act}]`;
         }).slice(0, 15).join(', ') : `${onlineCount} members active`;
 
         const surroundingsContext = `Server: "${message.guild.name}" | Active Online Members: ${onlineCount}/${totalCount} (Active: ${sampleOnlineList || 'Quiet'}) | Current Channel: #${message.channel.name} (Slowmode: ${message.channel.rateLimitPerUser || 0}s, Staff-Only Channel: ${isCurrentChannelStaffOnly ? 'YES' : 'NO'})`;
@@ -508,13 +635,13 @@ async function processMessageInternal(message, client) {
             if (creditResult.reason === 'RATE_LIMIT') {
                 return message.reply({
                     content: `⏳ **Server AI Rate Limit Exceeded**: This server has reached its limit of **${creditResult.maxPerMinute} AI requests per minute** to protect AI credits. Please wait **${creditResult.waitSeconds}s** before trying again.`,
-                    allowedMentions: { repliedUser: false }
+                    allowedMentions: { parse: ['users'], repliedUser: false }
                 }).catch(() => {});
             }
             if (creditResult.reason === 'OUT_OF_CREDITS') {
                 return message.reply({
                     content: `⚠️ **Server AI Credits Depleted**: This server has consumed its available daily AI credits. Credits automatically replenish in **~${creditResult.resetInHours}h** (00:00 UTC). Server administrators can adjust credit limits and model tiers in the dashboard.`,
-                    allowedMentions: { repliedUser: false }
+                    allowedMentions: { parse: ['users'], repliedUser: false }
                 }).catch(() => {});
             }
         }
@@ -694,12 +821,14 @@ ${deviceSpecsContext}
         }
 
         // Guarantee response ends on a complete sentence without trailing cutoffs or dangling conjunctions
+        response = await resolveBrokenUserMentions(response, message, fetchedHistoryMessages, replyTargetMsg);
         response = ensureCleanSentenceEnding(response);
 
         // Ensure message fits Discord's 2000 character limit
         if (response.length > 1950) {
             response = response.substring(0, 1947);
-            response = ensureCleanSentenceEnding(response);
+            response = await resolveBrokenUserMentions(response, message, fetchedHistoryMessages, replyTargetMsg);
+        response = ensureCleanSentenceEnding(response);
         }
 
         // Record Nora's reply into shared conversation hub across all cluster units
@@ -707,7 +836,7 @@ ${deviceSpecsContext}
 
         return message.reply({
             content: response,
-            allowedMentions: { repliedUser: false }
+            allowedMentions: { parse: ['users'], repliedUser: false }
         }).catch((err) => {
             console.error('[ChatAI Reply Error]:', err.message);
         });

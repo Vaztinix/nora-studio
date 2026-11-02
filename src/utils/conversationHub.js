@@ -82,7 +82,7 @@ class ConversationHub {
 
         // Limit to recent 12 turns so working memory stays fresh and prevents crosstalk confusion
         const recentMessages = safeMessages.slice(-12);
-        return recentMessages.map(t => `[${t.speaker}]: ${t.text}`).join('\n');
+        return recentMessages.map(t => (t.authorId && !t.isBot) ? `[${t.speaker} (<@${t.authorId}>)]: ${t.text}` : `[${t.speaker}]: ${t.text}`).join('\n');
     }
 
     /**

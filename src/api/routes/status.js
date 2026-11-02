@@ -512,26 +512,16 @@ module.exports = function(client) {
                 statusText = 'Scheduled Maintenance';
             }
 
-            // Gather shard metrics
-            const shardCount = (client && client.options && client.options.shardCount) ? client.options.shardCount : 1;
-            const shards = [];
+            // Gather dynamic shard metrics & Pre-2500 Safe Zone telemetry
+            const shardManager = require('../../utils/shardManager');
+            const isGatewayReady = client && client.ws && client.ws.status === 0;
+            const wsStatusStr = evaluation.components.discordGateway.wsStatus || 'CONNECTING';
+            const dynamicEval = shardManager.evaluateDynamicShards(client, wsPing, isGatewayReady, wsStatusStr);
+            const shards = dynamicEval.shards;
+            const shardingSummary = dynamicEval.shardingSummary;
 
-            const totalGuilds = client && client.guilds ? client.guilds.cache.size : 0;
-            let totalMembers = 0;
-            if (client && client.guilds) {
-                let guildMemberSum = 0;
-                const uniqueSet = new Set();
-                client.guilds.cache.forEach(g => {
-                    guildMemberSum += (g.memberCount || g.approximateMemberCount || 0);
-                    if (g.members && g.members.cache) {
-                        g.members.cache.forEach((_, id) => uniqueSet.add(id));
-                    }
-                });
-                if (client.users && client.users.cache) {
-                    client.users.cache.forEach((_, id) => uniqueSet.add(id));
-                }
-                totalMembers = Math.max(guildMemberSum, uniqueSet.size);
-            }
+            const totalGuilds = shardingSummary.totalGuilds;
+            const totalMembers = shardingSummary.totalMembers;
 
             // High-precision memory measurements
             const mem = process.memoryUsage();
@@ -544,27 +534,7 @@ module.exports = function(client) {
             const usedSystemMemMB = totalSystemMemMB - freeSystemMemMB;
             const memoryUsagePct = Math.min(100, Math.round((heapUsedMB / Math.max(heapTotalMB, 1)) * 100));
 
-            const uptimeSec = Math.floor(process.uptime());
-            const commandCount = client && client.commands ? client.commands.size : 59;
-            const isGatewayReady = client && client.ws && client.ws.status === 0;
-
-            for (let i = 0; i < shardCount; i++) {
-                shards.push({
-                    id: i,
-                    name: `Shard #${i}`,
-                    status: isGatewayReady ? 'READY' : (evaluation.components.discordGateway.wsStatus || 'CONNECTING'),
-                    pingMs: wsPing,
-                    pingQuality: wsPing < 75 ? 'Optimal' : (wsPing < 160 ? 'Good' : 'Elevated'),
-                    guilds: totalGuilds,
-                    users: totalMembers,
-                    uptimeSeconds: uptimeSec,
-                    memoryUsedMB: heapUsedMB,
-                    memoryHeapTotalMB: heapTotalMB,
-                    memoryRssMB: rssMB,
-                    memoryUsagePct: memoryUsagePct,
-                    lastPingTimestamp: Date.now()
-                });
-            }
+            const commandCount = client && client.commands ? client.commands.size : 65;
 
             // Record point for stock-style websocket latency chart
             recordLatency(wsPing);
@@ -577,7 +547,7 @@ module.exports = function(client) {
                 components: evaluation.components,
                 serverCount: totalGuilds > 0 ? totalGuilds : 65,
                 memberCount: totalMembers > 0 ? totalMembers : 10700,
-                commandCount: commandCount > 0 ? commandCount : 59,
+                commandCount: commandCount > 0 ? commandCount : 65,
                 ping: wsPing,
                 pingQuality: wsPing < 75 ? 'Optimal' : (wsPing < 160 ? 'Good' : 'Elevated'),
                 memory: {
@@ -589,6 +559,7 @@ module.exports = function(client) {
                     systemUsedRAM_MB: usedSystemMemMB,
                     memoryUsagePct
                 },
+                shardingSummary,
                 shards,
                 latencyHistory: [...latencyHistory],
                 incidents: (evaluation.allIncidents && evaluation.allIncidents.length > 0) ? evaluation.allIncidents : evaluation.activeFlags,
@@ -604,6 +575,27 @@ module.exports = function(client) {
             });
         } catch (err) {
             console.error('[Status API Error]:', err);
+            res.status(500).json({ error: err.message });
+        }
+    });
+
+    /**
+     * GET /api/status/shards
+     * Returns detailed Dynamic Sharding & Pre-2500 Safe Zone separation metrics
+     */
+    router.get('/shards', async (req, res) => {
+        try {
+            const evaluation = await evaluateSystemSector();
+            const shardManager = require('../../utils/shardManager');
+            const isGatewayReady = client && client.ws && client.ws.status === 0;
+            const wsStatusStr = evaluation.components.discordGateway.wsStatus || 'CONNECTING';
+            const dynamicEval = shardManager.evaluateDynamicShards(client, evaluation.wsPing, isGatewayReady, wsStatusStr);
+            res.json({
+                status: 'ok',
+                ...dynamicEval,
+                updatedAt: new Date().toISOString()
+            });
+        } catch (err) {
             res.status(500).json({ error: err.message });
         }
     });
