@@ -534,10 +534,8 @@ router.get('/sessions', requireAuth, async (req, res) => {
         
         const formatted = sessions.map(s => ({
             id: s.id,
-            ipAddress: s.ipAddress,
             userAgent: s.userAgent,
             deviceType: parseUserAgent(s.userAgent),
-            location: s.location || 'Unknown Location',
             createdAt: s.createdAt,
             expiresAt: s.expiresAt,
             isCurrent: s.id === currentHash

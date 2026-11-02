@@ -1922,22 +1922,8 @@ app.get('/api/user/me', async (req, res) => {
                 }
             }
 
-            // GeoIP lookup (skipped for local loopbacks)
-            let location = 'Unknown Location';
-            const isLocalIp = clientIp === '127.0.0.1' || clientIp === '::1' || clientIp === 'localhost' || clientIp.startsWith('192.168.') || clientIp.startsWith('10.') || clientIp.startsWith('::ffff:127.0.0.1');
-            if (!isLocalIp) {
-                try {
-                    const safeIp = encodeURIComponent(clientIp.replace(/[^a-fA-F0-9:.]/g, ''));
-                    if (safeIp) {
-                        const geo = await axios.get(`http://ip-api.com/json/${safeIp}`, { timeout: 3000 });
-                        if (geo.data && geo.data.status === 'success') {
-                            location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
-                        }
-                    }
-                } catch (e) { }
-            } else {
-                location = 'Localhost Development';
-            }
+            // Zero-Access Privacy: Never track user physical location or query external GeoIP services
+            const location = null;
 
             try {
                 const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
@@ -1950,9 +1936,9 @@ app.get('/api/user/me', async (req, res) => {
                     id: tokenHash,
                     userId: user.id,
                     discordToken: token,
-                    ipAddress: clientIp,
+                    ipAddress: null, // Zero-Access: Never store user IP
                     userAgent: req.headers['user-agent'] || 'Unknown',
-                    location: location,
+                    location: null, // Zero-Access: Never track location
                     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
                     sessionGenerationMarker: prefs.sessionGenerationMarker
                 });
@@ -2986,6 +2972,8 @@ app.get('/api/user/privacy/download-data', async (req, res) => {
             activeSessions: sessions.map(s => {
                 const copy = s.toJSON();
                 delete copy.discordToken;
+                delete copy.ipAddress;
+                delete copy.location;
                 return copy;
             }),
             hostedBots: hostedBots.map(b => {
@@ -3467,14 +3455,8 @@ app.post('/api/auth/pair/confirm', async (req, res) => {
             const secondaryTokenHash = crypto.createHash('sha256').update(secondaryToken).digest('hex');
 
             const Session = require('./database/models/Session');
-            let location = 'Unknown Location';
-            try {
-                const axios = require('axios');
-                const geo = await axios.get(`http://ip-api.com/json/${pending.secondaryDevice.ip}`, { timeout: 3000 });
-                if (geo.data && geo.data.status === 'success') {
-                    location = `${geo.data.city || 'Unknown'}, ${geo.data.country || 'Unknown'}`;
-                }
-            } catch (e) { }
+            // Zero-Access Privacy: Never track location
+            const location = null;
 
             const UserPrefs = require('./database/models/UserPrefs');
             const [prefs] = await UserPrefs.findOrCreate({ where: { userId: user.id } });
@@ -3487,9 +3469,9 @@ app.post('/api/auth/pair/confirm', async (req, res) => {
                 id: secondaryTokenHash,
                 userId: user.id,
                 discordToken: pending.discordToken, // Save primary device's Discord token (encrypted)
-                ipAddress: pending.secondaryDevice.ip,
+                ipAddress: null,
                 userAgent: pending.secondaryDevice.userAgent,
-                location: location,
+                location: null,
                 expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
                 sessionGenerationMarker: prefs.sessionGenerationMarker
             });
@@ -3534,7 +3516,7 @@ app.get('/api/auth/paired-devices', async (req, res) => {
                 sessionId: s.id,
                 name: s.userAgent ? parseDeviceName(s.userAgent) : 'Unknown Device',
                 userAgent: s.userAgent || '',
-                ip: s.ipAddress || '',
+                ip: null, // Zero-Access: No IP exposed
                 isCurrent: isCurrent(s),
                 pairedAt: s.createdAt
             };

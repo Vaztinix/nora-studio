@@ -13424,7 +13424,7 @@
                                 </div>
                                 <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                     <span style="background: rgba(255,255,255,0.06); color: ${roleColor}; font-size: 0.72rem; padding: 2px 8px; border-radius: 999px; border: 1px solid ${roleColor}33;">${roleLabel}</span>
-                                    ${cleanIp ? `<span style="color: var(--muted); font-size: 0.75rem;">${cleanIp}</span>` : ''}
+                                    
                                 </div>
                             </div>
                         </div>
@@ -27279,14 +27279,9 @@
                     const topRow = document.createElement('div');
                     topRow.style.cssText = 'display: flex; align-items: center; gap: 8px; flex-wrap: wrap;';
 
-                    const ipStrong = document.createElement('strong');
-                    ipStrong.textContent = `IP: ${s.ipAddress || 'Unknown'}`;
-                    topRow.appendChild(ipStrong);
-
-                    const locSpan = document.createElement('span');
-                    locSpan.style.cssText = 'color: var(--muted); font-size: 0.75rem;';
-                    locSpan.textContent = `(${s.location || 'Unknown'})`;
-                    topRow.appendChild(locSpan);
+                    const devStrong = document.createElement('strong');
+                    devStrong.textContent = s.deviceType || 'Authorized Device';
+                    topRow.appendChild(devStrong);
 
                     if (s.deviceType) {
                         const devSpan = document.createElement('span');
