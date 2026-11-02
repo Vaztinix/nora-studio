@@ -1110,7 +1110,6 @@
 
         // Input Tracking
         const keys = {};
-        const touchState = { active: false, x: 0, y: 0 };
 
         // Virtual Joystick State
         const joystick = {
@@ -1130,23 +1129,13 @@
         });
         window.addEventListener('keyup', (e) => { keys[e.code] = false; });
 
-        // Touch & Mouse glide controls for Canvas
+        // Canvas click/tap interactions (Audio unlock & optional manual fire only - NO position warping)
         canvas.addEventListener('pointerdown', (e) => {
             initAudio();
-            if (!joystick.active) {
-                touchState.active = true;
-                touchState.x = e.clientX;
-                touchState.y = e.clientY;
+            if (!autoFire && !isPaused && isGameRunning) {
+                playerShoot();
             }
         });
-        window.addEventListener('pointermove', (e) => {
-            if (touchState.active && !joystick.active) {
-                touchState.x = e.clientX;
-                touchState.y = e.clientY;
-            }
-        });
-        window.addEventListener('pointerup', () => { touchState.active = false; });
-        window.addEventListener('pointercancel', () => { touchState.active = false; });
 
         // Virtual Mobile Joystick setup
         const jZone = document.getElementById('v-joystick-zone');
@@ -1904,18 +1893,43 @@
                     }
                 }
 
-                // Update Player Position
+                // Update Player Position - STRICTLY controlled by WASD/Arrow keys or Controller (Virtual Joystick / Gamepad)
+                // Direct tapping or clicking on screen is disabled so ships cannot be instantly moved or warped across the screen.
                 if (joystick.active) {
                     player.x += joystick.moveX * player.speed;
                     player.y += joystick.moveY * player.speed;
-                } else if (touchState.active) {
-                    player.x += (touchState.x - player.x) * 0.16;
-                    player.y += (touchState.y - 45 - player.y) * 0.16;
-                } else {
-                    if (keys['KeyW'] || keys['ArrowUp']) player.y -= player.speed;
-                    if (keys['KeyS'] || keys['ArrowDown']) player.y += player.speed;
-                    if (keys['KeyA'] || keys['ArrowLeft']) player.x -= player.speed;
-                    if (keys['KeyD'] || keys['ArrowRight']) player.x += player.speed;
+                }
+
+                // Keyboard controls (WASD / Arrow Keys)
+                if (keys['KeyW'] || keys['ArrowUp']) player.y -= player.speed;
+                if (keys['KeyS'] || keys['ArrowDown']) player.y += player.speed;
+                if (keys['KeyA'] || keys['ArrowLeft']) player.x -= player.speed;
+                if (keys['KeyD'] || keys['ArrowRight']) player.x += player.speed;
+
+                // Gamepad Controller support (Left Stick & D-Pad)
+                if (navigator.getGamepads) {
+                    const gamepads = navigator.getGamepads();
+                    const gp = gamepads[0] || gamepads[1];
+                    if (gp && gp.connected) {
+                        const deadzone = 0.2;
+                        const ax = Math.abs(gp.axes[0]) > deadzone ? gp.axes[0] : 0;
+                        const ay = Math.abs(gp.axes[1]) > deadzone ? gp.axes[1] : 0;
+                        if (ax !== 0 || ay !== 0) {
+                            player.x += ax * player.speed;
+                            player.y += ay * player.speed;
+                        } else {
+                            if (gp.buttons[14]?.pressed) player.x -= player.speed;
+                            if (gp.buttons[15]?.pressed) player.x += player.speed;
+                            if (gp.buttons[12]?.pressed) player.y -= player.speed;
+                            if (gp.buttons[13]?.pressed) player.y += player.speed;
+                        }
+                        if ((gp.buttons[0]?.pressed || gp.buttons[7]?.pressed) && !autoFire && !isPaused && isGameRunning) {
+                            playerShoot();
+                        }
+                        if (gp.buttons[1]?.pressed || gp.buttons[6]?.pressed) {
+                            triggerWarpDash();
+                        }
+                    }
                 }
 
                 // Boundary containment
