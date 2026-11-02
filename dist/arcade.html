@@ -105,6 +105,36 @@
             box-shadow: 0 0 14px var(--blurple);
         }
 
+        .header-brand-mark {
+            width: 26px;
+            height: 26px;
+            border-radius: 8px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(88, 101, 242, 0.35));
+            border: 1px solid var(--cyan);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cyan);
+            font-size: 0.85rem;
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.4);
+            flex-shrink: 0;
+        }
+
+        .start-logo-badge {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(88, 101, 242, 0.3));
+            border: 2px solid var(--cyan);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cyan);
+            font-size: 1.35rem;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
+            margin-bottom: 2px;
+        }
+
         .brand-title {
             font-family: 'Orbitron', sans-serif;
             font-size: 1.05rem;
@@ -727,7 +757,7 @@
         <!-- Top Header Navigation -->
         <header class="arcade-header">
             <a href="/" class="header-brand">
-                <img src="/nora.png" alt="Nora Logo">
+                <div class="header-brand-mark"><i class="fas fa-rocket"></i></div>
                 <span class="brand-title">NORA OVERDRIVE</span>
             </a>
             <div class="header-actions">
@@ -814,7 +844,9 @@
         <!-- Start Game Screen -->
         <div id="start-screen" class="game-overlay-screen">
             <div class="modal-card">
-                <img src="/nora.png" class="start-logo-img" alt="Nora Logo" style="width: 56px; height: 56px; border-radius: 14px; box-shadow: 0 0 25px var(--blurple); object-fit: cover;" onerror="this.onerror=null; this.src='/favicon.ico';">
+                <div class="start-logo-badge">
+                    <i class="fas fa-rocket"></i>
+                </div>
                 <h1 class="modal-title" style="margin: 0; font-size: 1.6rem;">NORA OVERDRIVE</h1>
                 <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.35; margin: 0; max-width: 400px;">
                     Defend the Nora Quantum Core. Collect Data Crystals, earn XP to level up, and unlock power-up cards!
@@ -822,7 +854,7 @@
 
                 <!-- Pilot Profile Badge -->
                 <div class="pilot-profile-badge" id="pilot-badge" style="margin: 2px 0; padding: 8px 12px;">
-                    <img id="pilot-avatar-img" class="pilot-avatar" src="/nora.png" alt="Pilot Avatar" style="width: 36px; height: 36px;" onerror="this.onerror=null; this.src='/favicon.ico';">
+                    <img id="pilot-avatar-img" class="pilot-avatar" src="/nora.png" alt="" onerror="this.style.display='none'; document.getElementById('pilot-avatar-fallback').style.display='flex';" style="width: 36px; height: 36px;" onerror="this.onerror=null; this.src='/favicon.ico';">
                     <div class="pilot-info">
                         <div class="pilot-name" id="pilot-name-display" style="font-size: 0.9rem;">Guest Pilot</div>
                         <div class="pilot-status" id="pilot-status-display" style="font-size: 0.72rem;">Checking Discord session...</div>
@@ -1374,7 +1406,7 @@
                                 const avUrl = user.avatar.startsWith('http') 
                                     ? user.avatar 
                                     : `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
-                                document.getElementById('pilot-avatar-img').src = avUrl;
+                                document.getElementById('pilot-avatar-img').src = avUrl; document.getElementById('pilot-avatar-img').style.display = 'block'; const fb = document.getElementById('pilot-avatar-fallback'); if (fb) fb.style.display = 'none';
                             }
                             return;
                         }
