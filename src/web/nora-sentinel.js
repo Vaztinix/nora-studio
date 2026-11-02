@@ -1,7 +1,8 @@
 /**
- * Nora Studio - Real-Time Sentinel & Connectivity Monitor
- * Displays a spectral wave blur overlay when Nora backend goes offline,
- * and morphs into a glowing green checkmark before gracefully dismissing on reconnect.
+ * Nora Studio - Real-Time Sentinel & Connectivity Monitor (Liquid Glass Edition)
+ * Displays a sleek crystal liquid glass modal with organic aurora refractions
+ * and holographic radar animations when Nora backend is unreachable,
+ * then morphs with a celebratory green checkmark on reconnect.
  */
 (function() {
     // State Variables
@@ -64,9 +65,9 @@
             .sentinel-backdrop {
                 position: absolute;
                 inset: 0;
-                background: rgba(8, 10, 16, 0.88);
-                backdrop-filter: blur(18px) saturate(160%);
-                -webkit-backdrop-filter: blur(18px) saturate(160%);
+                background: radial-gradient(circle at 50% 35%, rgba(18, 22, 36, 0.72) 0%, rgba(6, 8, 14, 0.92) 100%);
+                backdrop-filter: blur(28px) saturate(180%);
+                -webkit-backdrop-filter: blur(28px) saturate(180%);
                 transition: background 0.8s ease;
             }
 
@@ -78,111 +79,181 @@
                 height: 100%;
                 pointer-events: none;
                 z-index: 1;
-                opacity: 0.85;
+                opacity: 0.75;
                 transition: opacity 0.8s ease;
             }
 
-            .sentinel-glow-orb {
+            .sentinel-ambient-blob {
                 position: absolute;
-                top: -120px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 600px;
-                height: 400px;
                 border-radius: 50%;
-                background: radial-gradient(circle, rgba(239, 68, 68, 0.45) 0%, rgba(220, 38, 38, 0.15) 50%, transparent 75%);
-                filter: blur(50px);
+                filter: blur(80px);
+                pointer-events: none;
                 z-index: 2;
-                transition: background 0.8s ease, transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-                animation: sentinelOrbPulse 4s ease-in-out infinite alternate;
+                transition: background 0.8s ease, transform 0.8s ease;
             }
 
-            #nora-sentinel-overlay.online-mode .sentinel-glow-orb {
-                background: radial-gradient(circle, rgba(34, 197, 94, 0.45) 0%, rgba(16, 185, 129, 0.15) 50%, transparent 75%);
+            .sentinel-ambient-blob.blob-1 {
+                top: 15%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 480px;
+                height: 320px;
+                background: radial-gradient(circle, rgba(244, 63, 94, 0.22) 0%, rgba(239, 68, 68, 0.08) 60%, transparent 80%);
+                animation: sentinelOrbPulse 6s ease-in-out infinite alternate;
+            }
+
+            .sentinel-ambient-blob.blob-2 {
+                bottom: 10%;
+                left: 45%;
+                width: 360px;
+                height: 260px;
+                background: radial-gradient(circle, rgba(251, 146, 60, 0.12) 0%, rgba(244, 63, 94, 0.05) 60%, transparent 80%);
+                animation: sentinelOrbPulse 7s ease-in-out infinite alternate-reverse;
+            }
+
+            #nora-sentinel-overlay.online-mode .sentinel-ambient-blob.blob-1 {
+                background: radial-gradient(circle, rgba(34, 197, 94, 0.3) 0%, rgba(16, 185, 129, 0.1) 60%, transparent 80%);
+            }
+
+            #nora-sentinel-overlay.online-mode .sentinel-ambient-blob.blob-2 {
+                background: radial-gradient(circle, rgba(56, 189, 248, 0.18) 0%, rgba(34, 197, 94, 0.05) 60%, transparent 80%);
             }
 
             @keyframes sentinelOrbPulse {
-                0% { transform: translateX(-50%) scale(0.95); opacity: 0.7; }
-                100% { transform: translateX(-50%) scale(1.15); opacity: 1; }
+                0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.6; }
+                50% { transform: translate(-48%, -52%) scale(1.12); opacity: 0.95; }
+                100% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.6; }
             }
 
+            /* Liquid Glass Box Architecture */
             .sentinel-card {
                 position: relative;
                 z-index: 10;
-                max-width: 520px;
+                max-width: 500px;
                 width: 100%;
-                background: linear-gradient(145deg, rgba(17, 20, 32, 0.92) 0%, rgba(11, 14, 24, 0.96) 100%);
-                border: 1px solid rgba(239, 68, 68, 0.35);
-                border-radius: 24px;
-                padding: 36px 30px;
+                background: linear-gradient(145deg, rgba(255, 255, 255, 0.065) 0%, rgba(255, 255, 255, 0.015) 100%), rgba(14, 18, 28, 0.68);
+                backdrop-filter: blur(36px) saturate(190%);
+                -webkit-backdrop-filter: blur(36px) saturate(190%);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-top: 1px solid rgba(255, 255, 255, 0.28);
+                border-radius: 28px;
+                padding: 38px 32px;
                 text-align: center;
-                box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 35px rgba(239, 68, 68, 0.2);
-                transform: translateY(30px) scale(0.95);
+                box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.8), inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), inset 0 -1px 1px 0 rgba(0, 0, 0, 0.35), 0 0 50px -15px rgba(244, 63, 94, 0.25);
+                transform: translateY(24px) scale(0.96);
                 transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.8s ease, box-shadow 0.8s ease;
                 box-sizing: border-box;
+                overflow: hidden;
             }
 
             #nora-sentinel-overlay.active .sentinel-card {
                 transform: translateY(0) scale(1);
+                animation: sentinelCardFloat 6s ease-in-out infinite alternate;
             }
 
             #nora-sentinel-overlay.online-mode .sentinel-card {
-                border-color: rgba(34, 197, 94, 0.45);
-                box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 45px rgba(34, 197, 94, 0.25);
+                border-color: rgba(34, 197, 94, 0.4);
+                border-top-color: rgba(34, 197, 94, 0.7);
+                box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.8), inset 0 1px 1px 0 rgba(255, 255, 255, 0.3), 0 0 60px -10px rgba(34, 197, 94, 0.35);
             }
 
+            @keyframes sentinelCardFloat {
+                0% { transform: translateY(0) scale(1); }
+                50% { transform: translateY(-5px) scale(1.002); }
+                100% { transform: translateY(0) scale(1); }
+            }
+
+            /* Specular Liquid Shimmer Sweep */
+            .sentinel-shimmer-sweep {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.04) 50%, transparent 100%);
+                pointer-events: none;
+                animation: liquidShimmer 8s infinite ease-in-out;
+            }
+
+            @keyframes liquidShimmer {
+                0% { transform: translateX(-150%) skewX(-20deg); }
+                100% { transform: translateX(250%) skewX(-20deg); }
+            }
+
+            /* Liquid Aura Halo behind Card */
+            .sentinel-liquid-halo {
+                position: absolute;
+                inset: -15px;
+                border-radius: 38px;
+                background: radial-gradient(circle at 50% 30%, rgba(244, 63, 94, 0.2) 0%, rgba(239, 68, 68, 0.06) 50%, transparent 75%);
+                filter: blur(28px);
+                z-index: -1;
+                pointer-events: none;
+                transition: background 0.8s ease;
+                animation: sentinelLiquidPulse 5s ease-in-out infinite alternate;
+            }
+
+            #nora-sentinel-overlay.online-mode .sentinel-liquid-halo {
+                background: radial-gradient(circle at 50% 30%, rgba(34, 197, 94, 0.3) 0%, rgba(16, 185, 129, 0.1) 50%, transparent 75%);
+            }
+
+            @keyframes sentinelLiquidPulse {
+                0% { opacity: 0.55; transform: scale(0.96); }
+                100% { opacity: 0.95; transform: scale(1.04); }
+            }
+
+            /* Holographic Radar Pulse Animation */
             .sentinel-icon-wrapper {
                 position: relative;
-                width: 88px;
-                height: 88px;
+                width: 92px;
+                height: 92px;
                 margin: 0 auto 20px auto;
                 display: flex;
                 align-items: center;
                 justify-content: center;
             }
 
-            .sentinel-icon-ring {
-                position: absolute;
-                inset: -8px;
-                border-radius: 50%;
-                border: 2px dashed rgba(239, 68, 68, 0.4);
-                animation: sentinelRingRotate 12s linear infinite;
-                transition: border-color 0.8s ease;
-            }
-
-            #nora-sentinel-overlay.online-mode .sentinel-icon-ring {
-                border-color: rgba(34, 197, 94, 0.5);
-                animation: sentinelRingRotate 4s linear infinite;
-            }
-
-            @keyframes sentinelRingRotate {
-                from { transform: rotate(0deg); }
-                to { transform: rotate(360deg); }
-            }
-
-            .sentinel-icon-pulse {
+            .sentinel-radar-ring {
                 position: absolute;
                 inset: 0;
                 border-radius: 50%;
-                background: rgba(239, 68, 68, 0.15);
-                animation: sentinelPulse 2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
-                transition: background 0.8s ease;
+                border: 2px solid rgba(244, 63, 94, 0.45);
+                animation: sentinelRadarWave 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+                pointer-events: none;
             }
 
-            #nora-sentinel-overlay.online-mode .sentinel-icon-pulse {
-                background: rgba(34, 197, 94, 0.2);
-                animation: sentinelSuccessRipple 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            .sentinel-radar-ring.ring-2 {
+                animation-delay: 0.8s;
+                border-color: rgba(244, 63, 94, 0.28);
             }
 
-            @keyframes sentinelPulse {
-                0% { transform: scale(0.9); opacity: 0.8; }
-                50% { transform: scale(1.3); opacity: 0; }
-                100% { transform: scale(0.9); opacity: 0; }
+            .sentinel-signal-sweep {
+                position: absolute;
+                inset: -6px;
+                border-radius: 50%;
+                border: 2px dashed rgba(251, 191, 36, 0.45);
+                animation: sentinelSignalSweep 10s linear infinite;
+                pointer-events: none;
             }
 
-            @keyframes sentinelSuccessRipple {
-                0% { transform: scale(0.8); opacity: 1; }
-                100% { transform: scale(2.2); opacity: 0; }
+            #nora-sentinel-overlay.online-mode .sentinel-radar-ring {
+                border-color: rgba(34, 197, 94, 0.5);
+            }
+
+            #nora-sentinel-overlay.online-mode .sentinel-signal-sweep {
+                border-color: rgba(52, 211, 153, 0.45);
+                animation-duration: 4s;
+            }
+
+            @keyframes sentinelRadarWave {
+                0% { transform: scale(0.65); opacity: 0.85; }
+                50% { transform: scale(1.35); opacity: 0.35; }
+                100% { transform: scale(2.05); opacity: 0; }
+            }
+
+            @keyframes sentinelSignalSweep {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
             }
 
             .sentinel-icon-badge {
@@ -191,20 +262,24 @@
                 width: 72px;
                 height: 72px;
                 border-radius: 22px;
-                background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+                background: linear-gradient(135deg, rgba(244, 63, 94, 0.9) 0%, rgba(225, 29, 72, 0.95) 100%);
+                border: 1px solid rgba(255, 255, 255, 0.25);
+                border-top: 1px solid rgba(255, 255, 255, 0.45);
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 color: #ffffff;
-                font-size: 2rem;
-                box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+                font-size: 1.85rem;
+                box-shadow: 0 12px 30px rgba(244, 63, 94, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+                backdrop-filter: blur(12px);
                 transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
             }
 
             #nora-sentinel-overlay.online-mode .sentinel-icon-badge {
-                background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
-                box-shadow: 0 10px 30px rgba(34, 197, 94, 0.5);
-                transform: scale(1.1) rotate(360deg);
+                background: linear-gradient(135deg, rgba(34, 197, 94, 0.92) 0%, rgba(16, 185, 129, 0.96) 100%);
+                border-color: rgba(255, 255, 255, 0.35);
+                box-shadow: 0 12px 35px rgba(34, 197, 94, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.5);
+                transform: scale(1.08) rotate(360deg);
             }
 
             .sentinel-status-pill {
@@ -213,11 +288,13 @@
                 gap: 8px;
                 padding: 5px 14px;
                 border-radius: 9999px;
-                background: rgba(239, 68, 68, 0.12);
-                border: 1px solid rgba(239, 68, 68, 0.35);
-                color: #fca5a5;
+                background: rgba(244, 63, 94, 0.12);
+                border: 1px solid rgba(244, 63, 94, 0.32);
+                border-top: 1px solid rgba(244, 63, 94, 0.5);
+                backdrop-filter: blur(12px);
+                color: #fda4af;
                 font-size: 0.75rem;
-                font-weight: 700;
+                font-weight: 800;
                 letter-spacing: 0.8px;
                 text-transform: uppercase;
                 margin-bottom: 14px;
@@ -227,6 +304,7 @@
             #nora-sentinel-overlay.online-mode .sentinel-status-pill {
                 background: rgba(34, 197, 94, 0.12);
                 border-color: rgba(34, 197, 94, 0.35);
+                border-top-color: rgba(34, 197, 94, 0.55);
                 color: #86efac;
             }
 
@@ -234,8 +312,8 @@
                 width: 7px;
                 height: 7px;
                 border-radius: 50%;
-                background: #ef4444;
-                box-shadow: 0 0 10px #ef4444;
+                background: #f43f5e;
+                box-shadow: 0 0 10px #f43f5e;
                 animation: sentinelDotBlink 1.4s infinite;
                 transition: background 0.6s ease, box-shadow 0.6s ease;
             }
@@ -247,8 +325,8 @@
             }
 
             @keyframes sentinelDotBlink {
-                0%, 100% { opacity: 1; }
-                50% { opacity: 0.3; }
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.35; transform: scale(0.85); }
             }
 
             .sentinel-title {
@@ -256,43 +334,56 @@
                 font-weight: 800;
                 color: #ffffff;
                 margin: 0 0 10px 0;
-                letter-spacing: -0.02em;
+                letter-spacing: -0.025em;
                 line-height: 1.25;
                 transition: color 0.5s ease;
             }
 
             .sentinel-description {
-                color: rgba(255, 255, 255, 0.7);
+                color: rgba(255, 255, 255, 0.72);
                 font-size: 0.92rem;
                 line-height: 1.55;
-                margin: 0 0 24px 0;
+                margin: 0 0 22px 0;
             }
 
+            /* Nested Liquid Glass Guarantee Box */
             .sentinel-guarantee-box {
-                background: rgba(255, 255, 255, 0.03);
-                border: 1px solid rgba(255, 255, 255, 0.07);
-                border-radius: 14px;
-                padding: 14px 16px;
+                background: rgba(255, 255, 255, 0.035);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-top: 1px solid rgba(255, 255, 255, 0.16);
+                border-radius: 16px;
+                padding: 14px 18px;
                 margin-bottom: 24px;
                 text-align: left;
                 display: flex;
                 flex-direction: column;
-                gap: 10px;
+                gap: 12px;
+                backdrop-filter: blur(16px);
+                -webkit-backdrop-filter: blur(16px);
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 20px rgba(0, 0, 0, 0.25);
             }
 
             .sentinel-guarantee-item {
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                font-size: 0.82rem;
-                color: rgba(255, 255, 255, 0.85);
+                gap: 12px;
+                font-size: 0.83rem;
+                color: rgba(255, 255, 255, 0.88);
                 font-weight: 500;
             }
 
-            .sentinel-guarantee-item i {
-                color: #38bdf8;
-                font-size: 0.9rem;
+            .sentinel-item-icon {
+                width: 28px;
+                height: 28px;
+                border-radius: 8px;
+                background: rgba(56, 189, 248, 0.14);
+                border: 1px solid rgba(56, 189, 248, 0.25);
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 flex-shrink: 0;
+                color: #38bdf8;
+                font-size: 0.85rem;
             }
 
             .sentinel-actions {
@@ -307,41 +398,57 @@
                 display: inline-flex;
                 align-items: center;
                 gap: 8px;
-                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-                border: 1px solid rgba(239, 68, 68, 0.5);
+                background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 0.95) 100%);
+                border: 1px solid rgba(255, 255, 255, 0.25);
+                border-top: 1px solid rgba(255, 255, 255, 0.45);
                 color: #ffffff;
                 font-size: 0.88rem;
                 font-weight: 700;
-                padding: 11px 22px;
+                padding: 12px 24px;
                 border-radius: 9999px;
                 cursor: pointer;
-                box-shadow: 0 4px 18px rgba(239, 68, 68, 0.35);
-                transition: all 0.2s ease;
+                backdrop-filter: blur(12px);
+                box-shadow: 0 6px 22px rgba(239, 68, 68, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+                transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             }
 
             .sentinel-retry-btn:hover {
                 transform: translateY(-2px);
-                box-shadow: 0 6px 24px rgba(239, 68, 68, 0.5);
+                box-shadow: 0 10px 30px rgba(239, 68, 68, 0.55), inset 0 1px 1px rgba(255, 255, 255, 0.5);
             }
 
             .sentinel-status-link {
                 display: inline-flex;
                 align-items: center;
-                gap: 6px;
+                gap: 8px;
                 background: rgba(255, 255, 255, 0.05);
-                border: 1px solid rgba(255, 255, 255, 0.1);
-                color: rgba(255, 255, 255, 0.8);
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-top: 1px solid rgba(255, 255, 255, 0.22);
+                color: rgba(255, 255, 255, 0.85);
                 text-decoration: none;
                 font-size: 0.85rem;
                 font-weight: 600;
-                padding: 11px 18px;
+                padding: 12px 20px;
                 border-radius: 9999px;
-                transition: all 0.2s ease;
+                backdrop-filter: blur(14px);
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
             }
 
             .sentinel-status-link:hover {
-                background: rgba(255, 255, 255, 0.08);
+                background: rgba(255, 255, 255, 0.1);
+                border-color: rgba(255, 255, 255, 0.25);
                 color: #ffffff;
+                transform: translateY(-2px);
+            }
+
+            .spinning {
+                animation: sentinelSpin 0.75s linear infinite;
+            }
+
+            @keyframes sentinelSpin {
+                from { transform: rotate(0deg); }
+                to { transform: rotate(360deg); }
             }
         `;
         document.head.appendChild(style);
@@ -352,14 +459,19 @@
         overlay.innerHTML = `
             <div class="sentinel-backdrop"></div>
             <canvas id="sentinel-canvas" class="sentinel-spectral-canvas"></canvas>
-            <div class="sentinel-glow-orb" id="sentinel-glow-orb"></div>
+            <div class="sentinel-ambient-blob blob-1"></div>
+            <div class="sentinel-ambient-blob blob-2"></div>
             
             <div class="sentinel-card" id="sentinel-card">
+                <div class="sentinel-liquid-halo"></div>
+                <div class="sentinel-shimmer-sweep"></div>
+
                 <div class="sentinel-icon-wrapper">
-                    <div class="sentinel-icon-ring"></div>
-                    <div class="sentinel-icon-pulse"></div>
+                    <div class="sentinel-radar-ring ring-1"></div>
+                    <div class="sentinel-radar-ring ring-2"></div>
+                    <div class="sentinel-signal-sweep"></div>
                     <div class="sentinel-icon-badge" id="sentinel-badge">
-                        <i class="fas fa-exclamation-triangle" id="sentinel-icon"></i>
+                        <i class="fas fa-satellite-dish" id="sentinel-icon"></i>
                     </div>
                 </div>
 
@@ -375,11 +487,11 @@
 
                 <div class="sentinel-guarantee-box">
                     <div class="sentinel-guarantee-item">
-                        <i class="fas fa-shield-alt"></i>
+                        <div class="sentinel-item-icon"><i class="fas fa-shield-alt"></i></div>
                         <span>Your edits and session inputs remain safe and cached locally.</span>
                     </div>
                     <div class="sentinel-guarantee-item">
-                        <i class="fas fa-sync-alt"></i>
+                        <div class="sentinel-item-icon"><i class="fas fa-sync-alt fa-spin"></i></div>
                         <span>Auto-reconnecting in <strong id="sentinel-countdown-timer" style="color: #fff; margin-left: 4px;">4s</strong>...</span>
                     </div>
                 </div>
@@ -421,64 +533,64 @@
         ensureSentinelDOM();
     }
 
-    // 2. Wave Canvas Animation
+    // 2. Multi-Harmonic Liquid Aurora Ribbon Animation
     function drawSpectralWaves() {
         if (!canvas || !ctx) return;
         const w = window.innerWidth;
         const h = window.innerHeight;
         ctx.clearRect(0, 0, w, h);
 
-        waveOffset += 0.015;
+        waveOffset += 0.012;
 
-        // Wave 1 - Large primary falling spectral wave
+        // Wave 1 - Ambient upper harmonic ribbon
         ctx.save();
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, 140 + Math.sin(waveOffset) * 40);
-
-        for (let x = 0; x <= w; x += 15) {
-            const y = 140 + Math.sin(x * 0.005 + waveOffset) * 50 + Math.cos(x * 0.003 - waveOffset * 0.8) * 30;
+        const yBase1 = h * 0.22;
+        ctx.moveTo(0, yBase1);
+        for (let x = 0; x <= w; x += 20) {
+            const y = yBase1 + Math.sin(x * 0.003 + waveOffset) * 45 + Math.cos(x * 0.002 - waveOffset * 0.7) * 30;
             ctx.lineTo(x, y);
         }
-
         ctx.lineTo(w, 0);
+        ctx.lineTo(0, 0);
         ctx.closePath();
 
-        const grad1 = ctx.createLinearGradient(0, 0, 0, 260);
+        const grad1 = ctx.createLinearGradient(0, 0, 0, yBase1 + 90);
         if (isWaveGreen) {
-            grad1.addColorStop(0, 'rgba(34, 197, 94, 0.45)');
-            grad1.addColorStop(0.6, 'rgba(16, 185, 129, 0.2)');
+            grad1.addColorStop(0, 'rgba(34, 197, 94, 0.18)');
+            grad1.addColorStop(0.6, 'rgba(16, 185, 129, 0.07)');
             grad1.addColorStop(1, 'rgba(34, 197, 94, 0)');
         } else {
-            grad1.addColorStop(0, 'rgba(239, 68, 68, 0.5)');
-            grad1.addColorStop(0.6, 'rgba(185, 28, 28, 0.22)');
-            grad1.addColorStop(1, 'rgba(239, 68, 68, 0)');
+            grad1.addColorStop(0, 'rgba(244, 63, 94, 0.16)');
+            grad1.addColorStop(0.6, 'rgba(239, 68, 68, 0.06)');
+            grad1.addColorStop(1, 'rgba(244, 63, 94, 0)');
         }
         ctx.fillStyle = grad1;
         ctx.fill();
         ctx.restore();
 
-        // Wave 2 - Secondary ambient ripple
+        // Wave 2 - Lower fluid liquid refraction ribbon
         ctx.save();
         ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, 90 + Math.cos(waveOffset * 1.2) * 30);
-
-        for (let x = 0; x <= w; x += 20) {
-            const y = 90 + Math.cos(x * 0.007 - waveOffset * 1.1) * 45 + Math.sin(x * 0.002 + waveOffset * 0.5) * 20;
+        const yBase2 = h * 0.78;
+        ctx.moveTo(0, yBase2);
+        for (let x = 0; x <= w; x += 25) {
+            const y = yBase2 + Math.cos(x * 0.0035 - waveOffset * 0.9) * 40 + Math.sin(x * 0.0018 + waveOffset * 0.6) * 25;
             ctx.lineTo(x, y);
         }
-
-        ctx.lineTo(w, 0);
+        ctx.lineTo(w, h);
+        ctx.lineTo(0, h);
         ctx.closePath();
 
-        const grad2 = ctx.createLinearGradient(0, 0, 0, 180);
+        const grad2 = ctx.createLinearGradient(0, yBase2 - 80, 0, h);
         if (isWaveGreen) {
-            grad2.addColorStop(0, 'rgba(52, 211, 153, 0.35)');
-            grad2.addColorStop(1, 'rgba(16, 185, 129, 0)');
+            grad2.addColorStop(0, 'rgba(52, 211, 153, 0)');
+            grad2.addColorStop(0.5, 'rgba(16, 185, 129, 0.06)');
+            grad2.addColorStop(1, 'rgba(34, 197, 94, 0.14)');
         } else {
-            grad2.addColorStop(0, 'rgba(248, 113, 113, 0.35)');
-            grad2.addColorStop(1, 'rgba(220, 38, 38, 0)');
+            grad2.addColorStop(0, 'rgba(251, 146, 60, 0)');
+            grad2.addColorStop(0.5, 'rgba(244, 63, 94, 0.06)');
+            grad2.addColorStop(1, 'rgba(239, 68, 68, 0.15)');
         }
         ctx.fillStyle = grad2;
         ctx.fill();
@@ -507,7 +619,7 @@
         }
 
         const iconEl = document.getElementById('sentinel-icon');
-        if (iconEl) iconEl.className = 'fas fa-exclamation-triangle';
+        if (iconEl) iconEl.className = 'fas fa-satellite-dish';
         const pillText = document.getElementById('sentinel-pill-text');
         if (pillText) pillText.textContent = 'Nora Offline';
         const titleEl = document.getElementById('sentinel-title');
@@ -555,7 +667,7 @@
         const actionsEl = document.getElementById('sentinel-actions');
         if (actionsEl) actionsEl.style.display = 'none';
 
-        // Auto-dismiss after 1.8 seconds of green checkmark celebration
+        // Auto-dismiss after 1.8 seconds of green celebration
         dismissalTimeout = setTimeout(() => {
             if (overlay) overlay.classList.remove('active');
             setTimeout(() => {
