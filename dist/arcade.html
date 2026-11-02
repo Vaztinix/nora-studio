@@ -333,32 +333,39 @@
 
         /* Modals & Overlays */
         .game-overlay-screen {
-            position: absolute;
+            position: fixed;
             inset: 0;
-            background: rgba(4, 7, 16, 0.88);
+            background: rgba(4, 7, 16, 0.92);
             backdrop-filter: blur(18px);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            z-index: 35;
-            padding: 20px;
+            justify-content: flex-start;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            z-index: 100;
+            padding: 16px 12px;
             text-align: center;
+            box-sizing: border-box;
         }
 
         .modal-card {
-            background: rgba(12, 17, 32, 0.95);
+            background: rgba(12, 17, 32, 0.96);
             border: 1px solid var(--border-glow);
             box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 35px rgba(56, 189, 248, 0.2);
             border-radius: 20px;
-            padding: 34px 38px;
-            max-width: 520px;
+            padding: 24px 20px;
+            max-width: 480px;
             width: 100%;
+            margin: auto 0;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 18px;
+            gap: 12px;
             animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-sizing: border-box;
+            position: relative;
+            z-index: 101;
         }
 
         @keyframes modalFadeIn {
@@ -620,9 +627,12 @@
 
         @media (max-width: 768px) {
             .mobile-controls-layer { display: block; }
-            .modal-card { padding: 22px 18px; }
-            .hud-overlay { top: 65px; left: 10px; }
-            .brand-title { display: none; }
+            .game-overlay-screen { padding: 10px 8px; }
+            .modal-card { padding: 16px 14px; gap: 8px; max-height: 96vh; }
+            .start-logo-img { width: 44px !important; height: 44px !important; border-radius: 12px !important; }
+            .modal-title { font-size: 1.35rem !important; }
+            .hud-overlay { top: 60px; left: 8px; }
+            .brand-title { display: inline-block; font-size: 0.82rem; }
             .cards-container { flex-direction: column; align-items: center; }
             .powerup-card { width: 100%; max-width: 320px; }
         }
@@ -723,23 +733,33 @@
         <!-- Start Game Screen -->
         <div id="start-screen" class="game-overlay-screen">
             <div class="modal-card">
-                <img src="/nora.png" alt="Nora Logo" style="width: 72px; height: 72px; border-radius: 18px; box-shadow: 0 0 35px var(--blurple);">
-                <h1 class="modal-title">NORA OVERDRIVE</h1>
-                <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5;">
-                    Defend the Nora Quantum Core from rogue glitch swarms. Collect Data Crystals, earn XP to level up, and unlock powerful roguelite upgrade cards!
+                <img src="/nora.png" class="start-logo-img" alt="Nora Logo" style="width: 56px; height: 56px; border-radius: 14px; box-shadow: 0 0 25px var(--blurple); object-fit: cover;" onerror="this.onerror=null; this.src='/favicon.ico';">
+                <h1 class="modal-title" style="margin: 0; font-size: 1.6rem;">NORA OVERDRIVE</h1>
+                <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.35; margin: 0; max-width: 400px;">
+                    Defend the Nora Quantum Core. Collect Data Crystals, earn XP to level up, and unlock power-up cards!
                 </p>
 
-                <div class="pilot-profile-badge" id="pilot-badge">
-                    <img id="pilot-avatar-img" class="pilot-avatar" src="/nora.png" alt="Pilot Avatar">
+                <!-- Pilot Profile Badge -->
+                <div class="pilot-profile-badge" id="pilot-badge" style="margin: 2px 0; padding: 8px 12px;">
+                    <img id="pilot-avatar-img" class="pilot-avatar" src="/nora.png" alt="Pilot Avatar" style="width: 36px; height: 36px;" onerror="this.onerror=null; this.src='/favicon.ico';">
                     <div class="pilot-info">
-                        <div class="pilot-name" id="pilot-name-display">Guest Pilot</div>
-                        <div class="pilot-status" id="pilot-status-display">Connected via Web • XP Active</div>
+                        <div class="pilot-name" id="pilot-name-display" style="font-size: 0.9rem;">Guest Pilot</div>
+                        <div class="pilot-status" id="pilot-status-display" style="font-size: 0.72rem;">Checking Discord session...</div>
                     </div>
                 </div>
 
-                <div id="controls-instructions-box" style="width: 100%; margin: 4px 0;"></div>
+                <!-- Manual Discord Username field for instant high score linking if not logged into dashboard -->
+                <div id="guest-discord-wrap" style="width: 100%; display: none;">
+                    <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; text-align: left;">
+                        <i class="fab fa-discord" style="color: #5865F2;"></i> Link High Score to Discord Tag:
+                    </div>
+                    <input type="text" id="custom-discord-name" placeholder="e.g. @lunarzlynz or Demi" 
+                        style="width: 100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(56,189,248,0.35); border-radius: 8px; padding: 7px 12px; color: #fff; font-size: 0.8rem; box-sizing: border-box; text-align: left; font-family: 'Inter', sans-serif;">
+                </div>
 
-                <button type="button" class="cta-btn-primary" onclick="startGame()">
+                <div id="controls-instructions-box" style="width: 100%; margin: 2px 0;"></div>
+
+                <button type="button" id="btn-start-launch" class="cta-btn-primary" onclick="startGame()" style="font-size: 1.05rem; padding: 13px 22px; cursor: pointer; touch-action: manipulation; margin-top: 4px; width: 100%;">
                     <i class="fas fa-play"></i> LAUNCH MISSION
                 </button>
             </div>
@@ -1208,6 +1228,16 @@
         window.addEventListener('gamepaddisconnected', () => renderOSControls());
 
         resizeCanvas();
+
+        // Explicit mobile touch binding for Launch Button
+        const launchBtn = document.getElementById('btn-start-launch');
+        if (launchBtn) {
+            launchBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                startGame();
+            });
+        }
+
         renderOSControls();
 
         // ==========================================
@@ -1227,7 +1257,13 @@
 
         // Auto-detect Discord login from Nora Studio dashboard
         (async function checkAuth() {
-            const token = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token');
+            const token = sessionStorage.getItem('discord_token') 
+                || localStorage.getItem('nora_discord_token')
+                || localStorage.getItem('discord_token')
+                || localStorage.getItem('discord_token_val')
+                || localStorage.getItem('token')
+                || localStorage.getItem('nora_auth_token');
+
             if (token) {
                 try {
                     const res = await fetch('/api/user/me', {
@@ -1235,17 +1271,31 @@
                     });
                     if (res.ok) {
                         const data = await res.json();
-                        if (data && data.user) {
-                            currentUser = data.user;
-                            document.getElementById('pilot-name-display').textContent = data.user.username;
-                            document.getElementById('pilot-status-display').textContent = 'Discord Verified • Syncing Nora XP';
-                            if (data.user.avatar) {
-                                document.getElementById('pilot-avatar-img').src = `https://cdn.discordapp.com/avatars/${data.user.id}/${data.user.avatar}.png`;
+                        const user = data.user || data;
+                        if (user && (user.username || user.id)) {
+                            currentUser = user;
+                            const displayName = user.global_name || user.username;
+                            document.getElementById('pilot-name-display').textContent = displayName;
+                            document.getElementById('pilot-status-display').innerHTML = '<span style="color: var(--emerald);"><i class="fas fa-check-circle"></i> Discord Linked (@' + user.username + ') • High Scores Active</span>';
+                            if (user.avatar) {
+                                const avUrl = user.avatar.startsWith('http') 
+                                    ? user.avatar 
+                                    : `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+                                document.getElementById('pilot-avatar-img').src = avUrl;
                             }
+                            return;
                         }
                     }
                 } catch (_) {}
             }
+
+            // If not logged in, show manual tag input and login link
+            const statusEl = document.getElementById('pilot-status-display');
+            if (statusEl) {
+                statusEl.innerHTML = '<a href="/dashboard" style="color: var(--cyan); text-decoration: underline; font-weight: 700;"><i class="fab fa-discord"></i> Login with Discord</a> or enter tag below';
+            }
+            const guestWrap = document.getElementById('guest-discord-wrap');
+            if (guestWrap) guestWrap.style.display = 'block';
         })();
 
         // Player Ship Object with Roguelite Stats
@@ -2432,7 +2482,15 @@
             statusEl.textContent = 'Submitting mission telemetry to Nora Grid...';
 
             try {
-                const token = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token');
+                const token = sessionStorage.getItem('discord_token') 
+                    || localStorage.getItem('nora_discord_token')
+                    || localStorage.getItem('discord_token')
+                    || localStorage.getItem('discord_token_val')
+                    || localStorage.getItem('token');
+                
+                const customInput = document.getElementById('custom-discord-name');
+                const customName = customInput ? customInput.value.trim() : '';
+
                 const res = await fetch('/api/arcade/score', {
                     method: 'POST',
                     headers: {
@@ -2444,14 +2502,18 @@
                         wave,
                         maxCombo: Math.round(combo * 10),
                         crystals: crystalsCollected,
-                        guestName: currentUser?.username || 'Pilot'
+                        token: token || undefined,
+                        discordUser: currentUser || undefined,
+                        discordUsername: currentUser?.username || customName || undefined,
+                        guestName: currentUser?.global_name || currentUser?.username || customName || 'Pilot'
                     })
                 });
 
                 if (res.ok) {
                     const data = await res.json();
                     document.getElementById('go-xp').textContent = `+${data.xpAwarded} XP`;
-                    statusEl.innerHTML = `✅ Saved to Leaderboard (Rank <strong>#${data.rank}</strong>) • Earned <strong>+${data.xpAwarded} Nora XP</strong>!`;
+                    const accountLabel = data.username ? `for <strong>${data.username}</strong>` : '';
+                    statusEl.innerHTML = `✅ Saved to Leaderboard ${accountLabel} (Rank <strong>#${data.rank}</strong>) • Earned <strong>+${data.xpAwarded} Nora XP</strong>!`;
                 } else {
                     statusEl.textContent = 'Mission logged locally.';
                 }

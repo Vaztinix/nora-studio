@@ -86,17 +86,24 @@ router.post('/score', scoreSubmitLimiter, async (req, res) => {
 
         if (token) {
             try {
-                const { getDiscordUser } = require('../../utils/discordAuth');
+                const { getDiscordUser } = require('../middleware/auth');
                 authUser = await getDiscordUser(token).catch(() => null);
-            } catch (_) {}
+            } catch (err) {
+                console.warn('[Arcade Auth Warning]:', err.message);
+            }
         }
 
         const list = await loadLeaderboard();
         let xpAwarded = 0;
 
-        const userId = authUser ? authUser.id : `guest_${Date.now()}`;
-        const username = authUser ? authUser.username : (String(guestName || 'CyberPilot').trim().slice(0, 24) || 'Guest Pilot');
-        const avatar = authUser && authUser.avatar ? `https://cdn.discordapp.com/avatars/${authUser.id}/${authUser.avatar}.png` : null;
+        const submittedUser = req.body.discordUser || null;
+        const fallbackName = String(req.body.discordUsername || guestName || 'CyberPilot').trim().slice(0, 24) || 'Guest Pilot';
+
+        const userId = authUser ? authUser.id : (submittedUser?.id || (fallbackName !== 'CyberPilot' && fallbackName !== 'Guest Pilot' ? ('user_' + fallbackName.toLowerCase().replace(/[^a-z0-9_]/g, '')) : ('guest_' + Date.now())));
+        const username = authUser ? (authUser.global_name || authUser.username) : (submittedUser?.username || fallbackName);
+        const avatar = authUser && authUser.avatar 
+            ? (authUser.avatar.startsWith('http') ? authUser.avatar : `https://cdn.discordapp.com/avatars/${authUser.id}/${authUser.avatar}.png`) 
+            : (submittedUser?.avatar || null);
 
         // Calculate XP reward: base on score, wave, and crystals collected (capped at 500 XP per game)
         if (authUser) {
