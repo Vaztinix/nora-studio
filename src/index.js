@@ -981,15 +981,18 @@ app.use((req, res, next) => {
     res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
     // Content Security Policy — applied to HTML page responses only
     if (!req.path.startsWith('/api/')) {
-        res.setHeader('X-Frame-Options', 'SAMEORIGIN'); // Legacy fallback for older browsers
+        const isArcadeEmbed = /^\/(arcade|game|play)(\.html)?$/i.test(req.path);
+        if (!isArcadeEmbed) {
+            res.setHeader('X-Frame-Options', 'SAMEORIGIN'); // Legacy fallback for dashboard/admin
+        }
         res.setHeader('Content-Security-Policy',
-            "default-src 'self' https://discord.com https://cdn.discordapp.com; " +
+            "default-src 'self' https://discord.com https://cdn.discordapp.com https://*.discordsays.com; " +
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " +
             "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
-            "img-src 'self' data: blob: https:; " +
+            "img-src 'self' data: blob: https: http:; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; " +
-            "connect-src 'self' https://discord.com https://cdn.discordapp.com https://api.vaztinix.dev https://vaztinix.dev https://*.vaztinix.dev http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com https://api.klipy.com https://*.klipy.com https://tenor.googleapis.com https://api.giphy.com; " +
-            "frame-ancestors 'self'; " +
+            "connect-src 'self' https://discord.com https://cdn.discordapp.com https://*.discordsays.com https://api.vaztinix.dev https://vaztinix.dev https://*.vaztinix.dev http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com https://api.klipy.com https://*.klipy.com https://tenor.googleapis.com https://api.giphy.com; " +
+            "frame-ancestors 'self' https://*.discordsays.com https://discord.com https://*.discord.com https://*.discord.gg; " +
             "frame-src 'none'; " +
             "object-src 'none';"
         );
@@ -1254,6 +1257,8 @@ function serveOwner(req, res) {
 app.get(['/owner', '/owner.html'], ipRateLimiter, serveOwner);
 
 app.get(['/favicon.ico', '/nora.png', '/logo.png', '/apple-touch-icon.png'], ipRateLimiter, (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
     const webPath = path.join(__dirname, 'web/nora.png');
     const distPath = path.join(__dirname, '../dist/nora.png');
     const filePath = fs.existsSync(webPath) ? webPath : (fs.existsSync(distPath) ? distPath : null);
@@ -4353,6 +4358,14 @@ const getWebFilePath = (filename) => {
 
 // Serve index.html (Vaztinix Bio landing page) at root '/'
 app.get('/', ipRateLimiter, (req, res) => {
+    // If request comes from Discord Activity proxy or iframe, redirect to arcade game
+    if (req.query && (req.query.frame_id || req.query.instance_id || req.query.platform)) {
+        return res.redirect('/arcade.html' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : ''));
+    }
+    const host = (req.headers.host || '').toLowerCase();
+    if (host.includes('discordsays.com')) {
+        return res.redirect('/arcade.html' + (req.url.includes('?') ? req.url.slice(req.url.indexOf('?')) : ''));
+    }
     res.sendFile(getWebFilePath('index.html'));
 });
 

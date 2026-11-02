@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <base href="/">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Nora Overdrive: Cyber Assault • Official Nora Arcade</title>
     <link rel="icon" type="image/png" href="/nora.png">
@@ -853,8 +854,15 @@
                 </p>
 
                 <!-- Pilot Profile Badge -->
-                <div class="pilot-profile-badge" id="pilot-badge" style="margin: 2px 0; padding: 8px 12px;">
-                    <img id="pilot-avatar-img" class="pilot-avatar" src="/nora.png" alt="" onerror="this.style.display='none'; document.getElementById('pilot-avatar-fallback').style.display='flex';" style="width: 36px; height: 36px;" onerror="this.onerror=null; this.src='/favicon.ico';">
+                <div class="pilot-profile-badge" id="pilot-badge" style="margin: 2px 0; padding: 8px 12px; display: flex; align-items: center; gap: 10px;">
+                    <div style="position: relative; width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;">
+                        <img id="pilot-avatar-img" class="pilot-avatar" src="/nora.png" alt="" 
+                            onerror="this.style.display='none'; const fb = document.getElementById('pilot-avatar-fallback'); if (fb) fb.style.display='flex';" 
+                            style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--border-glow);">
+                        <div id="pilot-avatar-fallback" style="display: none; width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, rgba(88, 101, 242, 0.4), rgba(56, 189, 248, 0.3)); border: 1.5px solid var(--border-glow); align-items: center; justify-content: center; color: var(--cyan); font-size: 16px;">
+                            <i class="fas fa-user-astronaut"></i>
+                        </div>
+                    </div>
                     <div class="pilot-info">
                         <div class="pilot-name" id="pilot-name-display" style="font-size: 0.9rem;">Guest Pilot</div>
                         <div class="pilot-status" id="pilot-status-display" style="font-size: 0.72rem;">Checking Discord session...</div>
@@ -1403,10 +1411,19 @@
                             document.getElementById('pilot-name-display').textContent = displayName;
                             document.getElementById('pilot-status-display').innerHTML = '<span style="color: var(--emerald);"><i class="fas fa-check-circle"></i> Discord Linked (@' + user.username + ') • High Scores Active</span>';
                             if (user.avatar) {
-                                const avUrl = user.avatar.startsWith('http') 
+                                let avUrl = user.avatar.startsWith('http') 
                                     ? user.avatar 
                                     : `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
-                                document.getElementById('pilot-avatar-img').src = avUrl; document.getElementById('pilot-avatar-img').style.display = 'block'; const fb = document.getElementById('pilot-avatar-fallback'); if (fb) fb.style.display = 'none';
+                                if (window.location.hostname.includes('discordsays.com')) {
+                                    avUrl = avUrl.replace('https://cdn.discordapp.com', '/.proxy/discord-cdn');
+                                }
+                                const avImg = document.getElementById('pilot-avatar-img');
+                                if (avImg) {
+                                    avImg.src = avUrl;
+                                    avImg.style.display = 'block';
+                                }
+                                const fb = document.getElementById('pilot-avatar-fallback');
+                                if (fb) fb.style.display = 'none';
                             }
                             return;
                         }
@@ -2671,12 +2688,19 @@
                         let html = '';
                         data.leaderboard.forEach((entry, idx) => {
                             const crown = idx === 0 ? '🥇 ' : (idx === 1 ? '🥈 ' : (idx === 2 ? '🥉 ' : `#${idx + 1}`));
-                            const avatar = entry.avatar || '/nora.png';
+                            const rawAvatar = entry.avatar || '/nora.png';
+                            let avatarUrl = rawAvatar;
+                            if (window.location.hostname.includes('discordsays.com') && avatarUrl.includes('cdn.discordapp.com')) {
+                                avatarUrl = avatarUrl.replace('https://cdn.discordapp.com', '/.proxy/discord-cdn');
+                            }
                             html += `
                                 <div class="lb-row">
                                     <span class="lb-rank">${crown}</span>
                                     <div class="lb-pilot">
-                                        <img src="${avatar}" style="width: 24px; height: 24px; border-radius: 50%;">
+                                        <div style="position: relative; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                            <img src="${avatarUrl}" alt="" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline-flex';">
+                                            <span style="display: none; width: 24px; height: 24px; border-radius: 50%; background: rgba(56,189,248,0.25); border: 1px solid rgba(56,189,248,0.4); align-items: center; justify-content: center; font-size: 11px; color: var(--cyan);"><i class="fas fa-user-astronaut"></i></span>
+                                        </div>
                                         <span>${entry.username}</span>
                                         <span style="font-size: 0.72rem; color: var(--text-muted);">(Wave ${entry.wave || 1})</span>
                                     </div>
