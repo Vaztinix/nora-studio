@@ -1230,7 +1230,7 @@
                     item.onmouseenter = () => item.style.borderColor = 'rgba(245, 158, 11, 0.3)';
                     item.onmouseleave = () => item.style.borderColor = 'rgba(255,255,255,0.06)';
                     item.innerHTML = `
-                        <img src="${u.avatar || 'nora.png'}" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); object-fit: cover; flex-shrink: 0;" onerror="this.src="/nora.png";">
+                        <img src="${u.avatar || 'nora.png'}" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.1); object-fit: cover; flex-shrink: 0;" onerror="this.src='/nora.png';">
                         <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column; gap: 2px;">
                             <div style="font-weight: 700; color: #fff; font-size: 0.92rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${u.globalName || u.username}</div>
                             <div style="font-size: 0.78rem; color: var(--muted); display: flex; gap: 6px; align-items: center; flex-wrap: wrap;">
@@ -1351,7 +1351,7 @@
                         <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                                    <img src="${s.icon}" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.onerror=null; this.src="/nora.png"">
+                                    <img src="${s.icon}" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.onerror=null; this.src='/nora.png';">
                                     <div style="min-width: 0;">
                                         <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;">
                                             ${String(s.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')} ${premiumStatus}
@@ -1401,7 +1401,7 @@
                         <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                                    <img src="${u.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src="/nora.png"">
+                                    <img src="${u.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='/nora.png';">
                                     <div style="min-width: 0;">
                                         <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;">
                                             ${u.username} ${premiumStatus}
@@ -1445,7 +1445,7 @@
                         <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(248,81,73,0.15);">
                             <div style="display: flex; align-items: center; justify-content: space-between; min-width: 0; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                                    <img src="${t.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src="/nora.png"">
+                                    <img src="${t.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='/nora.png';">
                                     <div style="min-width: 0;">
                                         <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;">
                                             ${t.username} ${statusBadge}
@@ -1484,7 +1484,7 @@
                         const userMark = b.user 
                             ? `
                             <div style="display: flex; align-items: center; gap: 6px; margin-top: 4px; background: rgba(255,255,255,0.01); padding: 4px; border-radius: 4px;">
-                                <img src="${b.user.avatar}" style="width: 18px; height: 18px; border-radius: 50%;" onerror="this.onerror=null; this.src="/nora.png"">
+                                <img src="${b.user.avatar}" style="width: 18px; height: 18px; border-radius: 50%;" onerror="this.onerror=null; this.src='/nora.png';">
                                 <span style="font-size: 0.75rem; color: #ff5555; font-weight: 600;">${b.user.username}</span>
                                 <span style="font-size: 0.7rem; color: var(--muted);">(${b.associatedUserId})</span>
                             </div>
@@ -2052,7 +2052,7 @@
                         container.innerHTML = bindings.map(b => `
                             <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
-                                    <img src="${b.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.src="/nora.png"">
+                                    <img src="${b.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.src='/nora.png';">
                                     <div style="min-width: 0;">
                                         <div style="font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                             ${b.username} <span style="color: #c084fc; font-weight: 400; font-size: 0.75rem;">(ID: ${b.userId})</span>
@@ -2573,7 +2573,7 @@
                     <!-- Top Row: Server Info + Badges -->
                     <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
                         <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
-                            <img src="${s.icon}" style="width: 40px; height: 40px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border);" onerror="this.onerror=null; this.src="/nora.png";">
+                            <img src="${s.icon}" style="width: 40px; height: 40px; border-radius: 10px; object-fit: cover; border: 1px solid var(--border);" onerror="this.onerror=null; this.src='/nora.png';">
                             <div style="min-width: 0;">
                                 <div style="font-weight: 700; font-size: 0.94rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 8px;">
                                     ${safeName}

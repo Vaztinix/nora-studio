@@ -5354,7 +5354,7 @@
                 <!-- Unified User Profile Menu Pill with Popover -->
                 <div class="user-menu-wrapper" id="user-menu-wrapper">
                     <button type="button" class="user-profile-pill" id="user-profile-btn" onclick="toggleUserDropdown(event)">
-                        <img id="user-avatar-top" src="/nora.png" onerror="this.onerror=null; this.src="/nora.png";" alt="User">
+                        <img id="user-avatar-top" src="/nora.png" onerror="this.onerror=null; this.src='/nora.png';" alt="User">
                         <span id="user-name-top" data-no-translate>Loading</span>
                         <i class="fas fa-chevron-down user-chevron"></i>
                     </button>
@@ -5401,7 +5401,7 @@
         <!-- User Profile Card in Drawer -->
         <div class="mobile-drawer-user-card" onclick="showTab('profile'); closeMobileNav();">
             <div style="position: relative; display: inline-block;">
-                <img id="mobile-drawer-avatar" src="/nora.png" onerror="this.onerror=null; this.src="/nora.png";" alt="Avatar">
+                <img id="mobile-drawer-avatar" src="/nora.png" onerror="this.onerror=null; this.src='/nora.png';" alt="Avatar">
                 <div id="mobile-drawer-status-dot" class="mobile-drawer-status-dot"></div>
             </div>
             <div class="mobile-drawer-user-info">
@@ -5572,7 +5572,7 @@
             <!-- User Profile in Sidebar -->
             <div class="user-profile" data-no-translate>
                 <div style="position: relative;">
-                    <img id="user-avatar" src="/nora.png" onerror="this.onerror=null; this.src="/nora.png";" alt="User">
+                    <img id="user-avatar" src="/nora.png" onerror="this.onerror=null; this.src='/nora.png';" alt="User">
                     <div id="user-status-dot" style="position: absolute; bottom: 0; right: 0; width: 12px; height: 12px; border-radius: 50%; background: #23a55a; border: 2px solid var(--sidebar-bg);"></div>
                 </div>
                 <div class="user-profile-info">
@@ -5878,7 +5878,7 @@
                                 <div style="padding: 14px 16px 18px 16px; position: relative; margin-top: -50px;">
                                     <!-- Avatar & Profile Header -->
                                     <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 10px;">
-                                        <img id="profile-preview-avatar" src="/nora.png" onerror="this.onerror=null; this.src="/nora.png";" style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid #0d0e12; background: #0d0e12; position: relative; z-index: 2; box-shadow: 0 4px 12px rgba(0,0,0,0.5); object-fit: cover;">
+                                        <img id="profile-preview-avatar" src="/nora.png" onerror="this.onerror=null; this.src='/nora.png';" style="width: 72px; height: 72px; border-radius: 50%; border: 3px solid #0d0e12; background: #0d0e12; position: relative; z-index: 2; box-shadow: 0 4px 12px rgba(0,0,0,0.5); object-fit: cover;">
                                         <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px;">
                                             <span style="background: rgba(88,101,242,0.12); border: 1px solid rgba(88,101,242,0.25); color: #818cf8; font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;"><i class="fab fa-discord"></i> Discord</span>
                                             <span style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #fff; font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
@@ -5972,7 +5972,7 @@
                 <div class="modal-content" style="max-width: 450px; width: 90%; background: var(--sidebar-bg); border: 1px solid var(--border); border-radius: 15px; overflow: hidden; padding: 0; animation: fadeIn 0.3s ease-out;">
                     <div id="modal-profile-banner" style="height: 100px; background: var(--primary); opacity: 0.8;"></div>
                     <div style="padding: 20px; position: relative; margin-top: -50px;">
-                        <img id="modal-profile-avatar" src="/nora.png" onerror="this.onerror=null; this.src="/nora.png";" style="width: 100px; height: 100px; border-radius: 50%; border: 6px solid var(--sidebar-bg); background: var(--sidebar-bg);">
+                        <img id="modal-profile-avatar" src="/nora.png" onerror="this.onerror=null; this.src='/nora.png';" style="width: 100px; height: 100px; border-radius: 50%; border: 6px solid var(--sidebar-bg); background: var(--sidebar-bg);">
                         <div style="margin-top: 15px;">
                             <h2 id="modal-profile-name" style="font-size: 1.5rem; font-weight: 800;">Username</h2>
                             <p id="modal-profile-handle" style="color: var(--muted); margin-bottom: 15px;">@handle</p>
@@ -6472,7 +6472,7 @@
                     <div style="display: flex; flex-direction: column; gap: 15px; align-items: flex-start;">
                         <button class="back-link" id="back-to-servers">← Back to Servers</button>
                         <div class="config-title">
-                            <img id="cfg-icon" src="/nora.png" onerror="this.onerror=null; this.src="/nora.png";">
+                            <img id="cfg-icon" src="/nora.png" onerror="this.onerror=null; this.src='/nora.png';">
                             <div><h2 id="cfg-name" data-no-translate>Loading... <div id="cfg-status" class="status-indicator online" title="Online"></div></h2><p style="color: var(--muted); margin-top: 4px;">Guild Configuration</p><div id="server-tier-sponsor-banner" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 6px;"></div></div>
                         </div>
                     </div>
@@ -6503,7 +6503,7 @@
                         <div id="sidebar-server-selector-card" style="background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 10px; margin: 0 14px 15px 14px; position: relative; transition: border-color 0.2s ease, box-shadow 0.2s ease;">
                             <div id="sidebar-server-trigger" onclick="toggleSidebarServerDropdown(event)" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;">
                                 <div style="display: flex; align-items: center; gap: 8px; min-width: 0;">
-                                    <img id="sidebar-server-icon" src="/nora.png" style="width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0; object-fit: cover;" onerror="this.onerror=null; this.src="/nora.png";">
+                                    <img id="sidebar-server-icon" src="/nora.png" style="width: 28px; height: 28px; border-radius: 6px; flex-shrink: 0; object-fit: cover;" onerror="this.onerror=null; this.src='/nora.png';">
                                     <span id="sidebar-server-name" style="font-size: 0.85rem; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" data-no-translate>Select Server</span>
                                 </div>
                                 <i id="sidebar-server-chevron" class="fas fa-chevron-down" style="font-size: 0.75rem; color: var(--muted); margin-left: 8px; transition: transform 0.2s ease, color 0.2s ease;"></i>
@@ -7292,7 +7292,7 @@
                                 <!-- Live Simulator Discord Frame -->
                                 <div style="background: #313338; border-radius: 10px; padding: 14px; font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);">
                                     <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                        <img src="/nora.png" style="width: 38px; height: 38px; border-radius: 50%;" onerror="this.src="/nora.png";" alt="Nora">
+                                        <img src="/nora.png" style="width: 38px; height: 38px; border-radius: 50%;" onerror="this.src='/nora.png';" alt="Nora">
                                         <div>
                                             <div style="display: flex; align-items: center; gap: 6px;">
                                                 <span style="font-weight: 600; color: #fff; font-size: 0.95rem;">Nora</span>
@@ -10005,7 +10005,7 @@
 
                                 <div style="background: #313338; border-radius: 10px; padding: 16px; font-family: 'gg sans', 'Noto Sans', sans-serif; color: #dbdee1; border: 1px solid #1e1f22; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);">
                                     <div style="display: flex; gap: 12px; align-items: flex-start;">
-                                        <img src="/nora.png" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover;" onerror="this.src="/nora.png";">
+                                        <img src="/nora.png" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover;" onerror="this.src='/nora.png';">
                                         <div style="flex: 1; overflow: hidden;">
                                             <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
                                                 <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">Nora</span>
@@ -10092,7 +10092,7 @@
                                 <p style="font-size: 0.78rem; color: var(--muted); margin: 0;">Monitor live in-game status of linked Roblox members.</p>
 
                                 <div style="display: flex; align-items: center; gap: 14px; background: rgba(0,0,0,0.25); padding: 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-                                    <img id="roblox-presence-avatar" src="/nora.png" style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover;" onerror="this.src="/nora.png";">
+                                    <img id="roblox-presence-avatar" src="/nora.png" style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover;" onerror="this.src='/nora.png';">
                                     <div style="flex: 1;">
                                         <div id="roblox-presence-names" style="font-weight: 700; color: #fff; font-size: 0.9rem;">Roblox User</div>
                                         <div id="roblox-presence-status" style="font-size: 0.75rem; color: var(--muted);">Click check status below...</div>
@@ -10423,7 +10423,7 @@
 
                                 <div style="background: #313338; border-radius: 12px; padding: 18px; font-family: 'gg sans', sans-serif; color: #dbdee1; border: 1px solid #1e1f22; box-shadow: inset 0 4px 20px rgba(0,0,0,0.4);">
                                     <div style="display: flex; gap: 12px; align-items: flex-start;">
-                                        <img id="rr-preview-bot-avatar" src="/nora.png" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover;" onerror="this.src="/nora.png";">
+                                        <img id="rr-preview-bot-avatar" src="/nora.png" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover;" onerror="this.src='/nora.png';">
                                         <div style="flex: 1; overflow: hidden;">
                                             <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                                                 <span style="font-weight: 700; color: #fff; font-size: 0.92rem;">Nora</span>
@@ -10756,7 +10756,7 @@
                             
                             <div style="background: #313338; border-radius: 14px; padding: 20px; font-family: 'gg sans', sans-serif; color: #dbdee1; border: 1px solid #1e1f22; box-shadow: inset 0 4px 20px rgba(0,0,0,0.4);">
                                 <div style="display: flex; gap: 14px; align-items: flex-start;">
-                                    <img src="/nora.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" onerror="this.src="/nora.png";">
+                                    <img src="/nora.png" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" onerror="this.src='/nora.png';">
                                     <div style="flex: 1; overflow: hidden;">
                                         <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
                                             <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">Nora Support</span>
@@ -11062,7 +11062,7 @@
                                     </div>
                                     
                                     <div id="starboard-preview-msg" style="display: none; gap: 14px; align-items: flex-start; text-align: left;">
-                                        <img id="starboard-preview-avatar" src="/nora.png" onerror="this.onerror=null; this.src="/nora.png";" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Bot avatar">
+                                        <img id="starboard-preview-avatar" src="/nora.png" onerror="this.onerror=null; this.src='/nora.png';" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;" alt="Bot avatar">
                                         <div style="flex: 1; min-width: 0;">
                                             <!-- Star Count Header -->
                                             <div id="starboard-preview-count" style="font-weight: 700; color: #f2f3f5; font-size: 0.95rem; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
@@ -11805,7 +11805,7 @@
                                 <!-- Discord Simulated Chat Frame -->
                                 <div class="preview-container" style="background: #313338; border-radius: 8px; padding: 16px; border: 1px solid rgba(255,255,255,0.05); font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);">
                                     <div class="discord-msg" style="display: flex; gap: 14px; align-items: flex-start;">
-                                        <img id="preview-avatar" class="discord-avatar" src="/nora.png" onerror="this.onerror=null; this.src="/nora.png";" style="width: 40px; height: 40px; border-radius: 50%; background: #313338; flex-shrink: 0; object-fit: cover;">
+                                        <img id="preview-avatar" class="discord-avatar" src="/nora.png" onerror="this.onerror=null; this.src='/nora.png';" style="width: 40px; height: 40px; border-radius: 50%; background: #313338; flex-shrink: 0; object-fit: cover;">
                                         <div class="discord-content" style="flex: 1; min-width: 0;">
                                             <div class="discord-name" style="color: #f2f3f5; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
                                                 <span id="preview-name" style="font-weight: 600;">Nora</span>
@@ -31619,7 +31619,7 @@
             
             <!-- Server Banner pill -->
             <div style="display: inline-flex; align-items: center; gap: 10px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); padding: 6px 14px; border-radius: 12px;">
-                <img id="perm-modal-guild-icon" src="/nora.png" style="width: 24px; height: 24px; border-radius: 6px; object-fit: cover;" onerror="this.src="/nora.png";">
+                <img id="perm-modal-guild-icon" src="/nora.png" style="width: 24px; height: 24px; border-radius: 6px; object-fit: cover;" onerror="this.src='/nora.png';">
                 <span id="perm-modal-guild-name" style="font-size: 0.88rem; font-weight: 700; color: #f1f5f9; max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Server Name</span>
             </div>
         </div>
