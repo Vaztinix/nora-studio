@@ -37,22 +37,33 @@
         }
 
         html, body {
+            margin: 0;
+            padding: 0;
             width: 100%;
             height: 100%;
+            height: 100dvh;
+            min-height: -webkit-fill-available;
             overflow: hidden;
+            position: fixed;
             background-color: var(--bg-void);
             color: var(--text-main);
             font-family: 'Plus Jakarta Sans', sans-serif;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
         }
 
         #game-container {
             position: relative;
             width: 100vw;
             height: 100vh;
+            height: 100dvh;
+            min-height: -webkit-fill-available;
             display: flex;
             align-items: center;
             justify-content: center;
             background: radial-gradient(circle at center, #0a0d1a 0%, #03050a 100%);
+            overflow: hidden;
         }
 
         canvas#gameCanvas {
@@ -246,89 +257,92 @@
             display: none;
         }
 
-        /* Virtual Joystick (Bottom Left) */
+        /* Virtual Joystick (Bottom Left) - Sized for mobile ergonomic thumb reach */
         .joystick-zone {
             position: absolute;
-            bottom: 25px;
-            left: 25px;
-            width: 130px;
-            height: 130px;
+            bottom: 16px;
+            left: 16px;
+            width: 88px;
+            height: 88px;
             border-radius: 50%;
-            background: rgba(15, 23, 42, 0.45);
-            border: 2px solid rgba(56, 189, 248, 0.35);
-            backdrop-filter: blur(8px);
+            background: rgba(15, 23, 42, 0.40);
+            border: 2px solid rgba(56, 189, 248, 0.4);
+            backdrop-filter: blur(6px);
             pointer-events: auto;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.2);
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.25);
+            touch-action: none;
         }
 
         .joystick-stick {
-            width: 52px;
-            height: 52px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: linear-gradient(135deg, #38bdf8, #5865F2);
             border: 2px solid #fff;
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.7);
+            box-shadow: 0 0 12px rgba(56, 189, 248, 0.7);
             pointer-events: none;
-            transition: transform 0.05s ease-out;
+            transition: transform 0.04s ease-out;
         }
 
-        /* Action Buttons (Bottom Right) */
+        /* Action Buttons (Bottom Right) - Compact, clean, non-obtrusive */
         .mobile-actions-zone {
             position: absolute;
-            bottom: 25px;
-            right: 25px;
+            bottom: 16px;
+            right: 16px;
             display: flex;
             align-items: flex-end;
-            gap: 16px;
+            gap: 10px;
             pointer-events: auto;
+            touch-action: none;
         }
 
         .mobile-action-btn {
             border-radius: 50%;
-            border: 2px solid #fff;
+            border: 2px solid rgba(255, 255, 255, 0.85);
             color: #fff;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.6);
-            transition: transform 0.1s ease;
+            box-shadow: 0 0 14px rgba(0, 0, 0, 0.6);
+            transition: transform 0.08s ease;
+            touch-action: manipulation;
         }
 
         .mobile-action-btn:active {
-            transform: scale(0.92);
+            transform: scale(0.88);
         }
 
         .mobile-dash-btn {
-            width: 64px;
-            height: 64px;
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.85), rgba(88, 101, 242, 0.85));
-            box-shadow: 0 0 25px rgba(56, 189, 248, 0.5);
+            width: 46px;
+            height: 46px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.8), rgba(88, 101, 242, 0.8));
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
         }
 
         .mobile-dash-btn span {
-            font-size: 0.65rem;
+            font-size: 0.52rem;
             font-weight: 800;
             font-family: 'Orbitron', sans-serif;
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
         .mobile-fire-btn {
-            width: 76px;
-            height: 76px;
-            background: linear-gradient(135deg, rgba(236, 72, 153, 0.85), rgba(190, 24, 93, 0.85));
-            box-shadow: 0 0 25px rgba(236, 72, 153, 0.5);
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.8), rgba(190, 24, 93, 0.8));
+            box-shadow: 0 0 18px rgba(236, 72, 153, 0.4);
         }
 
         .mobile-fire-btn span {
-            font-size: 0.7rem;
+            font-size: 0.58rem;
             font-weight: 800;
             font-family: 'Orbitron', sans-serif;
-            margin-top: 3px;
+            margin-top: 2px;
         }
 
         /* Modals & Overlays */
@@ -489,51 +503,52 @@
         .powerup-card {
             background: linear-gradient(165deg, rgba(15, 23, 42, 0.95) 0%, rgba(10, 14, 26, 0.98) 100%);
             border: 2px solid var(--border-glass);
-            border-radius: 16px;
-            padding: 22px 18px;
-            width: min(260px, 100%);
+            border-radius: 14px;
+            padding: 18px 16px;
+            width: min(250px, 100%);
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
-            gap: 12px;
+            gap: 10px;
             cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+            touch-action: manipulation;
         }
 
-        .powerup-card:hover {
-            transform: translateY(-8px) scale(1.03);
+        .powerup-card:hover, .powerup-card:active {
+            transform: scale(1.02);
             border-color: var(--cyan);
-            box-shadow: 0 20px 45px rgba(56, 189, 248, 0.4);
+            box-shadow: 0 15px 35px rgba(56, 189, 248, 0.4);
         }
 
         .powerup-card.rarity-rare {
             border-color: rgba(139, 92, 246, 0.6);
-            box-shadow: 0 15px 35px rgba(139, 92, 246, 0.25);
+            box-shadow: 0 12px 30px rgba(139, 92, 246, 0.25);
         }
-        .powerup-card.rarity-rare:hover {
+        .powerup-card.rarity-rare:hover, .powerup-card.rarity-rare:active {
             border-color: #a855f7;
-            box-shadow: 0 20px 45px rgba(168, 85, 247, 0.5);
+            box-shadow: 0 15px 35px rgba(168, 85, 247, 0.5);
         }
 
         .powerup-card.rarity-legendary {
             border-color: rgba(245, 158, 11, 0.7);
-            box-shadow: 0 15px 35px rgba(245, 158, 11, 0.25);
+            box-shadow: 0 12px 30px rgba(245, 158, 11, 0.25);
         }
-        .powerup-card.rarity-legendary:hover {
+        .powerup-card.rarity-legendary:hover, .powerup-card.rarity-legendary:active {
             border-color: #f59e0b;
-            box-shadow: 0 20px 45px rgba(245, 158, 11, 0.6);
+            box-shadow: 0 15px 35px rgba(245, 158, 11, 0.6);
         }
 
         .card-rarity-pill {
-            font-size: 0.65rem;
+            font-size: 0.60rem;
             font-family: 'Orbitron', sans-serif;
             font-weight: 800;
             letter-spacing: 1px;
-            padding: 3px 10px;
+            padding: 2px 8px;
             border-radius: 20px;
             background: rgba(255, 255, 255, 0.1);
             color: var(--text-muted);
@@ -541,36 +556,35 @@
         }
 
         .card-icon-wrap {
-            width: 56px;
-            height: 56px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
             background: rgba(56, 189, 248, 0.12);
             border: 2px solid var(--cyan);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
+            font-size: 1.3rem;
             color: var(--cyan);
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.3);
         }
 
         .card-title {
             font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
+            font-size: 1.05rem;
             font-weight: 900;
             color: #fff;
             letter-spacing: 0.5px;
         }
 
         .card-desc {
-            font-size: 0.8rem;
+            font-size: 0.76rem;
             color: var(--text-muted);
-            line-height: 1.4;
-            min-height: 48px;
+            line-height: 1.35;
         }
 
         .card-rank {
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             font-family: 'Orbitron', monospace;
             color: var(--emerald);
             font-weight: 800;
@@ -625,16 +639,83 @@
             color: var(--gold);
         }
 
-        @media (max-width: 768px) {
+        /* Mobile & Tablet Responsive Engine (Orientation Unlocked) */
+        @media (max-width: 820px) {
             .mobile-controls-layer { display: block; }
+            .arcade-header { padding: 6px 12px; height: 42px; }
+            .header-brand img { width: 26px; height: 26px; }
+            .brand-title { font-size: 0.82rem; }
+            .header-actions { gap: 5px; }
+            .arcade-btn { padding: 5px 8px; font-size: 0.72rem; }
+            .arcade-btn .btn-label { display: none; } /* Show icons on mobile header */
+
+            /* Horizontal Streamlined HUD for Mobile */
+            .hud-overlay {
+                top: 46px;
+                left: 8px;
+                right: 8px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 5px;
+                align-items: center;
+            }
+            .hud-stat-box {
+                padding: 3px 8px;
+                gap: 5px;
+                border-radius: 6px;
+                background: rgba(8, 12, 24, 0.75);
+            }
+            .hud-label { font-size: 0.58rem; }
+            .hud-value { font-size: 0.75rem; }
+            .hud-meter { width: 60px; height: 6px; }
+
+            /* Compact Modal Cards */
             .game-overlay-screen { padding: 10px 8px; }
-            .modal-card { padding: 16px 14px; gap: 8px; max-height: 96vh; }
+            .modal-card { padding: 16px 14px; gap: 8px; max-width: 380px; max-height: 96vh; }
             .start-logo-img { width: 44px !important; height: 44px !important; border-radius: 12px !important; }
             .modal-title { font-size: 1.35rem !important; }
-            .hud-overlay { top: 60px; left: 8px; }
-            .brand-title { display: inline-block; font-size: 0.82rem; }
-            .cards-container { flex-direction: column; align-items: center; }
-            .powerup-card { width: 100%; max-width: 320px; }
+
+            /* Horizontal Row Upgrade Cards on Mobile */
+            .cards-container {
+                flex-direction: column;
+                gap: 7px;
+                width: 100%;
+                max-width: 360px;
+            }
+            .powerup-card {
+                flex-direction: row;
+                text-align: left;
+                padding: 10px 12px;
+                gap: 12px;
+                width: 100%;
+                border-radius: 12px;
+                box-sizing: border-box;
+            }
+            .card-icon-wrap {
+                width: 38px !important;
+                height: 38px !important;
+                font-size: 1.1rem !important;
+                flex-shrink: 0;
+            }
+            .card-title { font-size: 0.88rem !important; }
+            .card-desc { font-size: 0.70rem !important; line-height: 1.25 !important; }
+            .card-rank { display: none; }
+        }
+
+        /* Landscape Mobile Mode (Height <= 500px) */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .arcade-header { padding: 4px 10px; height: 36px; }
+            .hud-overlay { top: 38px; left: 8px; right: 8px; gap: 4px; }
+            .hud-stat-box { padding: 2px 6px; }
+            .hud-meter { width: 45px; height: 5px; }
+            .joystick-zone { bottom: 10px; left: 10px; width: 78px; height: 78px; }
+            .joystick-stick { width: 32px; height: 32px; }
+            .mobile-actions-zone { bottom: 10px; right: 10px; gap: 8px; }
+            .mobile-dash-btn { width: 42px; height: 42px; }
+            .mobile-fire-btn { width: 50px; height: 50px; }
+            .modal-card { max-height: 94vh; padding: 12px 14px; gap: 6px; }
+            .start-logo-img { width: 36px !important; height: 36px !important; }
+            .modal-title { font-size: 1.15rem !important; }
         }
     </style>
 </head>
@@ -1053,8 +1134,20 @@
             }
         }
 
-        window.addEventListener('resize', resizeCanvas);
-        window.addEventListener('resize', renderOSControls);
+        function handleOrientationResize() {
+            resizeCanvas();
+            renderOSControls();
+            if (player) {
+                player.x = Math.max(player.radius + 10, Math.min(width - player.radius - 10, player.x));
+                player.y = Math.max(player.radius + 45, Math.min(height - player.radius - 15, player.y));
+            }
+        }
+
+        window.addEventListener('resize', handleOrientationResize);
+        window.addEventListener('orientationchange', () => setTimeout(handleOrientationResize, 150));
+        if (screen.orientation) {
+            screen.orientation.addEventListener('change', () => setTimeout(handleOrientationResize, 150));
+        }
 
         // ==========================================
         // OS DETECTION & DYNAMIC CONTROLS ENGINE
@@ -1339,7 +1432,7 @@
             startY: 0,
             moveX: 0,
             moveY: 0,
-            maxDist: 40
+            maxDist: 28
         };
 
         window.addEventListener('keydown', (e) => {
@@ -1364,9 +1457,13 @@
 
         if (jZone) {
             jZone.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
                 initAudio();
                 joystick.active = true;
+                if (jZone.setPointerCapture) {
+                    try { jZone.setPointerCapture(e.pointerId); } catch (_) {}
+                }
                 const rect = jZone.getBoundingClientRect();
                 joystick.startX = rect.left + rect.width / 2;
                 joystick.startY = rect.top + rect.height / 2;
@@ -1911,11 +2008,14 @@
                 const cardEl = document.createElement('div');
                 cardEl.className = `powerup-card rarity-${c.rarity}`;
                 cardEl.innerHTML = `
-                    <span class="card-rarity-pill">${c.rarity.toUpperCase()}</span>
                     <div class="card-icon-wrap"><i class="fas ${c.icon}"></i></div>
-                    <div class="card-title">${c.title}</div>
-                    <div class="card-desc">${c.desc}</div>
-                    <span class="card-rank">SELECT UPGRADE</span>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 2px;">
+                            <div class="card-title">${c.name}</div>
+                            <span class="card-rarity-pill">${c.rarity.toUpperCase()}</span>
+                        </div>
+                        <div class="card-desc">${c.desc}</div>
+                    </div>
                 `;
                 cardEl.onclick = () => selectPowerUpCard(c);
                 container.appendChild(cardEl);
