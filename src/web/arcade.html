@@ -1951,7 +1951,7 @@
         const UPGRADE_CARDS_POOL = [
             {
                 id: 'rapid_plasma',
-                title: 'RAPID PLASMA',
+                title: 'RAPID PLASMA', name: 'RAPID PLASMA',
                 desc: 'Increases firing rate by +25%. Faster trigger response.',
                 icon: 'fa-bolt',
                 rarity: 'rare',
@@ -1959,7 +1959,7 @@
             },
             {
                 id: 'multi_shot',
-                title: 'MULTI-SHOT SPREAD',
+                title: 'MULTI-SHOT SPREAD', name: 'MULTI-SHOT SPREAD',
                 desc: 'Adds an extra plasma stream. (Single → Twin → Triple → Quint).',
                 icon: 'fa-certificate',
                 rarity: 'rare',
@@ -1967,7 +1967,7 @@
             },
             {
                 id: 'kinetic_shield',
-                title: 'KINETIC BARRIER',
+                title: 'KINETIC BARRIER', name: 'KINETIC BARRIER',
                 desc: 'Restores full shield energy and increases max shield charges (+1).',
                 icon: 'fa-shield-alt',
                 rarity: 'rare',
@@ -1975,7 +1975,7 @@
             },
             {
                 id: 'nanite_repair',
-                title: 'NANITE REPAIR',
+                title: 'NANITE REPAIR', name: 'NANITE REPAIR',
                 desc: 'Restores +50 Health instantly and expands max Health by +25.',
                 icon: 'fa-heart',
                 rarity: 'common',
@@ -1983,7 +1983,7 @@
             },
             {
                 id: 'hyper_thrusters',
-                title: 'HYPER THRUSTERS',
+                title: 'HYPER THRUSTERS', name: 'HYPER THRUSTERS',
                 desc: '+20% Flight Speed and reduces Warp Dash cooldown by 25%.',
                 icon: 'fa-tachometer-alt',
                 rarity: 'common',
@@ -1991,7 +1991,7 @@
             },
             {
                 id: 'quantum_magnet',
-                title: 'QUANTUM MAGNET',
+                title: 'QUANTUM MAGNET', name: 'QUANTUM MAGNET',
                 desc: 'Greatly widens Crystal & Item attraction range (+90px).',
                 icon: 'fa-magnet',
                 rarity: 'common',
@@ -1999,7 +1999,7 @@
             },
             {
                 id: 'critical_matrix',
-                title: 'CRITICAL MATRIX',
+                title: 'CRITICAL MATRIX', name: 'CRITICAL MATRIX',
                 desc: '+20% Critical Hit chance dealing 2.5x damage with gold sparks.',
                 icon: 'fa-bullseye',
                 rarity: 'legendary',
@@ -2007,7 +2007,7 @@
             },
             {
                 id: 'orbit_drone',
-                title: 'ORBITAL DRONE',
+                title: 'ORBITAL DRONE', name: 'ORBITAL DRONE',
                 desc: 'Spawns an autonomous companion drone that circles and shoots.',
                 icon: 'fa-satellite',
                 rarity: 'legendary',
@@ -2015,7 +2015,7 @@
             },
             {
                 id: 'emp_overload',
-                title: 'EMP DETONATOR',
+                title: 'EMP DETONATOR', name: 'EMP DETONATOR',
                 desc: 'Periodically emits an electrical shockwave neutralizing all bullets.',
                 icon: 'fa-radiation',
                 rarity: 'legendary',
@@ -2023,7 +2023,7 @@
             },
             {
                 id: 'piercing_laser',
-                title: 'RAILGUN PIERCING',
+                title: 'RAILGUN PIERCING', name: 'RAILGUN PIERCING',
                 desc: 'Bullets pierce through 1 additional enemy before dissipating.',
                 icon: 'fa-arrow-right',
                 rarity: 'rare',
@@ -2060,7 +2060,7 @@
                     <div class="card-icon-wrap"><i class="fas ${c.icon}"></i></div>
                     <div style="flex: 1; min-width: 0;">
                         <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 2px;">
-                            <div class="card-title">${c.name}</div>
+                            <div class="card-title">${c.title || c.name}</div>
                             <span class="card-rarity-pill">${c.rarity.toUpperCase()}</span>
                         </div>
                         <div class="card-desc">${c.desc}</div>

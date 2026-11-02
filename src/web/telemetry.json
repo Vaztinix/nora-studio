@@ -1,10 +1,10 @@
 {
   "serverCount": 99,
-  "memberCount": 14084,
+  "memberCount": 14085,
   "commandCount": 66,
-  "ping": 39,
+  "ping": 38,
   "systemStatus": "online",
   "statusText": "Online",
-  "updatedAt": "2026-11-02T04:41:40.185Z",
+  "updatedAt": "2026-11-02T05:41:40.201Z",
   "nextUpdateInMs": 1800000
 }
