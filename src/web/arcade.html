@@ -748,7 +748,185 @@
             .start-logo-img { width: 36px !important; height: 36px !important; }
             .modal-title { font-size: 1.15rem !important; }
         }
-    </style>
+    
+        /* ==========================================
+           8 EXPANDED RARITIES & CARD STYLES
+           ========================================== */
+        .rarity-common {
+            border-color: rgba(148, 163, 184, 0.45);
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.7), rgba(15, 23, 42, 0.9));
+        }
+        .rarity-common .card-rarity-pill {
+            background: rgba(148, 163, 184, 0.15);
+            color: #cbd5e1;
+            border: 1px solid rgba(148, 163, 184, 0.35);
+        }
+        .rarity-common .card-icon-wrap {
+            background: rgba(148, 163, 184, 0.12);
+            color: #cbd5e1;
+            border-color: rgba(148, 163, 184, 0.3);
+        }
+
+        .rarity-uncommon {
+            border-color: rgba(16, 185, 129, 0.55);
+            background: linear-gradient(135deg, rgba(6, 78, 59, 0.4), rgba(10, 14, 26, 0.95));
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+        }
+        .rarity-uncommon .card-rarity-pill {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            border: 1px solid rgba(16, 185, 129, 0.4);
+        }
+        .rarity-uncommon .card-icon-wrap {
+            background: rgba(16, 185, 129, 0.18);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .rarity-rare {
+            border-color: rgba(56, 189, 248, 0.65);
+            background: linear-gradient(135deg, rgba(14, 116, 144, 0.35), rgba(10, 14, 26, 0.95));
+            box-shadow: 0 4px 25px rgba(56, 189, 248, 0.2);
+        }
+        .rarity-rare .card-rarity-pill {
+            background: rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.5);
+        }
+        .rarity-rare .card-icon-wrap {
+            background: rgba(56, 189, 248, 0.18);
+            color: #38bdf8;
+            border-color: rgba(56, 189, 248, 0.4);
+        }
+
+        .rarity-super-rare, .rarity-super\ rare {
+            border-color: rgba(139, 92, 246, 0.75);
+            background: linear-gradient(135deg, rgba(91, 33, 182, 0.45), rgba(10, 14, 26, 0.95));
+            box-shadow: 0 4px 28px rgba(139, 92, 246, 0.25);
+        }
+        .rarity-super-rare .card-rarity-pill, .rarity-super\ rare .card-rarity-pill {
+            background: rgba(139, 92, 246, 0.25);
+            color: #a78bfa;
+            border: 1px solid rgba(139, 92, 246, 0.55);
+        }
+        .rarity-super-rare .card-icon-wrap, .rarity-super\ rare .card-icon-wrap {
+            background: rgba(139, 92, 246, 0.22);
+            color: #a78bfa;
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .rarity-epic {
+            border-color: rgba(236, 72, 153, 0.85);
+            background: linear-gradient(135deg, rgba(157, 23, 77, 0.45), rgba(10, 14, 26, 0.95));
+            box-shadow: 0 4px 32px rgba(236, 72, 153, 0.3);
+        }
+        .rarity-epic .card-rarity-pill {
+            background: rgba(236, 72, 153, 0.25);
+            color: #f472b6;
+            border: 1px solid rgba(236, 72, 153, 0.6);
+        }
+        .rarity-epic .card-icon-wrap {
+            background: rgba(236, 72, 153, 0.22);
+            color: #f472b6;
+            border-color: rgba(236, 72, 153, 0.5);
+        }
+
+        .rarity-legendary {
+            border-color: rgba(245, 158, 11, 0.9);
+            background: linear-gradient(135deg, rgba(180, 83, 9, 0.45), rgba(10, 14, 26, 0.95));
+            box-shadow: 0 6px 36px rgba(245, 158, 11, 0.35);
+        }
+        .rarity-legendary .card-rarity-pill {
+            background: rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.65);
+        }
+        .rarity-legendary .card-icon-wrap {
+            background: rgba(245, 158, 11, 0.25);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.55);
+        }
+
+        .rarity-mythic {
+            border-color: rgba(239, 68, 68, 0.95);
+            background: linear-gradient(135deg, rgba(185, 28, 28, 0.55), rgba(10, 14, 26, 0.96));
+            box-shadow: 0 6px 40px rgba(239, 68, 68, 0.45);
+            animation: mythicPulse 2.8s ease-in-out infinite;
+        }
+        .rarity-mythic .card-rarity-pill {
+            background: rgba(239, 68, 68, 0.3);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.75);
+            text-shadow: 0 0 8px rgba(239, 68, 68, 0.8);
+        }
+        .rarity-mythic .card-icon-wrap {
+            background: rgba(239, 68, 68, 0.28);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.65);
+        }
+
+        .rarity-exotic {
+            border-color: transparent;
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(3, 7, 18, 0.98)) padding-box,
+                        linear-gradient(135deg, #38bdf8, #ec4899, #f59e0b, #8b5cf6, #10b981) border-box;
+            border: 2px solid transparent;
+            box-shadow: 0 8px 45px rgba(236, 72, 153, 0.5), 0 0 25px rgba(56, 189, 248, 0.4);
+            animation: exoticShift 3.5s ease infinite alternate;
+        }
+        .rarity-exotic .card-rarity-pill {
+            background: linear-gradient(90deg, #ec4899, #8b5cf6, #38bdf8);
+            color: #ffffff;
+            border: none;
+            font-weight: 900;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+        }
+        .rarity-exotic .card-icon-wrap {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.3), rgba(56, 189, 248, 0.3));
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 15px rgba(236, 72, 153, 0.6);
+        }
+
+        @keyframes mythicPulse {
+            0%, 100% { box-shadow: 0 6px 36px rgba(239, 68, 68, 0.35); }
+            50% { box-shadow: 0 8px 48px rgba(239, 68, 68, 0.65); }
+        }
+        @keyframes exoticShift {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+
+        /* Inventory Modal Styles */
+        .inv-filter-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-muted);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .inv-filter-btn:hover, .inv-filter-btn.active {
+            background: var(--blurple);
+            border-color: var(--cyan);
+            color: #ffffff;
+            box-shadow: 0 0 12px rgba(88, 101, 242, 0.4);
+        }
+        .inv-stat-badge {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 8px;
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+</style>
+    <script src="https://cdn.jsdelivr.net/npm/@discord/embedded-app-sdk@1.0.0/output/index.min.js"></script>
 </head>
 <body>
     <div id="game-container">
@@ -963,13 +1141,58 @@
                     Submitting score to Nora Global Grid...
                 </div>
 
-                <button type="button" class="cta-btn-primary" onclick="startGame()">
+                <div id="auto-score-status" style="width: 100%; font-size: 0.8rem; font-weight: 700; color: var(--emerald); padding: 8px 12px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 8px; margin-bottom: 8px; text-align: center;">
+                      <i class="fas fa-spinner fa-spin"></i> Auto-syncing score to global rankings...
+                  </div>
+                  <button type="button" class="cta-btn-primary" onclick="startGame()">
                     <i class="fas fa-redo"></i> PLAY AGAIN
                 </button>
 
                 <button type="button" class="arcade-btn" style="width: 100%; justify-content: center;" onclick="openLeaderboard()">
                     <i class="fas fa-trophy"></i> View Global Rankings
                 </button>
+            </div>
+        </div>
+
+        <!-- Card Inventory & Deck Modal -->
+        <div id="inventory-modal" class="game-overlay-screen" style="display: none; z-index: 50;">
+            <div class="modal-card" style="max-width: 860px; max-height: 90vh; width: 95%; display: flex; flex-direction: column; padding: 18px 20px; gap: 12px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(88,101,242,0.3); border: 1px solid var(--border-glow); display: flex; align-items: center; justify-content: center; color: var(--cyan); font-size: 16px;">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <div>
+                            <h2 style="font-family: 'Orbitron', sans-serif; font-size: 1.15rem; margin: 0; color: #fff; letter-spacing: 1px;">CRUISER ARSENAL & BUFFS</h2>
+                            <div style="font-size: 0.72rem; color: var(--text-muted);">Collected <span id="inv-total-cards" style="color: var(--cyan); font-weight: 800;">0</span> cards (<span id="inv-unique-cards" style="color: var(--gold); font-weight: 800;">0</span> unique buffs)</div>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeInventoryModal()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; width: 32px; height: 32px; border-radius: 8px; font-size: 14px; cursor: pointer;">✕</button>
+                </div>
+
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; width: 100%; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 8px 10px;" id="inv-stats-bar">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <div style="display: flex; gap: 6px; overflow-x: auto; width: 100%; padding-bottom: 4px;" id="inv-filter-container">
+                    <button type="button" class="inv-filter-btn active" onclick="filterInventory('all', this)">All Cards</button>
+                    <button type="button" class="inv-filter-btn" onclick="filterInventory('weapons', this)"><i class="fas fa-crosshairs"></i> Weapons</button>
+                    <button type="button" class="inv-filter-btn" onclick="filterInventory('defense', this)"><i class="fas fa-shield-alt"></i> Defense</button>
+                    <button type="button" class="inv-filter-btn" onclick="filterInventory('mobility', this)"><i class="fas fa-wind"></i> Mobility</button>
+                    <button type="button" class="inv-filter-btn" onclick="filterInventory('drones', this)"><i class="fas fa-satellite"></i> Drones</button>
+                    <button type="button" class="inv-filter-btn" onclick="filterInventory('utility', this)"><i class="fas fa-gem"></i> Utility</button>
+                    <button type="button" class="inv-filter-btn" onclick="filterInventory('specials', this)"><i class="fas fa-crown"></i> Specials</button>
+                </div>
+
+                <div id="inv-cards-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; overflow-y: auto; max-height: 52vh; padding-right: 4px; width: 100%;">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; width: 100%; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.08);">
+                    <button type="button" onclick="closeInventoryModal()" class="cta-btn-primary" style="padding: 10px 24px; font-size: 0.9rem; cursor: pointer;">
+                        <i class="fas fa-play"></i> Resume Mission (ESC / I)
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -1389,7 +1612,94 @@
         let currentUser = null;
 
         // Auto-detect Discord login from Nora Studio dashboard
+        function setPilotUser(user, token) {
+            currentUser = user;
+            if (token) {
+                try {
+                    localStorage.setItem('nora_discord_token', token);
+                    localStorage.setItem('discord_token', token);
+                } catch (_) {}
+            }
+            const displayName = user.global_name || user.username;
+            const nameEl = document.getElementById('pilot-name-display');
+            if (nameEl) nameEl.textContent = displayName;
+            const statusEl = document.getElementById('pilot-status-display');
+            if (statusEl) {
+                statusEl.innerHTML = '<span style="color: var(--emerald);"><i class="fas fa-check-circle"></i> Discord Linked (@' + user.username + ') • Auto High Scoring Active</span>';
+            }
+            if (user.avatar) {
+                let avUrl = user.avatar.startsWith('http') 
+                    ? user.avatar 
+                    : `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
+                if (window.location.hostname.includes('discordsays.com')) {
+                    avUrl = avUrl.replace('https://cdn.discordapp.com', '/.proxy/discord-cdn');
+                }
+                const avImg = document.getElementById('pilot-avatar-img');
+                if (avImg) {
+                    avImg.src = avUrl;
+                    avImg.style.display = 'block';
+                }
+                const fb = document.getElementById('pilot-avatar-fallback');
+                if (fb) fb.style.display = 'none';
+            }
+            const guestWrap = document.getElementById('guest-discord-wrap');
+            if (guestWrap) guestWrap.style.display = 'none';
+        }
+
+        // Auto-detect Discord login from Nora Studio dashboard & Discord Activities
         (async function checkAuth() {
+            // 1. Check URL Hash (e.g. #access_token=... returned from Discord OAuth)
+            if (window.location.hash && window.location.hash.includes('access_token=')) {
+                try {
+                    const hashParams = new URLSearchParams(window.location.hash.slice(1));
+                    const hashToken = hashParams.get('access_token');
+                    if (hashToken) {
+                        localStorage.setItem('nora_discord_token', hashToken);
+                        localStorage.setItem('discord_token', hashToken);
+                        history.replaceState(null, '', window.location.pathname + window.location.search);
+                    }
+                } catch (_) {}
+            }
+
+            // 2. Check URL Query parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const queryToken = urlParams.get('token') || urlParams.get('discord_token');
+            if (queryToken) {
+                try { localStorage.setItem('nora_discord_token', queryToken); } catch (_) {}
+            }
+
+            // 3. Discord Embedded App SDK Handshake if inside Discord Activities
+            if (window.location.hostname.includes('discordsays.com') && window.DiscordSDK) {
+                try {
+                    const discordSdk = new window.DiscordSDK('1375943730951098549');
+                    await discordSdk.ready();
+                    const { code } = await discordSdk.commands.authorize({
+                        client_id: '1375943730951098549',
+                        response_type: 'code',
+                        state: '',
+                        prompt: 'none',
+                        scope: ['identify']
+                    });
+                    if (code) {
+                        const res = await fetch('/api/arcade/discord-auth', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ code, redirect_uri: window.location.origin })
+                        });
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.user) {
+                                setPilotUser(data.user, data.token);
+                                return;
+                            }
+                        }
+                    }
+                } catch (sdkErr) {
+                    console.warn('[Discord SDK Auto-Auth]:', sdkErr);
+                }
+            }
+
+            // 4. Retrieve stored token
             const token = sessionStorage.getItem('discord_token') 
                 || localStorage.getItem('nora_discord_token')
                 || localStorage.getItem('discord_token')
@@ -1406,35 +1716,18 @@
                         const data = await res.json();
                         const user = data.user || data;
                         if (user && (user.username || user.id)) {
-                            currentUser = user;
-                            const displayName = user.global_name || user.username;
-                            document.getElementById('pilot-name-display').textContent = displayName;
-                            document.getElementById('pilot-status-display').innerHTML = '<span style="color: var(--emerald);"><i class="fas fa-check-circle"></i> Discord Linked (@' + user.username + ') • High Scores Active</span>';
-                            if (user.avatar) {
-                                let avUrl = user.avatar.startsWith('http') 
-                                    ? user.avatar 
-                                    : `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
-                                if (window.location.hostname.includes('discordsays.com')) {
-                                    avUrl = avUrl.replace('https://cdn.discordapp.com', '/.proxy/discord-cdn');
-                                }
-                                const avImg = document.getElementById('pilot-avatar-img');
-                                if (avImg) {
-                                    avImg.src = avUrl;
-                                    avImg.style.display = 'block';
-                                }
-                                const fb = document.getElementById('pilot-avatar-fallback');
-                                if (fb) fb.style.display = 'none';
-                            }
+                            setPilotUser(user, token);
                             return;
                         }
                     }
                 } catch (_) {}
             }
 
-            // If not logged in, show manual tag input and login link
+            // 5. If not logged in, provide 1-click Connect Discord link + tag entry
             const statusEl = document.getElementById('pilot-status-display');
             if (statusEl) {
-                statusEl.innerHTML = '<a href="/dashboard" style="color: var(--cyan); text-decoration: underline; font-weight: 700;"><i class="fab fa-discord"></i> Login with Discord</a> or enter tag below';
+                const oauthUrl = `https://discord.com/oauth2/authorize?client_id=1375943730951098549&response_type=token&scope=identify&redirect_uri=${encodeURIComponent(window.location.origin + window.location.pathname)}`;
+                statusEl.innerHTML = `<a href="${oauthUrl}" style="color: var(--cyan); text-decoration: underline; font-weight: 700;"><i class="fab fa-discord"></i> Connect Discord</a> or enter tag below:`;
             }
             const guestWrap = document.getElementById('guest-discord-wrap');
             if (guestWrap) guestWrap.style.display = 'block';
@@ -1446,29 +1739,58 @@
             y: 0,
             radius: 18,
             speed: 7.5,
+            speedMultiplier: 1.0,
             hp: 100,
             maxHp: 100,
             shield: 1,
             maxShield: 1,
+            shieldRegenRate: 0,
+            shieldRegenTimer: 0,
             weaponLevel: 1,
             bulletPiercing: 0,
+            bulletDamage: 25,
+            bulletSpeedMultiplier: 1.0,
+            bulletSizeMultiplier: 1.0,
             critChance: 0.05,
+            critMultiplier: 2.0,
             magnetRadius: 140,
             dashCooldown: 0,
-            dashCooldownMax: 150, // 2.5s
+            dashCooldownMax: 150,
             dashDuration: 0,
+            dashShockwave: false,
+            dashDamage: 0,
+            dashInvulnBonus: 0,
             isInvulnerable: false,
             invulnTimer: 0,
             lastShotTime: 0,
             shootInterval: 140,
-            // XP & Leveling system
             level: 1,
             xp: 0,
-            xpNext: 100,
-            // Upgrades state
+            xpNext: 60,
+            xpMultiplier: 1.0,
+            scoreMultiplier: 1.0,
+            // Card Inventory Deck
+            inventory: [],
+            // Special Combat Systems
             empActive: false,
             empCooldown: 0,
-            orbitDrones: 0
+            empInterval: 600,
+            empDamage: 120,
+            orbitDrones: 0,
+            guardianShields: 0,
+            homingMissiles: 0,
+            missileTimer: 0,
+            chainLightning: 0,
+            cryoBullets: false,
+            corrosiveBullets: false,
+            vampirismChance: 0,
+            reflectShieldChance: 0,
+            reviveCharges: 0,
+            timeDilation: false,
+            laserBeamActive: false,
+            plasmaAura: false,
+            crystalDoubler: 1.0,
+            afterburnerTrail: false
         };
 
         // Input Tracking
@@ -1692,8 +2014,9 @@
                 this.piercesLeft = piercesLeft;
             }
             update() {
-                this.x += this.vx;
-                this.y += this.vy;
+                const spdMult = (this.isEnemy && player.timeDilation) ? 0.55 : 1.0;
+                this.x += this.vx * spdMult;
+                this.y += this.vy * spdMult;
             }
             draw(ctx) {
                 ctx.save();
@@ -1742,15 +2065,40 @@
                     this.xpDrop = 110;
                     this.shootCooldown = Math.max(90, 160 - (wave * 7));
                 } else if (type === 'boss') {
-                    // Boss starts at a manageable 750 HP on wave 5, scaling smoothly each boss encounter
-                    this.hp = 750 + Math.floor(Math.max(0, wave - 5) * 280);
+                    if (wave <= 5) {
+                        this.name = 'DREAD SENTINEL MK-I';
+                        this.hp = 850;
+                        this.bossTier = 1;
+                        this.color = '#38bdf8';
+                    } else if (wave <= 10) {
+                        this.name = 'VOID LEVIATHAN';
+                        this.hp = 2200;
+                        this.bossTier = 2;
+                        this.color = '#8b5cf6';
+                    } else if (wave <= 15) {
+                        this.name = 'OMEGA HARBINGER';
+                        this.hp = 3900;
+                        this.bossTier = 3;
+                        this.color = '#ec4899';
+                    } else if (wave <= 20) {
+                        this.name = 'QUANTUM CORRUPTOR';
+                        this.hp = 6400;
+                        this.bossTier = 4;
+                        this.color = '#f59e0b';
+                    } else {
+                        const loop = Math.floor((wave - 20) / 5) + 1;
+                        this.name = `TITAN PRIME CORE (PHASE ${loop})`;
+                        this.hp = 6400 + ((wave - 20) * 550);
+                        this.bossTier = 5;
+                        this.color = '#ef4444';
+                    }
                     this.maxHp = this.hp;
-                    this.speed = 1.1;
-                    this.radius = 65;
-                    this.color = '#ff3366';
-                    this.scoreVal = 5000;
-                    this.xpDrop = 250;
-                    this.shootCooldown = Math.max(35, 55 - (wave * 2));
+                    this.speed = 1.1 + Math.min(1.2, wave * 0.04);
+                    this.radius = 70;
+                    this.scoreVal = 5000 + (wave * 500);
+                    this.xpDrop = 250 + (wave * 25);
+                    this.shootCooldown = Math.max(25, 55 - (wave * 2));
+                    this.enraged = false;
                 }
             }
 
@@ -1782,19 +2130,46 @@
                     }
                 } else if (this.type === 'boss') {
                     if (this.y < 120) {
-                        this.y += 1.3;
+                        this.y += 1.4;
                     } else {
-                        this.x += Math.cos(this.time * 0.025) * 2.8;
+                        this.x += Math.cos(this.time * 0.028) * (2.6 + (this.bossTier || 1) * 0.3);
+                    }
+                    // Enrage phase below 35% HP
+                    if (this.hp < this.maxHp * 0.35 && !this.enraged) {
+                        this.enraged = true;
+                        screenShake = 16;
+                        playSynthBossAlarm();
+                        floatingTexts.push(new FloatingText(this.x, this.y - 45, '⚠️ BOSS ENRAGED! ⚠️', '#ef4444'));
                     }
                     this.shootCooldown--;
                     if (this.shootCooldown <= 0) {
-                        this.shootCooldown = Math.max(36, 52 - Math.floor(wave * 1.5));
-                        const spiral = (this.time * 0.12) % (Math.PI * 2);
-                        const count = wave >= 10 ? 6 : 4;
-                        const bSpeed = Math.min(5.6, 3.6 + (wave * 0.15));
-                        for (let s = 0; s < count; s++) {
-                            const angle = spiral + (s * ((Math.PI * 2) / count));
-                            enemyBullets.push(new Bullet(this.x, this.y, Math.cos(angle) * bSpeed, Math.sin(angle) * bSpeed, true, '#ff3366', 22));
+                        this.shootCooldown = this.enraged ? 22 : Math.max(26, 52 - Math.floor(wave * 1.4));
+                        const tier = this.bossTier || 1;
+                        if (tier === 1) {
+                            const spiral = (this.time * 0.12) % (Math.PI * 2);
+                            for (let s = 0; s < 4; s++) {
+                                const angle = spiral + (s * (Math.PI / 2));
+                                enemyBullets.push(new Bullet(this.x, this.y, Math.cos(angle) * 3.8, Math.sin(angle) * 3.8, true, this.color, 18));
+                            }
+                        } else if (tier === 2) {
+                            for (let a = 0; a < 6; a++) {
+                                const angle = (a * Math.PI) / 3 + Math.sin(this.time * 0.05);
+                                enemyBullets.push(new Bullet(this.x, this.y, Math.cos(angle) * 4.2, Math.sin(angle) * 4.2, true, this.color, 22));
+                            }
+                        } else if (tier === 3) {
+                            for (let a = 0; a < 8; a++) {
+                                const angle = (a * Math.PI) / 4 + (this.time * 0.08);
+                                enemyBullets.push(new Bullet(this.x, this.y, Math.cos(angle) * 4.5, Math.sin(angle) * 4.5, true, this.color, 24));
+                            }
+                            const aimAngle = Math.atan2(player.y - this.y, player.x - this.x);
+                            enemyBullets.push(new Bullet(this.x, this.y, Math.cos(aimAngle) * 5.8, Math.sin(aimAngle) * 5.8, true, '#ef4444', 30));
+                        } else {
+                            const count = this.enraged ? 12 : 10;
+                            const spd = this.enraged ? 5.2 : 4.4;
+                            for (let a = 0; a < count; a++) {
+                                const angle = (a * (Math.PI * 2)) / count + (this.time * 0.1);
+                                enemyBullets.push(new Bullet(this.x, this.y, Math.cos(angle) * spd, Math.sin(angle) * spd, true, '#ef4444', 28));
+                            }
                         }
                     }
                 }
@@ -1922,22 +2297,37 @@
             playSynthLaser();
 
             const isCrit = Math.random() < player.critChance;
+            const critMult = isCrit ? (player.critMultiplier || 2.0) : 1.0;
+            const bDmg = Math.round(player.bulletDamage * critMult);
             const pierces = player.bulletPiercing;
+            const bSpeed = -14 * (player.bulletSpeedMultiplier || 1.0);
 
             if (player.weaponLevel === 1) {
-                bullets.push(new Bullet(player.x, player.y - 18, 0, -14, false, '#38bdf8', 35, isCrit, pierces));
+                bullets.push(new Bullet(player.x, player.y - 18, 0, bSpeed, false, '#38bdf8', bDmg, isCrit, pierces));
             } else if (player.weaponLevel === 2) {
-                bullets.push(new Bullet(player.x - 10, player.y - 12, 0, -14, false, '#38bdf8', 30, isCrit, pierces));
-                bullets.push(new Bullet(player.x + 10, player.y - 12, 0, -14, false, '#38bdf8', 30, isCrit, pierces));
+                bullets.push(new Bullet(player.x - 10, player.y - 12, 0, bSpeed, false, '#38bdf8', Math.round(bDmg * 0.9), isCrit, pierces));
+                bullets.push(new Bullet(player.x + 10, player.y - 12, 0, bSpeed, false, '#38bdf8', Math.round(bDmg * 0.9), isCrit, pierces));
             } else if (player.weaponLevel === 3) {
-                bullets.push(new Bullet(player.x, player.y - 18, 0, -14, false, '#8b5cf6', 32, isCrit, pierces));
-                bullets.push(new Bullet(player.x - 12, player.y - 10, -3, -13, false, '#8b5cf6', 26, isCrit, pierces));
-                bullets.push(new Bullet(player.x + 12, player.y - 10, 3, -13, false, '#8b5cf6', 26, isCrit, pierces));
+                bullets.push(new Bullet(player.x, player.y - 18, 0, bSpeed, false, '#8b5cf6', bDmg, isCrit, pierces));
+                bullets.push(new Bullet(player.x - 12, player.y - 10, -3, bSpeed * 0.95, false, '#8b5cf6', Math.round(bDmg * 0.85), isCrit, pierces));
+                bullets.push(new Bullet(player.x + 12, player.y - 10, 3, bSpeed * 0.95, false, '#8b5cf6', Math.round(bDmg * 0.85), isCrit, pierces));
             } else if (player.weaponLevel === 4) {
                 for (let a = -3; a <= 3; a += 2) {
-                    bullets.push(new Bullet(player.x + (a * 4), player.y - 12, a * 1.5, -14, false, '#ec4899', 32, isCrit, pierces));
+                    bullets.push(new Bullet(player.x + (a * 4), player.y - 12, a * 1.5, bSpeed, false, '#ec4899', Math.round(bDmg * 0.85), isCrit, pierces));
+                }
+            } else if (player.weaponLevel === 5) {
+                for (let a = -4; a <= 4; a += 2) {
+                    bullets.push(new Bullet(player.x + (a * 4), player.y - 12, a * 1.8, bSpeed, false, '#f59e0b', Math.round(bDmg * 0.88), isCrit, pierces));
                 }
             } else {
+                // Tier 6 (Mythic / Exotic Quantum Overdrive) - 7 Rainbow Beams
+                const rainbowColors = ['#ef4444', '#f59e0b', '#10b981', '#38bdf8', '#8b5cf6', '#ec4899', '#ffffff'];
+                for (let a = -3; a <= 3; a++) {
+                    const c = rainbowColors[(a + 3) % rainbowColors.length];
+                    bullets.push(new Bullet(player.x + (a * 5), player.y - 14, a * 1.9, bSpeed * 1.1, false, c, Math.round(bDmg * 1.1), isCrit, pierces + 2));
+                }
+            }
+        } else {
                 // Quintuple Overdrive
                 for (let a = -4; a <= 4; a += 2) {
                     bullets.push(new Bullet(player.x + (a * 4), player.y - 12, a * 1.8, -14, false, '#f59e0b', 36, isCrit, pierces));
@@ -1948,88 +2338,1171 @@
         // ==========================================
         // 6. ROGUELITE POWER-UP CARDS & LEVEL UP
         // ==========================================
+        
+        // ==========================================
+        // 110+ QUANTUM POWER-UP CARDS ACROSS 8 RARITIES
+        // ==========================================
         const UPGRADE_CARDS_POOL = [
-            {
-                id: 'rapid_plasma',
-                title: 'RAPID PLASMA', name: 'RAPID PLASMA',
-                desc: 'Increases firing rate by +25%. Faster trigger response.',
-                icon: 'fa-bolt',
-                rarity: 'rare',
-                apply: () => { player.shootInterval = Math.max(55, player.shootInterval * 0.75); }
-            },
-            {
-                id: 'multi_shot',
-                title: 'MULTI-SHOT SPREAD', name: 'MULTI-SHOT SPREAD',
-                desc: 'Adds an extra plasma stream. (Single → Twin → Triple → Quint).',
-                icon: 'fa-certificate',
-                rarity: 'rare',
-                apply: () => { player.weaponLevel = Math.min(5, player.weaponLevel + 1); }
-            },
-            {
-                id: 'kinetic_shield',
-                title: 'KINETIC BARRIER', name: 'KINETIC BARRIER',
-                desc: 'Restores full shield energy and increases max shield charges (+1).',
-                icon: 'fa-shield-alt',
-                rarity: 'rare',
-                apply: () => { player.maxShield++; player.shield = player.maxShield; }
-            },
-            {
-                id: 'nanite_repair',
-                title: 'NANITE REPAIR', name: 'NANITE REPAIR',
-                desc: 'Restores +50 Health instantly and expands max Health by +25.',
-                icon: 'fa-heart',
-                rarity: 'common',
-                apply: () => { player.maxHp += 25; player.hp = Math.min(player.maxHp, player.hp + 50); }
-            },
-            {
-                id: 'hyper_thrusters',
-                title: 'HYPER THRUSTERS', name: 'HYPER THRUSTERS',
-                desc: '+20% Flight Speed and reduces Warp Dash cooldown by 25%.',
-                icon: 'fa-tachometer-alt',
-                rarity: 'common',
-                apply: () => { player.speed = Math.min(13, player.speed + 1.2); player.dashCooldownMax = Math.max(70, player.dashCooldownMax * 0.75); }
-            },
-            {
-                id: 'quantum_magnet',
-                title: 'QUANTUM MAGNET', name: 'QUANTUM MAGNET',
-                desc: 'Greatly widens Crystal & Item attraction range (+90px).',
-                icon: 'fa-magnet',
-                rarity: 'common',
-                apply: () => { player.magnetRadius += 90; }
-            },
-            {
-                id: 'critical_matrix',
-                title: 'CRITICAL MATRIX', name: 'CRITICAL MATRIX',
-                desc: '+20% Critical Hit chance dealing 2.5x damage with gold sparks.',
-                icon: 'fa-bullseye',
-                rarity: 'legendary',
-                apply: () => { player.critChance += 0.20; }
-            },
-            {
-                id: 'orbit_drone',
-                title: 'ORBITAL DRONE', name: 'ORBITAL DRONE',
-                desc: 'Spawns an autonomous companion drone that circles and shoots.',
-                icon: 'fa-satellite',
-                rarity: 'legendary',
-                apply: () => { player.orbitDrones++; }
-            },
-            {
-                id: 'emp_overload',
-                title: 'EMP DETONATOR', name: 'EMP DETONATOR',
-                desc: 'Periodically emits an electrical shockwave neutralizing all bullets.',
-                icon: 'fa-radiation',
-                rarity: 'legendary',
-                apply: () => { player.empActive = true; }
-            },
-            {
-                id: 'piercing_laser',
-                title: 'RAILGUN PIERCING', name: 'RAILGUN PIERCING',
-                desc: 'Bullets pierce through 1 additional enemy before dissipating.',
-                icon: 'fa-arrow-right',
-                rarity: 'rare',
-                apply: () => { player.bulletPiercing++; }
+    {
+        id: 'nanite_repair',
+        title: 'NANITE REPAIR',
+        name: 'NANITE REPAIR',
+        rarity: 'common',
+        category: 'defense',
+        icon: 'fa-heart',
+        desc: 'Restores +45 Health instantly and expands max Health by +20.',
+        apply: () => { player.maxHp += 20; player.hp = Math.min(player.maxHp, player.hp + 45); }
+    },
+    {
+        id: 'hyper_thrusters',
+        title: 'HYPER THRUSTERS',
+        name: 'HYPER THRUSTERS',
+        rarity: 'common',
+        category: 'mobility',
+        icon: 'fa-tachometer-alt',
+        desc: '+15% Flight Speed and reduces Warp Dash cooldown by 15%.',
+        apply: () => { player.speed = Math.min(13, player.speed + 1.0); player.dashCooldownMax = Math.max(70, player.dashCooldownMax * 0.85); }
+    },
+    {
+        id: 'quantum_magnet',
+        title: 'QUANTUM MAGNET',
+        name: 'QUANTUM MAGNET',
+        rarity: 'common',
+        category: 'utility',
+        icon: 'fa-magnet',
+        desc: 'Greatly widens Crystal & Item attraction range (+75px).',
+        apply: () => { player.magnetRadius += 75; }
+    },
+    {
+        id: 'plasma_boost',
+        title: 'PLASMA BOOST',
+        name: 'PLASMA BOOST',
+        rarity: 'common',
+        category: 'weapons',
+        icon: 'fa-fire',
+        desc: '+12% Bullet speed and +10% base damage.',
+        apply: () => { player.bulletSpeedMultiplier = (player.bulletSpeedMultiplier || 1) + 0.12; player.bulletDamage = (player.bulletDamage || 25) + 3; }
+    },
+    {
+        id: 'hull_plating',
+        title: 'TITANIUM PLATING',
+        name: 'TITANIUM PLATING',
+        rarity: 'common',
+        category: 'defense',
+        icon: 'fa-shield',
+        desc: 'Reinforces cruiser structure, increasing Max HP by +35.',
+        apply: () => { player.maxHp += 35; player.hp += 35; }
+    },
+    {
+        id: 'quick_charge',
+        title: 'QUICK CAPACITORS',
+        name: 'QUICK CAPACITORS',
+        rarity: 'common',
+        category: 'weapons',
+        icon: 'fa-bolt',
+        desc: 'Decreases weapon firing delay by 12%.',
+        apply: () => { player.shootInterval = Math.max(50, player.shootInterval * 0.88); }
+    },
+    {
+        id: 'crystal_scanner',
+        title: 'CRYSTAL SCANNER',
+        name: 'CRYSTAL SCANNER',
+        rarity: 'common',
+        category: 'utility',
+        icon: 'fa-satellite-dish',
+        desc: 'Increases Data Crystal drop chance by +20%.',
+        apply: () => { player.crystalDoubler = (player.crystalDoubler || 1) + 0.20; }
+    },
+    {
+        id: 'stabilizers',
+        title: 'GYRO STABILIZERS',
+        name: 'GYRO STABILIZERS',
+        rarity: 'common',
+        category: 'mobility',
+        icon: 'fa-arrows-alt',
+        desc: 'Improves ship handling and drift dampening.',
+        apply: () => { player.speedMultiplier = (player.speedMultiplier || 1) + 0.08; }
+    },
+    {
+        id: 'reactive_sparks',
+        title: 'REACTIVE SPARKS',
+        name: 'REACTIVE SPARKS',
+        rarity: 'common',
+        category: 'defense',
+        icon: 'fa-asterisk',
+        desc: 'Emits damaging sparks in a ring whenever taking damage.',
+        apply: () => { player.reactiveSparks = (player.reactiveSparks || 0) + 1; }
+    },
+    {
+        id: 'energy_drink',
+        title: 'OVERCLOCKED CELL',
+        name: 'OVERCLOCKED CELL',
+        rarity: 'common',
+        category: 'weapons',
+        icon: 'fa-battery-half',
+        desc: '+10% Bullet size and +5% Critical hit chance.',
+        apply: () => { player.bulletSizeMultiplier = (player.bulletSizeMultiplier || 1) + 0.10; player.critChance += 0.05; }
+    },
+    {
+        id: 'light_armor',
+        title: 'LIGHTWEIGHT COMPOSITE',
+        name: 'LIGHTWEIGHT COMPOSITE',
+        rarity: 'common',
+        category: 'mobility',
+        icon: 'fa-feather',
+        desc: '+18% Movement speed when shields are active.',
+        apply: () => { player.speedMultiplier = (player.speedMultiplier || 1) + 0.12; }
+    },
+    {
+        id: 'salvage_drone',
+        title: 'MINING SENSOR',
+        name: 'MINING SENSOR',
+        rarity: 'common',
+        category: 'utility',
+        icon: 'fa-gem',
+        desc: '+15% Score gained from all destroyed enemies.',
+        apply: () => { player.scoreMultiplier = (player.scoreMultiplier || 1) + 0.15; }
+    },
+    {
+        id: 'rebound_spring',
+        title: 'KINETIC SPRING',
+        name: 'KINETIC SPRING',
+        rarity: 'common',
+        category: 'defense',
+        icon: 'fa-compress',
+        desc: 'Pushes nearby enemies away after using Warp Dash.',
+        apply: () => { player.dashShockwave = true; }
+    },
+    {
+        id: 'plasma_focus',
+        title: 'LENS FOCUS',
+        name: 'LENS FOCUS',
+        rarity: 'common',
+        category: 'weapons',
+        icon: 'fa-bullseye',
+        desc: '+15% Bullet velocity and range.',
+        apply: () => { player.bulletSpeedMultiplier = (player.bulletSpeedMultiplier || 1) + 0.15; }
+    },
+    {
+        id: 'battery_pack',
+        title: 'AUXILIARY CELL',
+        name: 'AUXILIARY CELL',
+        rarity: 'common',
+        category: 'defense',
+        icon: 'fa-plus-circle',
+        desc: '+25 Max HP and restores +25 HP immediately.',
+        apply: () => { player.maxHp += 25; player.hp = Math.min(player.maxHp, player.hp + 25); }
+    },
+    {
+        id: 'spark_plugs',
+        title: 'IMPULSE COILS',
+        name: 'IMPULSE COILS',
+        rarity: 'common',
+        category: 'mobility',
+        icon: 'fa-plug',
+        desc: 'Reduces Warp Dash recharge time by 1.0s.',
+        apply: () => { player.dashCooldownMax = Math.max(60, player.dashCooldownMax - 30); }
+    },
+    {
+        id: 'targeting_optic',
+        title: 'TARGETING OPTIC',
+        name: 'TARGETING OPTIC',
+        rarity: 'common',
+        category: 'weapons',
+        icon: 'fa-crosshairs',
+        desc: '+8% Critical strike probability.',
+        apply: () => { player.critChance += 0.08; }
+    },
+    {
+        id: 'crystal_attractor',
+        title: 'GRAVITON PULL',
+        name: 'GRAVITON PULL',
+        rarity: 'common',
+        category: 'utility',
+        icon: 'fa-atom',
+        desc: '+60px Magnet collection radius.',
+        apply: () => { player.magnetRadius += 60; }
+    },
+    {
+        id: 'cooling_ducts',
+        title: 'COOLING DUCTS',
+        name: 'COOLING DUCTS',
+        rarity: 'common',
+        category: 'weapons',
+        icon: 'fa-fan',
+        desc: 'Reduces weapon overheat and increases fire rate by 10%.',
+        apply: () => { player.shootInterval = Math.max(50, player.shootInterval * 0.90); }
+    },
+    {
+        id: 'deflector_grid',
+        title: 'DEFLECTOR MESH',
+        name: 'DEFLECTOR MESH',
+        rarity: 'common',
+        category: 'defense',
+        icon: 'fa-circle-notch',
+        desc: '5% chance to deflect incoming enemy projectiles.',
+        apply: () => { player.reflectShieldChance = Math.min(0.35, (player.reflectShieldChance || 0) + 0.05); }
+    },
+    {
+        id: 'power_converter',
+        title: 'DATA EXTRACTOR',
+        name: 'DATA EXTRACTOR',
+        rarity: 'common',
+        category: 'utility',
+        icon: 'fa-microchip',
+        desc: 'Data crystals now award +1 bonus score on pickup.',
+        apply: () => { player.crystalBonusScore = (player.crystalBonusScore || 0) + 1; }
+    },
+    {
+        id: 'streamlined_chassis',
+        title: 'AERO CHASSIS',
+        name: 'AERO CHASSIS',
+        rarity: 'common',
+        category: 'mobility',
+        icon: 'fa-wind',
+        desc: 'Cruiser moves 10% faster across all directions.',
+        apply: () => { player.speed = Math.min(14, player.speed + 0.8); }
+    },
+    {
+        id: 'rapid_plasma',
+        title: 'RAPID PLASMA',
+        name: 'RAPID PLASMA',
+        rarity: 'uncommon',
+        category: 'weapons',
+        icon: 'fa-bolt',
+        desc: 'Increases weapon firing rate by +22%. Faster trigger response.',
+        apply: () => { player.shootInterval = Math.max(45, player.shootInterval * 0.78); }
+    },
+    {
+        id: 'kinetic_shield',
+        title: 'KINETIC BARRIER',
+        name: 'KINETIC BARRIER',
+        rarity: 'uncommon',
+        category: 'defense',
+        icon: 'fa-shield-alt',
+        desc: 'Restores full shield energy and increases max shield charges (+1).',
+        apply: () => { player.maxShield++; player.shield = player.maxShield; }
+    },
+    {
+        id: 'piercing_laser',
+        title: 'RAILGUN PIERCING',
+        name: 'RAILGUN PIERCING',
+        rarity: 'uncommon',
+        category: 'weapons',
+        icon: 'fa-arrow-right',
+        desc: 'Bullets pierce through 1 additional enemy before dissipating.',
+        apply: () => { player.bulletPiercing++; }
+    },
+    {
+        id: 'turbo_boost',
+        title: 'TURBO THRUSTERS',
+        name: 'TURBO THRUSTERS',
+        rarity: 'uncommon',
+        category: 'mobility',
+        icon: 'fa-forward',
+        desc: '+25% Ship speed and warp dash recovery.',
+        apply: () => { player.speed = Math.min(14, player.speed + 1.5); player.dashCooldownMax = Math.max(60, player.dashCooldownMax * 0.80); }
+    },
+    {
+        id: 'vitality_core',
+        title: 'VITALITY CORE',
+        name: 'VITALITY CORE',
+        rarity: 'uncommon',
+        category: 'defense',
+        icon: 'fa-heart-circle-bolt',
+        desc: '+50 Max HP and immediate full repair.',
+        apply: () => { player.maxHp += 50; player.hp = player.maxHp; }
+    },
+    {
+        id: 'magnetic_pulse',
+        title: 'MAGNETIC AMPLIFIER',
+        name: 'MAGNETIC AMPLIFIER',
+        rarity: 'uncommon',
+        category: 'utility',
+        icon: 'fa-satellite-dish',
+        desc: '+120px Crystal collection radius and +15% XP gain.',
+        apply: () => { player.magnetRadius += 120; player.xpMultiplier = (player.xpMultiplier || 1) + 0.15; }
+    },
+    {
+        id: 'crit_enhancer',
+        title: 'CRITICAL OVERCLOCK',
+        name: 'CRITICAL OVERCLOCK',
+        rarity: 'uncommon',
+        category: 'weapons',
+        icon: 'fa-crosshairs',
+        desc: '+15% Critical strike rate and +25% Critical damage.',
+        apply: () => { player.critChance += 0.15; player.critMultiplier = (player.critMultiplier || 2.0) + 0.25; }
+    },
+    {
+        id: 'cryo_rounds',
+        title: 'CRYO ROUNDS',
+        name: 'CRYO ROUNDS',
+        rarity: 'uncommon',
+        category: 'weapons',
+        icon: 'fa-snowflake',
+        desc: 'Bullets inflict Cryo Frost, slowing enemy movement by 30%.',
+        apply: () => { player.cryoBullets = true; }
+    },
+    {
+        id: 'corrosive_slugs',
+        title: 'CORROSIVE SLUGS',
+        name: 'CORROSIVE SLUGS',
+        rarity: 'uncommon',
+        category: 'weapons',
+        icon: 'fa-flask',
+        desc: 'Bullets coat enemies in acid, dealing damage over time.',
+        apply: () => { player.corrosiveBullets = true; }
+    },
+    {
+        id: 'absorb_shield',
+        title: 'ENERGY SIPHON',
+        name: 'ENERGY SIPHON',
+        rarity: 'uncommon',
+        category: 'defense',
+        icon: 'fa-battery-full',
+        desc: 'Collecting 10 Data Crystals restores +10 Health.',
+        apply: () => { player.crystalHeal = (player.crystalHeal || 0) + 10; }
+    },
+    {
+        id: 'shockwave_dash',
+        title: 'WARP SHOCKWAVE',
+        name: 'WARP SHOCKWAVE',
+        rarity: 'uncommon',
+        category: 'mobility',
+        icon: 'fa-wave-square',
+        desc: 'Warp Dash unleashes a kinetic ring vaporizing small enemy bullets.',
+        apply: () => { player.dashShockwave = true; }
+    },
+    {
+        id: 'bullet_velocity',
+        title: 'ACCELERATOR TUBE',
+        name: 'ACCELERATOR TUBE',
+        rarity: 'uncommon',
+        category: 'weapons',
+        icon: 'fa-angle-double-right',
+        desc: '+30% Bullet speed and projectile hitbox radius.',
+        apply: () => { player.bulletSpeedMultiplier = (player.bulletSpeedMultiplier || 1) + 0.30; player.bulletSizeMultiplier = (player.bulletSizeMultiplier || 1) + 0.15; }
+    },
+    {
+        id: 'shield_recharge',
+        title: 'RECHARGE COIL',
+        name: 'RECHARGE COIL',
+        rarity: 'uncommon',
+        category: 'defense',
+        icon: 'fa-sync',
+        desc: 'Shield charges regenerate automatically over time (1 charge every 25s).',
+        apply: () => { player.shieldRegenRate = Math.max(1, (player.shieldRegenRate || 0) + 1); }
+    },
+    {
+        id: 'scout_drone',
+        title: 'SUPPORT DRONE',
+        name: 'SUPPORT DRONE',
+        rarity: 'uncommon',
+        category: 'drones',
+        icon: 'fa-satellite',
+        desc: 'Deploys an autonomous companion drone that circles and shoots.',
+        apply: () => { player.orbitDrones++; }
+    },
+    {
+        id: 'heavy_ordnance',
+        title: 'HEAVY CALIBER',
+        name: 'HEAVY CALIBER',
+        rarity: 'uncommon',
+        category: 'weapons',
+        icon: 'fa-burn',
+        desc: '+25% Base bullet damage but -5% fire rate.',
+        apply: () => { player.bulletDamage = (player.bulletDamage || 25) + 8; player.shootInterval = Math.min(220, player.shootInterval * 1.05); }
+    },
+    {
+        id: 'combo_master',
+        title: 'COMBO EXTENDER',
+        name: 'COMBO EXTENDER',
+        rarity: 'uncommon',
+        category: 'utility',
+        icon: 'fa-stopwatch',
+        desc: 'Combo multiplier lasts +50% longer before decaying.',
+        apply: () => { player.comboDecayTime = (player.comboDecayTime || 1) * 1.5; }
+    },
+    {
+        id: 'flak_burst',
+        title: 'FLAK CANNON',
+        name: 'FLAK CANNON',
+        rarity: 'uncommon',
+        category: 'weapons',
+        icon: 'fa-bahai',
+        desc: 'Every 4th shot explodes into a burst of 4 shrapnel pellets.',
+        apply: () => { player.flakBurst = true; }
+    },
+    {
+        id: 'afterburner_ignite',
+        title: 'AFTERBURNER FLAME',
+        name: 'AFTERBURNER FLAME',
+        rarity: 'uncommon',
+        category: 'mobility',
+        icon: 'fa-fire-alt',
+        desc: 'Cruiser leaves a trail of scorching neon plasma damaging pursuers.',
+        apply: () => { player.afterburnerTrail = true; }
+    },
+    {
+        id: 'xp_magnet',
+        title: 'DATA RECEPTOR',
+        name: 'DATA RECEPTOR',
+        rarity: 'uncommon',
+        category: 'utility',
+        icon: 'fa-broadcast-tower',
+        desc: 'XP crystals award +25% bonus experience towards next level.',
+        apply: () => { player.xpMultiplier = (player.xpMultiplier || 1) + 0.25; }
+    },
+    {
+        id: 'protective_bubble',
+        title: 'BARRIER EMITTER',
+        name: 'BARRIER EMITTER',
+        rarity: 'uncommon',
+        category: 'defense',
+        icon: 'fa-circle',
+        desc: '+1 Shield charge and +20 Max Health.',
+        apply: () => { player.maxShield++; player.shield++; player.maxHp += 20; player.hp += 20; }
+    },
+    {
+        id: 'precision_barrel',
+        title: 'RIFLED BARRELS',
+        name: 'RIFLED BARRELS',
+        rarity: 'uncommon',
+        category: 'weapons',
+        icon: 'fa-crosshairs',
+        desc: 'Tightens spread angle and adds +15% bullet damage.',
+        apply: () => { player.bulletDamage = (player.bulletDamage || 25) + 5; }
+    },
+    {
+        id: 'nanite_vampire',
+        title: 'NANITE HARVESTER',
+        name: 'NANITE HARVESTER',
+        rarity: 'uncommon',
+        category: 'defense',
+        icon: 'fa-syringe',
+        desc: '10% chance to restore +5 HP on enemy destruction.',
+        apply: () => { player.vampirismChance = Math.min(0.40, (player.vampirismChance || 0) + 0.10); }
+    },
+    {
+        id: 'multi_shot',
+        title: 'MULTI-SHOT SPREAD',
+        name: 'MULTI-SHOT SPREAD',
+        rarity: 'rare',
+        category: 'weapons',
+        icon: 'fa-certificate',
+        desc: 'Adds an extra plasma stream. (Single -> Twin -> Triple -> Quint).',
+        apply: () => { player.weaponLevel = Math.min(5, player.weaponLevel + 1); }
+    },
+    {
+        id: 'orbit_drone',
+        title: 'ORBITAL DRONE',
+        name: 'ORBITAL DRONE',
+        rarity: 'rare',
+        category: 'drones',
+        icon: 'fa-satellite',
+        desc: 'Spawns an autonomous armed combat drone orbiting your vessel.',
+        apply: () => { player.orbitDrones++; }
+    },
+    {
+        id: 'twin_lasers',
+        title: 'TWIN DISRUPTORS',
+        name: 'TWIN DISRUPTORS',
+        rarity: 'rare',
+        category: 'weapons',
+        icon: 'fa-grip-lines-vertical',
+        desc: 'Adds twin parallel beam emitters firing synchronously.',
+        apply: () => { player.weaponLevel = Math.min(5, player.weaponLevel + 1); player.bulletDamage = (player.bulletDamage || 25) + 6; }
+    },
+    {
+        id: 'ricochet_rounds',
+        title: 'KINETIC RICOCHET',
+        name: 'KINETIC RICOCHET',
+        rarity: 'rare',
+        category: 'weapons',
+        icon: 'fa-reply',
+        desc: 'Bullets bounce off screen edges and seek nearest targets.',
+        apply: () => { player.bulletRicochet = (player.bulletRicochet || 0) + 1; }
+    },
+    {
+        id: 'guardian_sphere',
+        title: 'GUARDIAN ORB',
+        name: 'GUARDIAN ORB',
+        rarity: 'rare',
+        category: 'defense',
+        icon: 'fa-shield-virus',
+        desc: 'Spawns an orbital defensive shield orb that intercepts bullets.',
+        apply: () => { player.guardianShields = (player.guardianShields || 0) + 1; }
+    },
+    {
+        id: 'micro_missiles',
+        title: 'MICRO MISSILES',
+        name: 'MICRO MISSILES',
+        rarity: 'rare',
+        category: 'weapons',
+        icon: 'fa-rocket',
+        desc: 'Periodically fires 2 seeking swarm missiles at enemy weakpoints.',
+        apply: () => { player.homingMissiles = (player.homingMissiles || 0) + 2; }
+    },
+    {
+        id: 'super_magnet',
+        title: 'GRAVITON SINGULARITY',
+        name: 'GRAVITON SINGULARITY',
+        rarity: 'rare',
+        category: 'utility',
+        icon: 'fa-magnet',
+        desc: 'Instantly vacuums all Data Crystals across the entire screen.',
+        apply: () => { player.magnetRadius += 220; player.crystalDoubler = (player.crystalDoubler || 1) + 0.35; }
+    },
+    {
+        id: 'aegis_plating',
+        title: 'AEGIS ALLOY',
+        name: 'AEGIS ALLOY',
+        rarity: 'rare',
+        category: 'defense',
+        icon: 'fa-shield-alt',
+        desc: '+2 Max Shield charges and +40 Max HP.',
+        apply: () => { player.maxShield += 2; player.shield += 2; player.maxHp += 40; player.hp += 40; }
+    },
+    {
+        id: 'plasma_cascade',
+        title: 'PLASMA CASCADE',
+        name: 'PLASMA CASCADE',
+        rarity: 'rare',
+        category: 'weapons',
+        icon: 'fa-stream',
+        desc: 'Killing an enemy causes it to erupt into 3 plasma sparks.',
+        apply: () => { player.plasmaCascade = true; }
+    },
+    {
+        id: 'chrono_shift',
+        title: 'CHRONO DASH',
+        name: 'CHRONO DASH',
+        rarity: 'rare',
+        category: 'mobility',
+        icon: 'fa-history',
+        desc: 'Warp Dash grants 1.5 seconds of absolute invulnerability.',
+        apply: () => { player.dashInvulnBonus = 90; }
+    },
+    {
+        id: 'chain_lightning',
+        title: 'TESLA COILS',
+        name: 'TESLA COILS',
+        rarity: 'rare',
+        category: 'weapons',
+        icon: 'fa-bolt',
+        desc: 'Bullets chain electrical arcs to 2 nearby enemies upon impact.',
+        apply: () => { player.chainLightning = (player.chainLightning || 0) + 2; }
+    },
+    {
+        id: 'titan_slayer',
+        title: 'TITAN SLAYER',
+        name: 'TITAN SLAYER',
+        rarity: 'rare',
+        category: 'weapons',
+        icon: 'fa-skull-crossbones',
+        desc: '+35% Damage dealt to Elite enemies and Bosses.',
+        apply: () => { player.bossDamageMultiplier = (player.bossDamageMultiplier || 1) + 0.35; }
+    },
+    {
+        id: 'overdrive_reactor',
+        title: 'FUSION OVERDRIVE',
+        name: 'FUSION OVERDRIVE',
+        rarity: 'rare',
+        category: 'weapons',
+        icon: 'fa-radiation-alt',
+        desc: '+30% Fire rate and +15% Ship speed.',
+        apply: () => { player.shootInterval = Math.max(40, player.shootInterval * 0.70); player.speed = Math.min(14, player.speed + 1.2); }
+    },
+    {
+        id: 'reflective_matrix',
+        title: 'PRISM DEFLECTOR',
+        name: 'PRISM DEFLECTOR',
+        rarity: 'rare',
+        category: 'defense',
+        icon: 'fa-shield',
+        desc: '20% chance to reflect incoming projectiles back as homing bolts.',
+        apply: () => { player.reflectShieldChance = Math.min(0.50, (player.reflectShieldChance || 0) + 0.20); }
+    },
+    {
+        id: 'crystal_synthesizer',
+        title: 'CRYSTAL SYNTHESIS',
+        name: 'CRYSTAL SYNTHESIS',
+        rarity: 'rare',
+        category: 'utility',
+        icon: 'fa-gem',
+        desc: 'Permanently multiplies all Data Crystal collection score by 2x.',
+        apply: () => { player.crystalDoubler = (player.crystalDoubler || 1) * 2; }
+    },
+    {
+        id: 'executioner',
+        title: 'EXECUTION PROTOCOL',
+        name: 'EXECUTION PROTOCOL',
+        rarity: 'rare',
+        category: 'weapons',
+        icon: 'fa-gavel',
+        desc: 'Enemies under 25% HP take double critical damage.',
+        apply: () => { player.executioner = true; }
+    },
+    {
+        id: 'phase_cloak',
+        title: 'PHASE DRIVE',
+        name: 'PHASE DRIVE',
+        rarity: 'rare',
+        category: 'mobility',
+        icon: 'fa-ghost',
+        desc: 'When shields break, gain 2 seconds of invulnerability.',
+        apply: () => { player.phaseCloak = true; }
+    },
+    {
+        id: 'cluster_bomb',
+        title: 'CLUSTER MUNITIONS',
+        name: 'CLUSTER MUNITIONS',
+        rarity: 'rare',
+        category: 'weapons',
+        icon: 'fa-bomb',
+        desc: 'Warp Dash drops 3 timed cluster mines that detonate violently.',
+        apply: () => { player.clusterMines = (player.clusterMines || 0) + 3; }
+    },
+    {
+        id: 'emp_overload',
+        title: 'EMP DETONATOR',
+        name: 'EMP DETONATOR',
+        rarity: 'super rare',
+        category: 'specials',
+        icon: 'fa-radiation',
+        desc: 'Periodically emits an electrical shockwave neutralizing all bullets.',
+        apply: () => { player.empActive = true; player.empInterval = Math.max(300, (player.empInterval || 600) * 0.85); }
+    },
+    {
+        id: 'critical_matrix',
+        title: 'CRITICAL MATRIX',
+        name: 'CRITICAL MATRIX',
+        rarity: 'super rare',
+        category: 'weapons',
+        icon: 'fa-bullseye',
+        desc: '+25% Critical Hit chance dealing 2.5x damage with gold sparks.',
+        apply: () => { player.critChance += 0.25; player.critMultiplier = (player.critMultiplier || 2.0) + 0.50; }
+    },
+    {
+        id: 'hydra_missiles',
+        title: 'HYDRA BARRAGE',
+        name: 'HYDRA BARRAGE',
+        rarity: 'super rare',
+        category: 'weapons',
+        icon: 'fa-rocket',
+        desc: 'Spawns 4 heavy homing torpedoes every 4 seconds.',
+        apply: () => { player.homingMissiles = (player.homingMissiles || 0) + 4; }
+    },
+    {
+        id: 'shield_overclock',
+        title: 'PLASMA AURA',
+        name: 'PLASMA AURA',
+        rarity: 'super rare',
+        category: 'defense',
+        icon: 'fa-sun',
+        desc: 'Shield emits a continuous plasma aura burning nearby hostiles.',
+        apply: () => { player.plasmaAura = true; }
+    },
+    {
+        id: 'tachyon_blaster',
+        title: 'TACHYON ACCELERATOR',
+        name: 'TACHYON ACCELERATOR',
+        rarity: 'super rare',
+        category: 'weapons',
+        icon: 'fa-wind',
+        desc: 'Doubles bullet velocity and grants +2 Piercing capability.',
+        apply: () => { player.bulletSpeedMultiplier = (player.bulletSpeedMultiplier || 1) + 0.75; player.bulletPiercing += 2; }
+    },
+    {
+        id: 'drone_swarm',
+        title: 'DRONE SQUADRON',
+        name: 'DRONE SQUADRON',
+        rarity: 'super rare',
+        category: 'drones',
+        icon: 'fa-satellite',
+        desc: 'Spawns 2 advanced combat drones equipped with laser cannons.',
+        apply: () => { player.orbitDrones += 2; }
+    },
+    {
+        id: 'nanite_surge',
+        title: 'BIO-NANITE SWARM',
+        name: 'BIO-NANITE SWARM',
+        rarity: 'super rare',
+        category: 'defense',
+        icon: 'fa-heartbeat',
+        desc: 'Regenerates +2 Health every second continuously.',
+        apply: () => { player.regenRate = (player.regenRate || 0) + 2; }
+    },
+    {
+        id: 'nova_burst',
+        title: 'NOVA CANNON',
+        name: 'NOVA CANNON',
+        rarity: 'super rare',
+        category: 'weapons',
+        icon: 'fa-sun',
+        desc: 'Replaces primary cannon with radiant neon nova spheres.',
+        apply: () => { player.novaPulse = true; player.bulletDamage = (player.bulletDamage || 25) + 18; }
+    },
+    {
+        id: 'kinetic_overload',
+        title: 'KINETIC SURGE',
+        name: 'KINETIC SURGE',
+        rarity: 'super rare',
+        category: 'mobility',
+        icon: 'fa-running',
+        desc: 'Warp Dash cooldown reduced to 1 second with infinite flight trail.',
+        apply: () => { player.dashCooldownMax = 60; }
+    },
+    {
+        id: 'overcharge_shield',
+        title: 'AEGIS FORTRESS',
+        name: 'AEGIS FORTRESS',
+        rarity: 'super rare',
+        category: 'defense',
+        icon: 'fa-shield',
+        desc: '+3 Max Shield charges and full repair.',
+        apply: () => { player.maxShield += 3; player.shield = player.maxShield; }
+    },
+    {
+        id: 'berserker_core',
+        title: 'BERSERKER PROTOCOL',
+        name: 'BERSERKER PROTOCOL',
+        rarity: 'super rare',
+        category: 'weapons',
+        icon: 'fa-fire-burner',
+        desc: 'When below 40% HP, firing rate and speed are tripled.',
+        apply: () => { player.berserkActive = true; }
+    },
+    {
+        id: 'ion_cannon',
+        title: 'ION STRIKE',
+        name: 'ION STRIKE',
+        rarity: 'super rare',
+        category: 'specials',
+        icon: 'fa-bolt',
+        desc: 'Every 12 seconds, an orbital ion beam scorches the most dangerous foe.',
+        apply: () => { player.ionStrike = true; }
+    },
+    {
+        id: 'quantum_doubler',
+        title: 'QUANTUM DUPLICATOR',
+        name: 'QUANTUM DUPLICATOR',
+        rarity: 'super rare',
+        category: 'utility',
+        icon: 'fa-copy',
+        desc: '50% chance for destroyed enemies to drop duplicate Data Crystals.',
+        apply: () => { player.crystalDupeChance = 0.50; }
+    },
+    {
+        id: 'anti_matter_slug',
+        title: 'ANTIMATTER SLUGS',
+        name: 'ANTIMATTER SLUGS',
+        rarity: 'super rare',
+        category: 'weapons',
+        icon: 'fa-biohazard',
+        desc: 'Bullets trigger miniature dark matter implosions on hit.',
+        apply: () => { player.antimatterRounds = true; player.bulletDamage = (player.bulletDamage || 25) + 15; }
+    },
+    {
+        id: 'vortex_shield',
+        title: 'VORTEX BARRIER',
+        name: 'VORTEX BARRIER',
+        rarity: 'super rare',
+        category: 'defense',
+        icon: 'fa-spinner',
+        desc: 'Intercepted bullets recharge your Warp Dash instantly.',
+        apply: () => { player.vortexShield = true; }
+    },
+    {
+        id: 'continuous_laser',
+        title: 'DEATH RAY',
+        name: 'DEATH RAY',
+        rarity: 'epic',
+        category: 'weapons',
+        icon: 'fa-grip-lines',
+        desc: 'Fires a continuous high-energy particle beam down the center screen.',
+        apply: () => { player.laserBeamActive = true; }
+    },
+    {
+        id: 'tri_drone_strike',
+        title: 'FLEET WINGMEN',
+        name: 'FLEET WINGMEN',
+        rarity: 'epic',
+        category: 'drones',
+        icon: 'fa-space-shuttle',
+        desc: 'Spawns 3 high-tier escort fighters providing suppressing fire.',
+        apply: () => { player.orbitDrones += 3; }
+    },
+    {
+        id: 'hellfire_swarm',
+        title: 'HELLFIRE SALVO',
+        name: 'HELLFIRE SALVO',
+        rarity: 'epic',
+        category: 'weapons',
+        icon: 'fa-fire',
+        desc: 'Unleashes 6 high-explosive micro-missiles every 3.5 seconds.',
+        apply: () => { player.homingMissiles = (player.homingMissiles || 0) + 6; }
+    },
+    {
+        id: 'hardlight_aegis',
+        title: 'HARDLIGHT FORTRESS',
+        name: 'HARDLIGHT FORTRESS',
+        rarity: 'epic',
+        category: 'defense',
+        icon: 'fa-shield-halved',
+        desc: '+4 Shield capacity and incoming collision damage reduced by 50%.',
+        apply: () => { player.maxShield += 4; player.shield += 4; player.damageReduction = 0.50; }
+    },
+    {
+        id: 'plasma_storm',
+        title: 'PLASMA TYPHOON',
+        name: 'PLASMA TYPHOON',
+        rarity: 'epic',
+        category: 'weapons',
+        icon: 'fa-tornado',
+        desc: 'Quadruples weapon spread streams with 360-degree coverage.',
+        apply: () => { player.weaponLevel = Math.min(6, player.weaponLevel + 2); }
+    },
+    {
+        id: 'cryo_singularity',
+        title: 'ABSOLUTE ZERO',
+        name: 'ABSOLUTE ZERO',
+        rarity: 'epic',
+        category: 'specials',
+        icon: 'fa-icicles',
+        desc: 'Freezes all enemies and bullets in place for 3 seconds every 20s.',
+        apply: () => { player.absoluteZero = true; }
+    },
+    {
+        id: 'vampiric_matrix',
+        title: 'SOUL SIPHON',
+        name: 'SOUL SIPHON',
+        rarity: 'epic',
+        category: 'defense',
+        icon: 'fa-skull',
+        desc: '35% chance to heal +8 HP on kill. Critical hits heal +15 HP.',
+        apply: () => { player.vampirismChance = 0.35; }
+    },
+    {
+        id: 'super_railgun',
+        title: 'HYPER-ION RAILGUN',
+        name: 'HYPER-ION RAILGUN',
+        rarity: 'epic',
+        category: 'weapons',
+        icon: 'fa-bolt-lightning',
+        desc: 'Bullets pierce through infinite enemies with +50% bonus damage.',
+        apply: () => { player.bulletPiercing += 10; player.bulletDamage = (player.bulletDamage || 25) + 25; }
+    },
+    {
+        id: 'singularity_magnet',
+        title: 'COSMIC VACUUM',
+        name: 'COSMIC VACUUM',
+        rarity: 'epic',
+        category: 'utility',
+        icon: 'fa-circle-notch',
+        desc: 'Instantly pulls all crystals on screen and multiplies XP gain by 2x.',
+        apply: () => { player.magnetRadius += 400; player.xpMultiplier = (player.xpMultiplier || 1) * 2; }
+    },
+    {
+        id: 'apocalypse_emp',
+        title: 'SUPERCHARGED EMP',
+        name: 'SUPERCHARGED EMP',
+        rarity: 'epic',
+        category: 'specials',
+        icon: 'fa-radiation-alt',
+        desc: 'EMP pulse deals 300 damage to all foes and clears all bullets.',
+        apply: () => { player.empActive = true; player.empDamage = 300; player.empInterval = 400; }
+    },
+    {
+        id: 'chain_annihilation',
+        title: 'CHAIN REACTION',
+        name: 'CHAIN REACTION',
+        rarity: 'epic',
+        category: 'weapons',
+        icon: 'fa-network-wired',
+        desc: 'Chain lightning jumps up to 6 targets with full critical chance.',
+        apply: () => { player.chainLightning = (player.chainLightning || 0) + 6; player.chainCrit = true; }
+    },
+    {
+        id: 'warp_singularity',
+        title: 'GRAVITATIONAL DASH',
+        name: 'GRAVITATIONAL DASH',
+        rarity: 'epic',
+        category: 'mobility',
+        icon: 'fa-expand',
+        desc: 'Warp Dash pulls all enemies into your wake and detonates them.',
+        apply: () => { player.dashBlackHole = true; }
+    },
+    {
+        id: 'black_hole_gen',
+        title: 'SINGULARITY GENERATOR',
+        name: 'SINGULARITY GENERATOR',
+        rarity: 'legendary',
+        category: 'specials',
+        icon: 'fa-circle',
+        desc: 'Spawns a massive gravitational black hole crushing all enemies.',
+        apply: () => { player.blackHoleActive = true; }
+    },
+    {
+        id: 'time_dilation',
+        title: 'TIME DILATION FIELD',
+        name: 'TIME DILATION FIELD',
+        rarity: 'legendary',
+        category: 'specials',
+        icon: 'fa-clock',
+        desc: 'Slows all enemy movements and enemy bullets by 45% permanently.',
+        apply: () => { player.timeDilation = true; }
+    },
+    {
+        id: 'phoenix_protocol',
+        title: 'PHOENIX MATRIX',
+        name: 'PHOENIX MATRIX',
+        rarity: 'legendary',
+        category: 'defense',
+        icon: 'fa-dove',
+        desc: 'Revives ship once upon destruction with 100% HP and screen-wide EMP.',
+        apply: () => { player.reviveCharges = (player.reviveCharges || 0) + 1; }
+    },
+    {
+        id: 'god_cannon',
+        title: 'DOOMSDAY BEAM',
+        name: 'DOOMSDAY BEAM',
+        rarity: 'legendary',
+        category: 'weapons',
+        icon: 'fa-crosshairs',
+        desc: 'Fires sweeping twin gamma-ray beams piercing the entire battlefield.',
+        apply: () => { player.laserBeamActive = true; player.bulletDamage = (player.bulletDamage || 25) + 40; player.bulletPiercing += 99; }
+    },
+    {
+        id: 'drone_mothership',
+        title: 'DRONE MOTHERSHIP',
+        name: 'DRONE MOTHERSHIP',
+        rarity: 'legendary',
+        category: 'drones',
+        icon: 'fa-cubes',
+        desc: 'Spawns 5 heavy drones that fire homing missiles and lasers.',
+        apply: () => { player.orbitDrones += 5; player.homingMissiles = (player.homingMissiles || 0) + 3; }
+    },
+    {
+        id: 'hyper_shield_matrix',
+        title: 'INVULNERABLE AEGIS',
+        name: 'INVULNERABLE AEGIS',
+        rarity: 'legendary',
+        category: 'defense',
+        icon: 'fa-shield',
+        desc: '+5 Shield charges. Absorbed hits grant +100 bonus score each.',
+        apply: () => { player.maxShield += 5; player.shield += 5; player.shieldScoreBonus = true; }
+    },
+    {
+        id: 'omega_gatling',
+        title: 'MINIGUN TYPHOON',
+        name: 'MINIGUN TYPHOON',
+        rarity: 'legendary',
+        category: 'weapons',
+        icon: 'fa-meteor',
+        desc: 'Reduces weapon fire delay by 60%. Unlocks insane ballistic storm.',
+        apply: () => { player.shootInterval = Math.max(25, player.shootInterval * 0.40); }
+    },
+    {
+        id: 'supernova_pulse',
+        title: 'SUPERNOVA RADIANCE',
+        name: 'SUPERNOVA RADIANCE',
+        rarity: 'legendary',
+        category: 'specials',
+        icon: 'fa-certificate',
+        desc: 'Detonates a blinding supernova flash every 15s killing normal drones.',
+        apply: () => { player.supernovaPulse = true; }
+    },
+    {
+        id: 'limit_breaker',
+        title: 'LIMIT BREAKER',
+        name: 'LIMIT BREAKER',
+        rarity: 'legendary',
+        category: 'weapons',
+        icon: 'fa-gauge-high',
+        desc: 'All current weapon stats, fire rates, and damage increased by 50%.',
+        apply: () => { player.bulletDamage = Math.floor((player.bulletDamage || 25) * 1.5); player.speed *= 1.25; player.critChance += 0.20; }
+    },
+    {
+        id: 'quantum_immortality',
+        title: 'QUANTUM BULWARK',
+        name: 'QUANTUM BULWARK',
+        rarity: 'legendary',
+        category: 'defense',
+        icon: 'fa-gem',
+        desc: '+100 Max Health and full recovery. Shields regenerate 2x faster.',
+        apply: () => { player.maxHp += 100; player.hp = player.maxHp; player.maxShield += 3; player.shield += 3; }
+    },
+    {
+        id: 'celestial_wrath',
+        title: 'CELESTIAL WRATH',
+        name: 'CELESTIAL WRATH',
+        rarity: 'mythic',
+        category: 'specials',
+        icon: 'fa-sun',
+        desc: 'Rains incandescent celestial meteorites across the entire screen.',
+        apply: () => { player.celestialWrath = true; player.scoreMultiplier = (player.scoreMultiplier || 1) + 1.0; }
+    },
+    {
+        id: 'quantum_overdrive',
+        title: 'OMEGA QUANTUM OVERDRIVE',
+        name: 'OMEGA QUANTUM OVERDRIVE',
+        rarity: 'mythic',
+        category: 'weapons',
+        icon: 'fa-bolt',
+        desc: 'Triples ship bullet streams with rainbow plasma and 100% crit chance.',
+        apply: () => { player.weaponLevel = 6; player.critChance = 1.0; player.shootInterval = Math.max(20, player.shootInterval * 0.35); }
+    },
+    {
+        id: 'chrono_rewind',
+        title: 'CHRONO IMMORTALIS',
+        name: 'CHRONO IMMORTALIS',
+        rarity: 'mythic',
+        category: 'defense',
+        icon: 'fa-infinity',
+        desc: 'Grants +2 Phoenix Revives. Shield charges regenerate every 10 seconds.',
+        apply: () => { player.reviveCharges = (player.reviveCharges || 0) + 2; player.shieldRegenRate = 3; }
+    },
+    {
+        id: 'armageddon_payload',
+        title: 'ARMAGEDDON MISSILES',
+        name: 'ARMAGEDDON MISSILES',
+        rarity: 'mythic',
+        category: 'weapons',
+        icon: 'fa-radiation',
+        desc: 'Fires 8 nuclear micro-warheads seeking bosses and elite ships.',
+        apply: () => { player.homingMissiles = (player.homingMissiles || 0) + 8; player.nuclearWarheads = true; }
+    },
+    {
+        id: 'titan_annihilator',
+        title: 'TITAN EXTINCTION CORE',
+        name: 'TITAN EXTINCTION CORE',
+        rarity: 'mythic',
+        category: 'weapons',
+        icon: 'fa-skull',
+        desc: 'Bosses and Elites take +150% more damage. Screen clears on boss kill.',
+        apply: () => { player.bossDamageMultiplier = (player.bossDamageMultiplier || 1) + 1.5; }
+    },
+    {
+        id: 'singularity_armada',
+        title: 'HARBINGER ARMADA',
+        name: 'HARBINGER ARMADA',
+        rarity: 'mythic',
+        category: 'drones',
+        icon: 'fa-satellite-dish',
+        desc: 'Surrounds cruiser with 8 orbital gunships with heavy plasma cannons.',
+        apply: () => { player.orbitDrones += 8; }
+    },
+    {
+        id: 'vaztinix_core',
+        title: 'VAZTINIX QUANTUM CORE',
+        name: 'VAZTINIX QUANTUM CORE',
+        rarity: 'exotic',
+        category: 'specials',
+        icon: 'fa-crown',
+        desc: 'Unleashes the ultimate creator core: Rainbow singularity beams, +250 HP, +5 Shields, and permanent +100% Score.',
+        apply: () => { player.maxHp += 250; player.hp = player.maxHp; player.maxShield += 5; player.shield += 5; player.scoreMultiplier = (player.scoreMultiplier || 1) * 2.0; player.rainbowCore = true; player.laserBeamActive = true; }
+    },
+    {
+        id: 'cosmic_ascension',
+        title: 'COSMIC ASCENSION',
+        name: 'COSMIC ASCENSION',
+        rarity: 'exotic',
+        category: 'specials',
+        icon: 'fa-star-and-crescent',
+        desc: 'Cruiser transcends mortal physics: Infinite piercing, 4x crit damage, +50% speed, and time dilation aura.',
+        apply: () => { player.bulletPiercing += 99; player.critMultiplier = (player.critMultiplier || 2.0) * 4.0; player.speed *= 1.5; player.timeDilation = true; player.cosmicAscension = true; }
+    },
+    {
+        id: 'infinite_galaxy',
+        title: 'GALACTIC OVERLORD',
+        name: 'GALACTIC OVERLORD',
+        rarity: 'exotic',
+        category: 'drones',
+        icon: 'fa-shuttle-space',
+        desc: 'Summons 10 permanent celestial drones and fires double helical antimatter waves.',
+        apply: () => { player.orbitDrones += 10; player.weaponLevel = 6; player.antimatterRounds = true; player.empActive = true; }
+    },
+    {
+        id: 'eternity_engine',
+        title: 'ETERNITY DRIVE',
+        name: 'ETERNITY DRIVE',
+        rarity: 'exotic',
+        category: 'mobility',
+        icon: 'fa-meteor',
+        desc: 'Warp Dash has 0 cooldown and deals 500 collision damage with invulnerability.',
+        apply: () => { player.dashCooldownMax = 15; player.dashInvulnBonus = 120; player.dashDamage = 500; }
+    },
+    {
+        id: 'nora_genesis',
+        title: 'NORA GENESIS MATRIX',
+        name: 'NORA GENESIS MATRIX',
+        rarity: 'exotic',
+        category: 'defense',
+        icon: 'fa-heart-pulse',
+        desc: 'Cruiser cannot be destroyed: Grants +3 Revives, auto-repairs +10 HP/sec, and pulses continuous EMP shockwaves.',
+        apply: () => { player.reviveCharges = (player.reviveCharges || 0) + 3; player.regenRate = 10; player.empActive = true; player.empInterval = 240; }
+    }
+];
+
+
+
+        // Rarity Weighted Random Selector
+        function getRandomRarity() {
+            const roll = Math.random() * 100;
+            if (roll < 0.8) return 'exotic';         // 0.8%
+            if (roll < 2.5) return 'mythic';         // 1.7%
+            if (roll < 6.5) return 'legendary';      // 4.0%
+            if (roll < 13.0) return 'epic';          // 6.5%
+            if (roll < 23.5) return 'super rare';    // 10.5%
+            if (roll < 40.0) return 'rare';          // 16.5%
+            if (roll < 65.0) return 'uncommon';      // 25.0%
+            return 'common';                         // 35.0%
+        }
+
+        function getRarityColor(rarity) {
+            const r = (rarity || '').toLowerCase();
+            switch(r) {
+                case 'common': return '#cbd5e1';
+                case 'uncommon': return '#10b981';
+                case 'rare': return '#38bdf8';
+                case 'super rare':
+                case 'super-rare': return '#a78bfa';
+                case 'epic': return '#f472b6';
+                case 'legendary': return '#fbbf24';
+                case 'mythic': return '#ef4444';
+                case 'exotic': return '#ec4899';
+                default: return '#38bdf8';
             }
-        ];
+        }
+
+        function getThreeRandomCards() {
+            const selected = [];
+            const usedIds = new Set();
+
+            for (let i = 0; i < 3; i++) {
+                let attempts = 0;
+                let picked = null;
+                while (attempts < 15) {
+                    const targetRarity = getRandomRarity();
+                    const candidates = UPGRADE_CARDS_POOL.filter(c => c.rarity === targetRarity && !usedIds.has(c.id));
+                    if (candidates.length > 0) {
+                        picked = candidates[Math.floor(Math.random() * candidates.length)];
+                        break;
+                    }
+                    attempts++;
+                }
+                if (!picked) {
+                    const remaining = UPGRADE_CARDS_POOL.filter(c => !usedIds.has(c.id));
+                    picked = remaining.length > 0 
+                        ? remaining[Math.floor(Math.random() * remaining.length)]
+                        : UPGRADE_CARDS_POOL[Math.floor(Math.random() * UPGRADE_CARDS_POOL.length)];
+                }
+                usedIds.add(picked.id);
+                selected.push(picked);
+            }
+            return selected;
+        }
 
         function checkLevelUp() {
             if (player.xp >= player.xpNext) {
@@ -2043,19 +3516,17 @@
         function triggerLevelUpModal() {
             isPaused = true;
             playSynthLevelUp();
-            screenShake = 10;
+            screenShake = 12;
             floatingTexts.push(new FloatingText(player.x, player.y - 30, '★ LEVEL UP! ★', '#a855f7'));
 
-            // Pick 3 unique random cards
-            const shuffled = [...UPGRADE_CARDS_POOL].sort(() => Math.random() - 0.5);
-            const selectedCards = shuffled.slice(0, 3);
-
+            const selectedCards = getThreeRandomCards();
             const container = document.getElementById('powerup-cards-container');
             container.innerHTML = '';
 
             selectedCards.forEach(c => {
                 const cardEl = document.createElement('div');
-                cardEl.className = `powerup-card rarity-${c.rarity}`;
+                const rarityClass = c.rarity.replace(/\s+/g, '-');
+                cardEl.className = `powerup-card rarity-${rarityClass}`;
                 cardEl.innerHTML = `
                     <div class="card-icon-wrap"><i class="fas ${c.icon}"></i></div>
                     <div style="flex: 1; min-width: 0;">
@@ -2076,12 +3547,124 @@
         function selectPowerUpCard(card) {
             playSynthPickup();
             card.apply();
-            floatingTexts.push(new FloatingText(player.x, player.y - 25, `+${card.title}`, '#38bdf8'));
+
+            // Track in Player Card Inventory Deck
+            if (!player.inventory) player.inventory = [];
+            const existing = player.inventory.find(i => i.id === card.id);
+            if (existing) {
+                existing.count = (existing.count || 1) + 1;
+            } else {
+                player.inventory.push({
+                    id: card.id,
+                    title: card.title || card.name,
+                    name: card.name || card.title,
+                    rarity: card.rarity,
+                    category: card.category || 'specials',
+                    icon: card.icon,
+                    desc: card.desc,
+                    count: 1
+                });
+            }
+
+            // Update HUD deck badge
+            const deckBadge = document.getElementById('hud-deck-count');
+            if (deckBadge) deckBadge.textContent = player.inventory.reduce((sum, item) => sum + item.count, 0);
+
+            floatingTexts.push(new FloatingText(player.x, player.y - 25, `+${card.title || card.name}`, getRarityColor(card.rarity)));
 
             document.getElementById('level-up-modal').style.display = 'none';
             isPaused = false;
             updateHud();
         }
+
+        // ==========================================
+        // CARD INVENTORY & DECK MENU LOGIC
+        // ==========================================
+        let currentInvFilter = 'all';
+
+        function openInventoryModal() {
+            if (!isGameRunning) return;
+            isPaused = true;
+            renderInventoryModal();
+            document.getElementById('inventory-modal').style.display = 'flex';
+        }
+
+        function closeInventoryModal() {
+            document.getElementById('inventory-modal').style.display = 'none';
+            isPaused = false;
+        }
+
+        function filterInventory(category, btn) {
+            currentInvFilter = category;
+            const buttons = document.querySelectorAll('.inv-filter-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            if (btn) btn.classList.add('active');
+            renderInventoryCards();
+        }
+
+        function renderInventoryModal() {
+            const totalCount = player.inventory ? player.inventory.reduce((sum, i) => sum + i.count, 0) : 0;
+            const uniqueCount = player.inventory ? player.inventory.length : 0;
+            document.getElementById('inv-total-cards').textContent = totalCount;
+            document.getElementById('inv-unique-cards').textContent = uniqueCount;
+
+            // Render Pilot Live Stats Bar
+            const statsBar = document.getElementById('inv-stats-bar');
+            statsBar.innerHTML = `
+                <div class="inv-stat-badge"><i class="fas fa-heart" style="color: #ef4444;"></i> HP: <strong>${Math.round(player.hp)}/${player.maxHp}</strong></div>
+                <div class="inv-stat-badge"><i class="fas fa-shield-alt" style="color: #38bdf8;"></i> Shields: <strong>${player.shield}/${player.maxShield}</strong></div>
+                <div class="inv-stat-badge"><i class="fas fa-crosshairs" style="color: #f59e0b;"></i> Weapon: <strong>Lv. ${player.weaponLevel}</strong></div>
+                <div class="inv-stat-badge"><i class="fas fa-tachometer-alt" style="color: #10b981;"></i> Speed: <strong>${(player.speed * (player.speedMultiplier || 1)).toFixed(1)}</strong></div>
+                <div class="inv-stat-badge"><i class="fas fa-bullseye" style="color: #ec4899;"></i> Crit: <strong>${Math.round(player.critChance * 100)}%</strong></div>
+                <div class="inv-stat-badge"><i class="fas fa-magnet" style="color: #a78bfa;"></i> Magnet: <strong>${player.magnetRadius}px</strong></div>
+                <div class="inv-stat-badge"><i class="fas fa-satellite" style="color: #38bdf8;"></i> Drones: <strong>${player.orbitDrones}</strong></div>
+                <div class="inv-stat-badge"><i class="fas fa-dove" style="color: #fbbf24;"></i> Revives: <strong>${player.reviveCharges || 0}</strong></div>
+            `;
+
+            renderInventoryCards();
+        }
+
+        function renderInventoryCards() {
+            const grid = document.getElementById('inv-cards-grid');
+            grid.innerHTML = '';
+
+            const list = player.inventory || [];
+            const filtered = currentInvFilter === 'all' 
+                ? list 
+                : list.filter(i => (i.category || 'specials').toLowerCase() === currentInvFilter.toLowerCase());
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1 / -1; padding: 40px 20px; text-align: center; color: var(--text-muted); font-size: 0.85rem;">
+                        <i class="fas fa-layer-group" style="font-size: 2rem; margin-bottom: 8px; opacity: 0.5;"></i><br>
+                        ${list.length === 0 ? 'No quantum buffs collected yet. Destroy rogue drones & collect crystals to level up!' : 'No buffs found in this category.'}
+                    </div>
+                `;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                const rarityClass = (item.rarity || 'common').replace(/\s+/g, '-');
+                card.className = `powerup-card rarity-${rarityClass}`;
+                card.style.cursor = 'default';
+                card.innerHTML = `
+                    <div class="card-icon-wrap" style="position: relative;">
+                        <i class="fas ${item.icon}"></i>
+                        ${item.count > 1 ? `<span style="position: absolute; top: -6px; right: -6px; background: var(--gold); color: #000; font-weight: 900; font-size: 10px; border-radius: 10px; padding: 1px 5px;">x${item.count}</span>` : ''}
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px; margin-bottom: 2px;">
+                            <div class="card-title" style="font-size: 0.82rem;">${item.title || item.name}</div>
+                            <span class="card-rarity-pill" style="font-size: 0.65rem;">${(item.rarity || 'common').toUpperCase()}</span>
+                        </div>
+                        <div class="card-desc" style="font-size: 0.72rem;">${item.desc}</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
 
         // ==========================================
         // 7. MAIN GAME LOOP
@@ -2105,21 +3688,53 @@
             player.maxHp = 100;
             player.shield = 1;
             player.maxShield = 1;
+            player.shieldRegenRate = 0;
+            player.shieldRegenTimer = 0;
             player.weaponLevel = 1;
             player.bulletPiercing = 0;
+            player.bulletDamage = 25;
+            player.bulletSpeedMultiplier = 1.0;
+            player.bulletSizeMultiplier = 1.0;
             player.critChance = 0.05;
+            player.critMultiplier = 2.0;
             player.magnetRadius = 140;
             player.speed = 7.5;
+            player.speedMultiplier = 1.0;
             player.shootInterval = 140;
             player.dashCooldown = 0;
             player.dashCooldownMax = 150;
+            player.dashDuration = 0;
+            player.dashShockwave = false;
+            player.dashDamage = 0;
+            player.dashInvulnBonus = 0;
             player.invulnTimer = 0;
             player.level = 1;
             player.xp = 0;
-            player.xpNext = 60; // 2 drone kills in wave 1 trigger first level-up
+            player.xpNext = 60;
+            player.xpMultiplier = 1.0;
+            player.scoreMultiplier = 1.0;
             player.empActive = false;
             player.empCooldown = 0;
+            player.empInterval = 600;
+            player.empDamage = 120;
             player.orbitDrones = 0;
+            player.guardianShields = 0;
+            player.homingMissiles = 0;
+            player.missileTimer = 0;
+            player.chainLightning = 0;
+            player.cryoBullets = false;
+            player.corrosiveBullets = false;
+            player.vampirismChance = 0;
+            player.reflectShieldChance = 0;
+            player.reviveCharges = 0;
+            player.timeDilation = false;
+            player.laserBeamActive = false;
+            player.plasmaAura = false;
+            player.crystalDoubler = 1.0;
+            player.afterburnerTrail = false;
+            player.inventory = [];
+            const hudDeckCount = document.getElementById('hud-deck-count');
+            if (hudDeckCount) hudDeckCount.textContent = '0';
 
             score = 0;
             wave = 1;
@@ -2164,6 +3779,39 @@
         function gameLoop() {
             requestAnimationFrame(gameLoop);
 
+            // Gamepad & VR Controller Polling (Xbox, PS4/PS5, Oculus Quest Browser, Bluetooth Gamepads)
+            if (navigator.getGamepads && isGameRunning && !isPaused) {
+                const gamepads = navigator.getGamepads();
+                if (gamepads && gamepads[0]) {
+                    const gp = gamepads[0];
+                    const deadzone = 0.20;
+                    const ax = Math.abs(gp.axes[0]) > deadzone ? gp.axes[0] : 0;
+                    const ay = Math.abs(gp.axes[1]) > deadzone ? gp.axes[1] : 0;
+                    if (ax !== 0 || ay !== 0) {
+                        const curSpd = player.speed * (player.speedMultiplier || 1.0);
+                        player.x += ax * curSpd;
+                        player.y += ay * curSpd;
+                        player.x = Math.max(player.radius, Math.min(width - player.radius, player.x));
+                        player.y = Math.max(player.radius + 60, Math.min(height - player.radius - 20, player.y));
+                    }
+                    if (gp.buttons[0]?.pressed || gp.buttons[7]?.pressed) {
+                        playerShoot();
+                    }
+                    if (gp.buttons[1]?.pressed || gp.buttons[6]?.pressed) {
+                        triggerWarpDash();
+                    }
+                    if (gp.buttons[2]?.pressed || gp.buttons[3]?.pressed || gp.buttons[8]?.pressed) {
+                        const invModal = document.getElementById('inventory-modal');
+                        if (!invModal || invModal.style.display === 'none') {
+                            openInventoryModal();
+                        }
+                    }
+                    if (gp.buttons[9]?.pressed) {
+                        togglePause();
+                    }
+                }
+            }
+
             if (isPaused) {
                 // Keep starfield animating gently during pause
                 drawStarfield();
@@ -2192,6 +3840,49 @@
                         combo = 1.0;
                         updateHud();
                     }
+                }
+
+                // Passive Nanite Health Regeneration
+                if (player.regenRate && player.regenRate > 0 && player.hp < player.maxHp && (time % 60 === 0)) {
+                    player.hp = Math.min(player.maxHp, player.hp + player.regenRate);
+                    updateHud();
+                }
+
+                // Passive Shield Regeneration
+                if (player.shieldRegenRate && player.shieldRegenRate > 0 && player.shield < player.maxShield) {
+                    player.shieldRegenTimer = (player.shieldRegenTimer || 0) + 1;
+                    const reqTime = Math.max(180, 1500 / player.shieldRegenRate);
+                    if (player.shieldRegenTimer > reqTime) {
+                        player.shieldRegenTimer = 0;
+                        player.shield = Math.min(player.maxShield, player.shield + 1);
+                        floatingTexts.push(new FloatingText(player.x, player.y - 20, '+1 SHIELD RECHARGED', '#38bdf8'));
+                        updateHud();
+                    }
+                }
+
+                // Homing Missiles System
+                if (player.homingMissiles && player.homingMissiles > 0) {
+                    player.missileTimer = (player.missileTimer || 0) + 1;
+                    if (player.missileTimer > 180 && enemies.length > 0) {
+                        player.missileTimer = 0;
+                        for (let m = 0; m < Math.min(8, player.homingMissiles); m++) {
+                            const target = enemies[Math.floor(Math.random() * enemies.length)];
+                            if (target) {
+                                const angle = Math.atan2(target.y - player.y, target.x - player.x) + (m - player.homingMissiles/2) * 0.2;
+                                bullets.push(new Bullet(player.x, player.y - 10, Math.cos(angle) * 9, Math.sin(angle) * 9, false, '#f43f5e', player.nuclearWarheads ? 75 : 40, true, 2));
+                            }
+                        }
+                    }
+                }
+
+                // Continuous Death Ray Particle Beam
+                if (player.laserBeamActive && (time % 5 === 0)) {
+                    enemies.forEach(en => {
+                        if (Math.abs(en.x - player.x) < 32 && en.y < player.y) {
+                            en.hp -= Math.round(player.bulletDamage * 0.4);
+                            particles.push(new Particle(en.x, en.y, '#ec4899', 4, 15));
+                        }
+                    });
                 }
 
                 // EMP Overload pulse logic
@@ -2586,10 +4277,19 @@
         }
 
         function takePlayerDamage(amount) {
+            if (player.damageReduction) {
+                amount = Math.max(1, Math.round(amount * (1 - player.damageReduction)));
+            }
+
             if (player.shield > 0) {
                 player.shield--;
                 screenShake = 6;
-                floatingTexts.push(new FloatingText(player.x, player.y - 20, 'SHIELD DEFLECTED', '#60a5fa'));
+                if (player.reflectShieldChance && Math.random() < player.reflectShieldChance) {
+                    floatingTexts.push(new FloatingText(player.x, player.y - 25, '⚡ REFLECTED TO FOES!', '#10b981'));
+                    enemies.forEach(en => { en.hp -= 45; });
+                } else {
+                    floatingTexts.push(new FloatingText(player.x, player.y - 20, 'SHIELD DEFLECTED', '#60a5fa'));
+                }
                 updateHud();
                 return;
             }
@@ -2602,6 +4302,24 @@
             updateHud();
 
             if (player.hp <= 0) {
+                // Phoenix Protocol Revive System
+                if (player.reviveCharges && player.reviveCharges > 0) {
+                    player.reviveCharges--;
+                    player.hp = player.maxHp;
+                    player.shield = player.maxShield;
+                    player.invulnTimer = 90;
+                    screenShake = 25;
+                    playSynthBossAlarm();
+                    floatingTexts.push(new FloatingText(player.x, player.y - 45, '🕊️ PHOENIX REVIVE TRIGGERED! 🕊️', '#fbbf24'));
+                    // Vaporize all enemy bullets and damage nearby enemies
+                    enemyBullets.length = 0;
+                    enemies.forEach(en => { en.hp -= 120; });
+                    for (let p = 0; p < 45; p++) {
+                        particles.push(new Particle(player.x, player.y, '#fbbf24', 8, 45));
+                    }
+                    updateHud();
+                    return;
+                }
                 playerDeath();
             }
         }
@@ -2628,7 +4346,16 @@
 
         async function submitFinalScore() {
             const statusEl = document.getElementById('go-submit-status');
-            statusEl.textContent = 'Submitting mission telemetry to Nora Grid...';
+            const autoStatus = document.getElementById('auto-score-status');
+            if (statusEl) statusEl.textContent = 'Auto-syncing mission score to global rankings...';
+            if (autoStatus) autoStatus.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Auto-syncing score to global rankings...';
+
+            // Cache Personal Best in localStorage
+            const prevHigh = parseInt(localStorage.getItem('nora_arcade_high_score') || '0', 10);
+            if (score > prevHigh) {
+                localStorage.setItem('nora_arcade_high_score', score);
+                localStorage.setItem('nora_arcade_best_wave', wave);
+            }
 
             try {
                 const token = sessionStorage.getItem('discord_token') 
@@ -2660,14 +4387,19 @@
 
                 if (res.ok) {
                     const data = await res.json();
-                    document.getElementById('go-xp').textContent = `+${data.xpAwarded} XP`;
+                    const xpEl = document.getElementById('go-xp');
+                    if (xpEl) xpEl.textContent = `+${data.xpAwarded} XP`;
                     const accountLabel = data.username ? `for <strong>${data.username}</strong>` : '';
-                    statusEl.innerHTML = `✅ Saved to Leaderboard ${accountLabel} (Rank <strong>#${data.rank}</strong>) • Earned <strong>+${data.xpAwarded} Nora XP</strong>!`;
+                    const successMsg = `✅ High score automatically synced! ${accountLabel} (Rank <strong>#${data.rank}</strong>) • Earned <strong>+${data.xpAwarded} XP</strong>!`;
+                    if (statusEl) statusEl.innerHTML = successMsg;
+                    if (autoStatus) autoStatus.innerHTML = `<i class="fas fa-check-circle"></i> High score automatically synced! Rank #${data.rank} (${score.toLocaleString()} pts)`;
                 } else {
-                    statusEl.textContent = 'Mission logged locally.';
+                    if (statusEl) statusEl.textContent = 'Mission logged locally to personal records.';
+                    if (autoStatus) autoStatus.innerHTML = `<i class="fas fa-check-circle"></i> Saved locally! Score: ${score.toLocaleString()}`;
                 }
             } catch (err) {
-                statusEl.textContent = 'Offline score recorded.';
+                if (statusEl) statusEl.textContent = 'Offline score recorded.';
+                if (autoStatus) autoStatus.innerHTML = `<i class="fas fa-check-circle"></i> Saved locally! Score: ${score.toLocaleString()}`;
             }
         }
 

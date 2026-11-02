@@ -65,6 +65,52 @@ router.get('/leaderboard', async (req, res) => {
  * POST /api/arcade/score
  * Submit game score & award Nora XP
  */
+/**
+ * POST /api/arcade/discord-auth
+ * Discord Activity & OAuth auto-handshake
+ */
+router.post('/discord-auth', async (req, res) => {
+    try {
+        const { code, token, redirect_uri } = req.body;
+        let accessToken = token;
+
+        if (code) {
+            const clientId = process.env.DISCORD_CLIENT_ID || process.env.CLIENT_ID || '1375943730951098549';
+            const clientSecret = process.env.DISCORD_CLIENT_SECRET || process.env.CLIENT_SECRET;
+            if (clientSecret) {
+                const params = new URLSearchParams();
+                params.append('client_id', clientId);
+                params.append('client_secret', clientSecret);
+                params.append('grant_type', 'authorization_code');
+                params.append('code', code);
+                params.append('redirect_uri', redirect_uri || '');
+
+                const tokenRes = await fetch('https://discord.com/api/v10/oauth2/token', {
+                    method: 'POST',
+                    body: params,
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+                });
+                if (tokenRes.ok) {
+                    const tokenData = await tokenRes.json();
+                    accessToken = tokenData.access_token;
+                }
+            }
+        }
+
+        if (accessToken) {
+            const { getDiscordUser } = require('../middleware/auth');
+            const user = await getDiscordUser(accessToken).catch(() => null);
+            if (user) {
+                return res.json({ success: true, user, token: accessToken });
+            }
+        }
+        res.status(400).json({ error: 'Failed to authenticate pilot with Discord.' });
+    } catch (err) {
+        console.error('[Arcade Discord Auth Error]:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 router.post('/score', scoreSubmitLimiter, async (req, res) => {
     try {
         const { score, wave, maxCombo, crystals, guestName } = req.body;
@@ -126,7 +172,7 @@ router.post('/score', scoreSubmitLimiter, async (req, res) => {
         }
 
         // Check if user already has an entry on leaderboard
-        const existingIdx = list.findIndex(e => e.id === userId && authUser);
+        const existingIdx = list.findIndex(e => (userId && e.id === userId) || (username && e.username.toLowerCase() === username.toLowerCase()));
         let isNewHigh = false;
 
         if (existingIdx !== -1) {
