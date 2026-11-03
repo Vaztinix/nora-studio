@@ -2018,7 +2018,8 @@
                         el.textContent = aiCache[original];
                     } else {
                         el.textContent = originalFullText;
-                        if (original.length < 100 && !el.closest('[data-no-translate]')) {
+                        // Avoid flooding browser connection pool and hitting backend 429 rate limit
+                        if (el.hasAttribute('data-ai-translate') && original.length < 100 && !el.closest('[data-no-translate]')) {
                             window.requestAiTranslation(original, lang).then(translated => {
                                 if (translated && translated !== original && el) {
                                     el.textContent = translated;

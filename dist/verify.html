@@ -1,39 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nora Studio | Roblox Verification Portal</title>
-    <meta name="description" content="Securely link and verify your Roblox profile with your Discord identity in Nora Studio.">
+    <meta name="description"
+        content="Securely link and verify your Roblox profile with your Discord identity in Nora Studio.">
     <link rel="icon" type="image/png" href="/nora.png">
     <link rel="manifest" href="/manifest.json">
-    
+
     <!-- Modern Typography & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/nora-sentinel.js?v=2.2" defer></script>
-    
+
     <style>
         :root {
             --bg-base: #06080E;
             --text-main: #F8FAFC;
             --text-muted: #94A3B8;
             --text-dim: #64748B;
-            
+
             --blurple: #5865F2;
             --blurple-hover: #4752C4;
             --success: #10B981;
             --warning: #F59E0B;
             --danger: #EF4444;
             --accent-cyan: #38BDF8;
-            
+
             --radius-sm: 10px;
             --radius-md: 16px;
             --radius-lg: 28px;
             --radius-full: 9999px;
-            
+
             --spring-easing: cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -52,7 +56,7 @@
             flex-direction: column;
             overflow-x: hidden;
             position: relative;
-            background-image: 
+            background-image:
                 radial-gradient(circle at 50% 20%, rgba(30, 36, 56, 0.45) 0%, rgba(6, 8, 14, 0.98) 100%),
                 radial-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 100% 100%, 28px 28px;
@@ -91,9 +95,17 @@
         }
 
         @keyframes ambientFloat {
-            0% { transform: translate(-50%, -50%) scale(0.95); }
-            50% { transform: translate(-48%, -52%) scale(1.08); }
-            100% { transform: translate(-50%, -50%) scale(0.95); }
+            0% {
+                transform: translate(-50%, -50%) scale(0.95);
+            }
+
+            50% {
+                transform: translate(-48%, -52%) scale(1.08);
+            }
+
+            100% {
+                transform: translate(-50%, -50%) scale(0.95);
+            }
         }
 
         /* Header Navigation */
@@ -217,14 +229,29 @@
         }
 
         @keyframes cardEntrance {
-            0% { opacity: 0; transform: translateY(24px) scale(0.96); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
+            0% {
+                opacity: 0;
+                transform: translateY(24px) scale(0.96);
+            }
+
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
 
         @keyframes cardFloat {
-            0% { transform: translateY(0); }
-            50% { transform: translateY(-4px); }
-            100% { transform: translateY(0); }
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-4px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
         }
 
         /* Specular Liquid Shimmer */
@@ -240,8 +267,13 @@
         }
 
         @keyframes liquidShimmer {
-            0% { transform: translateX(-150%) skewX(-20deg); }
-            100% { transform: translateX(250%) skewX(-20deg); }
+            0% {
+                transform: translateX(-150%) skewX(-20deg);
+            }
+
+            100% {
+                transform: translateX(250%) skewX(-20deg);
+            }
         }
 
         /* Hero Roblox Icon Badge */
@@ -270,9 +302,20 @@
         }
 
         @keyframes heroRadarWave {
-            0% { transform: scale(0.65); opacity: 0.85; }
-            50% { transform: scale(1.3); opacity: 0.3; }
-            100% { transform: scale(1.9); opacity: 0; }
+            0% {
+                transform: scale(0.65);
+                opacity: 0.85;
+            }
+
+            50% {
+                transform: scale(1.3);
+                opacity: 0.3;
+            }
+
+            100% {
+                transform: scale(1.9);
+                opacity: 0;
+            }
         }
 
         .roblox-hero-icon {
@@ -633,8 +676,13 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .spinner {
@@ -647,7 +695,9 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
 
         /* Sleek Toast Notification */
@@ -680,18 +730,43 @@
             pointer-events: auto;
         }
 
-        .toast-success { border-color: rgba(16, 185, 129, 0.4); color: #fff; }
-        .toast-error { border-color: rgba(239, 68, 68, 0.4); color: #fff; }
-        .toast-warning { border-color: rgba(245, 158, 11, 0.4); color: #fff; }
-        .toast-info { border-color: rgba(56, 189, 248, 0.4); color: #fff; }
+        .toast-success {
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #fff;
+        }
+
+        .toast-error {
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #fff;
+        }
+
+        .toast-warning {
+            border-color: rgba(245, 158, 11, 0.4);
+            color: #fff;
+        }
+
+        .toast-info {
+            border-color: rgba(56, 189, 248, 0.4);
+            color: #fff;
+        }
 
         @media (max-width: 540px) {
-            .nav-container { padding: 0 16px; }
-            .portal-card { padding: 28px 20px; border-radius: 20px; }
-            .perks-grid { grid-template-columns: 1fr; }
+            .nav-container {
+                padding: 0 16px;
+            }
+
+            .portal-card {
+                padding: 28px 20px;
+                border-radius: 20px;
+            }
+
+            .perks-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Ambient Glowing Blobs -->
@@ -727,13 +802,17 @@
                     <div class="roblox-radar-ring ring-2"></div>
                     <div class="roblox-hero-icon">
                         <svg viewBox="0 0 24 24">
-                            <path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/>
+                            <path
+                                d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z" />
                         </svg>
                     </div>
                 </div>
 
-                <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 6px; text-align: center; letter-spacing: -0.025em;">Roblox Verification</h1>
-                <p style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin-bottom: 22px; line-height: 1.5;">
+                <h1
+                    style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-bottom: 6px; text-align: center; letter-spacing: -0.025em;">
+                    Roblox Verification</h1>
+                <p
+                    style="color: var(--text-muted); font-size: 0.9rem; text-align: center; margin-bottom: 22px; line-height: 1.5;">
                     Link and verify your Roblox profile with your Discord identity.
                 </p>
 
@@ -755,27 +834,33 @@
 
                 <!-- View 2: Main Connected Flow -->
                 <div id="view-main" style="display: none;">
-                    
+
                     <!-- Discord User Identity Badge -->
                     <div class="identity-panel discord-user-badge">
                         <div class="discord-user-info">
-                            <img id="discord-avatar" class="discord-user-avatar" src="/nora.png" alt="Discord Avatar" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
+                            <img id="discord-avatar" class="discord-user-avatar" src="/nora.png" alt="Discord Avatar"
+                                onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
                             <div style="min-width: 0;">
                                 <div id="discord-name" class="discord-user-name">Username</div>
                                 <div id="discord-id" class="discord-user-id">ID: 000000000000000000</div>
                             </div>
                         </div>
-                        <button class="logout-btn" onclick="performLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                        <button class="logout-btn" onclick="performLogout()"><i class="fas fa-sign-out-alt"></i>
+                            Logout</button>
                     </div>
 
                     <!-- Active Linked Roblox Identity -->
                     <div id="active-roblox-container" style="display: none;">
                         <div class="identity-panel roblox-identity-card">
-                            <img id="roblox-avatar" class="roblox-avatar-img" src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Roblox Avatar" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
+                            <img id="roblox-avatar" class="roblox-avatar-img"
+                                src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Roblox Avatar"
+                                onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
                             <div class="roblox-identity-details">
                                 <div class="roblox-display-name">
                                     <span id="roblox-display-name">Roblox User</span>
-                                    <span class="badge" style="font-size: 0.68rem; background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 7px; border-radius: 999px; font-weight: 700;"><i class="fas fa-check-circle"></i> Linked</span>
+                                    <span class="badge"
+                                        style="font-size: 0.68rem; background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 7px; border-radius: 999px; font-weight: 700;"><i
+                                            class="fas fa-check-circle"></i> Linked</span>
                                 </div>
                                 <div id="roblox-username" class="roblox-handle">@username</div>
                                 <div id="roblox-id" class="roblox-id-badge">ID: 000000000</div>
@@ -794,7 +879,8 @@
                     <div id="connect-action-container" style="text-align: center; margin-bottom: 16px;">
                         <button onclick="startOAuthVerification()" class="btn btn-roblox">
                             <svg viewBox="0 0 24 24">
-                                <path d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z"/>
+                                <path
+                                    d="M18.926 23.998L0 18.892 5.075.002 24 5.108ZM15.348 10.09l-5.282-1.417-1.414 5.281 5.281 1.417z" />
                             </svg>
                             Connect Roblox Account
                         </button>
@@ -804,10 +890,15 @@
                     </div>
 
                     <!-- Multi-Account Management Section -->
-                    <div id="multi-accounts-section" style="display: none; margin-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 16px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <span style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted);">Connected Accounts</span>
-                            <span id="accounts-count" style="font-size: 0.72rem; color: var(--text-dim);">0 Accounts</span>
+                    <div id="multi-accounts-section"
+                        style="display: none; margin-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 16px;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <span
+                                style="font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-muted);">Connected
+                                Accounts</span>
+                            <span id="accounts-count" style="font-size: 0.72rem; color: var(--text-dim);">0
+                                Accounts</span>
                         </div>
                         <div id="accounts-list" class="accounts-grid"></div>
                     </div>
@@ -847,12 +938,12 @@
 
     <script>
         // High-Speed Session Persistence & Instant Cache Hydration
-        (function() {
+        (function () {
             const originalSetItem = sessionStorage.setItem;
             const originalGetItem = sessionStorage.getItem;
             const ONE_WEEK_MS = 7 * 24 * 60 * 60 * 1000;
 
-            sessionStorage.setItem = function(key, value) {
+            sessionStorage.setItem = function (key, value) {
                 if (key === 'discord_token') {
                     localStorage.setItem('discord_token_val', value);
                     localStorage.setItem('discord_token_time', Date.now().toString());
@@ -860,7 +951,7 @@
                 originalSetItem.call(sessionStorage, key, value);
             };
 
-            sessionStorage.getItem = function(key) {
+            sessionStorage.getItem = function (key) {
                 if (key === 'discord_token') {
                     const time = localStorage.getItem('discord_token_time');
                     const val = localStorage.getItem('discord_token_val');
@@ -883,16 +974,16 @@
         const CLIENT_ID = window.__NORA_CLIENT_ID__ || "1375943730951098549";
         const REDIRECT_URI = encodeURIComponent(
             (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000')
-            ? window.location.origin + '/verify'
-            : 'https://vaztinix.dev/verify'
+                ? window.location.origin + '/verify'
+                : 'https://vaztinix.dev/verify'
         );
         const discordLoginURL = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URI}&scope=identify`;
 
-        window.getApiBaseUrl = function() {
+        window.getApiBaseUrl = function () {
             const host = window.location.hostname;
             if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.') || !host || window.location.protocol === 'file:') {
-                return (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null') 
-                    ? window.location.origin 
+                return (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null')
+                    ? window.location.origin
                     : 'http://localhost:3000';
             }
             if (host === 'api.vaztinix.dev') return window.location.origin;
@@ -980,16 +1071,16 @@
                 document.getElementById('roblox-display-name').textContent = active.robloxDisplayName || active.robloxUsername || `User ${active.robloxId}`;
                 document.getElementById('roblox-username').textContent = `@${active.robloxUsername || active.robloxId}`;
                 document.getElementById('roblox-id').textContent = `Roblox ID: ${active.robloxId}`;
-                
+
                 let isRobloxThumb = false;
                 try {
                     const parsedAvatar = new URL(active.avatar);
                     if (parsedAvatar.hostname === 'thumbnails.roblox.com' || parsedAvatar.hostname.endsWith('.roblox.com')) {
                         isRobloxThumb = true;
                     }
-                } catch (e) {}
-                const robloxAvatarUrl = (active.avatar && !isRobloxThumb) 
-                    ? active.avatar 
+                } catch (e) { }
+                const robloxAvatarUrl = (active.avatar && !isRobloxThumb)
+                    ? active.avatar
                     : (getApiBaseUrl() + `/api/user/roblox/avatar?userId=${encodeURIComponent(active.robloxId)}`);
                 document.getElementById('roblox-avatar').src = robloxAvatarUrl;
             } else {
@@ -1004,7 +1095,7 @@
             if (userAccounts.length > 0) {
                 accountsSection.style.display = 'block';
                 countBadge.textContent = `${userAccounts.length} Account${userAccounts.length > 1 ? 's' : ''}`;
-                
+
                 let html = '';
                 userAccounts.forEach(acc => {
                     const isCurActive = active && String(active.robloxId) === String(acc.robloxId);
@@ -1078,7 +1169,7 @@
                 if (cachedUser) renderDiscordUserUI(cachedUser);
                 const cachedAccounts = JSON.parse(localStorage.getItem('nora_cached_roblox_accounts') || 'null');
                 if (cachedAccounts) renderRobloxAccountsUI(cachedAccounts);
-            } catch (_) {}
+            } catch (_) { }
 
             // Capture OAuth token from URL hash
             const fragment = new URLSearchParams(window.location.hash.slice(1));
@@ -1213,7 +1304,7 @@
                 const data = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(data.error || 'Failed to set active account');
                 showToast(data.message || 'Switched active Roblox identity!', 'success');
-                
+
                 // Re-fetch accounts in background
                 const accountsRes = await fetch(getApiBaseUrl() + '/api/user/roblox/accounts', { headers: { 'Authorization': `Bearer ${token}` } });
                 if (accountsRes.ok) {
@@ -1231,7 +1322,7 @@
 
         async function unlinkAccount(robloxId) {
             if (!confirm('Are you sure you want to unlink this Roblox account? Verified roles may be removed.')) return;
-            
+
             toggleLoading(true);
             const token = sessionStorage.getItem('discord_token');
             try {
@@ -1242,7 +1333,7 @@
                 const data = await res.json().catch(() => ({}));
                 if (!res.ok) throw new Error(data.error || 'Failed to unlink account');
                 showToast(data.message || 'Roblox account unlinked.', 'info');
-                
+
                 // Re-fetch accounts
                 const accountsRes = await fetch(getApiBaseUrl() + '/api/user/roblox/accounts', { headers: { 'Authorization': `Bearer ${token}` } });
                 if (accountsRes.ok) {
@@ -1259,4 +1350,5 @@
         }
     </script>
 </body>
+
 </html>

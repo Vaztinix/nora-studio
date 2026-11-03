@@ -3649,14 +3649,8 @@ app.get('/api/user/guilds', async (req, res) => {
             const perms = BigInt(g.permissions);
             const isManaged = (perms & BigInt(0x8)) === BigInt(0x8) || (perms & BigInt(0x20)) === BigInt(0x20) || g.owner;
 
-            let liveGuild = req.client.guilds.cache.get(g.id);
-            if (!liveGuild) {
-                try {
-                    liveGuild = await req.client.guilds.fetch(g.id).catch(() => null);
-                } catch (e) {
-                    liveGuild = null;
-                }
-            }
+            // Direct cache lookup avoids Discord 404s and global bot REST API rate limits
+            const liveGuild = req.client.guilds.cache.get(g.id) || null;
 
             const hasSettings = settingsMap.has(g.id);
             const hasNora = !!liveGuild || hasSettings;
