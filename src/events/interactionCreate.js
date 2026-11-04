@@ -151,6 +151,12 @@ module.exports = {
             return dmRelayManager.handleStaffAction(interaction, client);
         }
 
+        // 🧪 Nora Studio Tester Application Accept/Decline in Vaztinix's DMs
+        if (interaction.isButton() && (interaction.customId.startsWith('tester_accept_') || interaction.customId.startsWith('tester_decline_'))) {
+            const noraTesterManager = require('../utils/noraTesterManager');
+            return noraTesterManager.handleButton(interaction, client);
+        }
+
         // 📬 Nora Support DM Relay: Staff quick reply modal submit
         if (interaction.isModalSubmit() && interaction.customId.startsWith('dm_modal_reply_')) {
             const dmRelayManager = require('../utils/dmRelayManager');

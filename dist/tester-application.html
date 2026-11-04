@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora Studio • Tester Application</title>
+    <meta name="description" content="Apply to become an official feature tester for Nora Bot & Nora Studio. Test new features, hunt glitches, and help make Nora the best Discord companion.">
+    <link rel="icon" type="image/png" href="https://cdn.discordapp.com/emojis/1234567890.png" id="favicon">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --bg-primary: #07090E;
+            --bg-secondary: #0D111A;
+            --bg-card: rgba(17, 24, 39, 0.7);
+            --bg-card-hover: rgba(23, 32, 51, 0.85);
+            --border-glass: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(88, 101, 242, 0.35);
+            --blurple: #5865F2;
+            --blurple-glow: rgba(88, 101, 242, 0.4);
+            --blurple-hover: #4752C4;
+            --emerald: #10B981;
+            --emerald-glow: rgba(16, 185, 129, 0.25);
+            --rose: #F43F5E;
+            --amber: #F59E0B;
+            --text-main: #F8FAFC;
+            --text-muted: #94A3B8;
+            --text-dim: #64748B;
+            --radius-lg: 20px;
+            --radius-md: 14px;
+            --radius-sm: 8px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 15% 20%, rgba(88, 101, 242, 0.12) 0%, transparent 40%),
+                radial-gradient(circle at 85% 75%, rgba(16, 185, 129, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 50% 50%, rgba(13, 17, 26, 0.6) 0%, transparent 80%);
+            background-attachment: fixed;
+        }
+
+        /* Top Header */
+        header {
+            width: 100%;
+            height: 72px;
+            border-bottom: 1px solid var(--border-glass);
+            background: rgba(13, 17, 26, 0.8);
+            backdrop-filter: blur(20px);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+        }
+
+        .brand-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-main);
+        }
+
+        .brand-logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #5865F2, #818CF8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 1.25rem;
+            color: white;
+            box-shadow: 0 0 20px rgba(88, 101, 242, 0.4);
+        }
+
+        .brand-title {
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .brand-badge {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            background: rgba(88, 101, 242, 0.15);
+            color: #818CF8;
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            border-radius: 20px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .nav-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            color: var(--text-muted);
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Main Container */
+        main {
+            flex: 1;
+            max-width: 860px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 24px 80px;
+        }
+
+        /* Hero Banner */
+        .hero-section {
+            text-align: center;
+            margin-bottom: 36px;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(88, 101, 242, 0.12);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            border-radius: 30px;
+            color: #A5B4FC;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .hero-title {
+            font-size: 2.35rem;
+            font-weight: 800;
+            line-height: 1.2;
+            letter-spacing: -0.03em;
+            margin-bottom: 12px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #CBD5E1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.55;
+        }
+
+        /* Stepper Navigation */
+        .stepper-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 32px;
+            position: relative;
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            padding: 16px 20px;
+            backdrop-filter: blur(12px);
+        }
+
+        .step-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 2;
+            opacity: 0.45;
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active {
+            opacity: 1;
+        }
+
+        .step-item.completed {
+            opacity: 1;
+        }
+
+        .step-circle {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            transition: all 0.3s ease;
+        }
+
+        .step-item.active .step-circle {
+            background: var(--blurple);
+            border-color: #818CF8;
+            color: white;
+            box-shadow: 0 0 15px var(--blurple-glow);
+        }
+
+        .step-item.completed .step-circle {
+            background: var(--emerald);
+            border-color: #34D399;
+            color: white;
+            box-shadow: 0 0 15px var(--emerald-glow);
+        }
+
+        .step-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .step-num {
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-dim);
+            font-weight: 700;
+        }
+
+        .step-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .step-arrow {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            opacity: 0.4;
+        }
+
+        /* Step Panels */
+        .step-panel {
+            display: none;
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .step-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+            margin-bottom: 24px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-glass);
+        }
+
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-sm);
+            background: rgba(88, 101, 242, 0.15);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #818CF8;
+            font-size: 1.15rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.01em;
+        }
+
+        .card-desc {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* User Profile Pill */
+        .user-preview-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius-md);
+            margin-bottom: 24px;
+        }
+
+        .user-preview-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .user-preview-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: 2px solid var(--blurple);
+            object-fit: cover;
+        }
+
+        .user-preview-name {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .user-preview-handle {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .user-status-tag {
+            padding: 6px 12px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34D399;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            width: 100%;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #5865F2, #4F46E5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: var(--radius-md);
+            color: white;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 20px rgba(88, 101, 242, 0.35);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.5);
+            background: linear-gradient(135deg, #6366F1, #4338CA);
+        }
+
+        .btn-secondary {
+            width: 100%;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            color: var(--text-main);
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Password Gate Box */
+        .password-box {
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .password-input-wrapper {
+            position: relative;
+            max-width: 380px;
+            margin: 20px auto;
+        }
+
+        .password-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-align: center;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+
+        .password-input:focus {
+            outline: none;
+            border-color: var(--blurple);
+            box-shadow: 0 0 20px var(--blurple-glow);
+        }
+
+        .password-hint {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-top: 10px;
+        }
+
+        /* Form Fields */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 8px;
+        }
+
+        .form-hint {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            color: white;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--blurple);
+            box-shadow: 0 0 15px var(--blurple-glow);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        textarea.form-control {
+            min-height: 95px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        /* Grid Selection / Checkboxes */
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .custom-check-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .custom-check-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .custom-check-card input {
+            accent-color: var(--blurple);
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .custom-check-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        /* Multiple Choice Cards */
+        .quiz-option-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.025);
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            margin-bottom: 10px;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .quiz-option-card:hover {
+            background: rgba(88, 101, 242, 0.06);
+            border-color: rgba(88, 101, 242, 0.3);
+        }
+
+        .quiz-option-card.selected {
+            background: rgba(88, 101, 242, 0.15);
+            border-color: var(--blurple);
+            box-shadow: 0 0 15px rgba(88, 101, 242, 0.2);
+        }
+
+        .quiz-radio {
+            margin-top: 3px;
+            accent-color: var(--blurple);
+            width: 16px;
+            height: 16px;
+        }
+
+        .quiz-text {
+            font-size: 0.88rem;
+            line-height: 1.45;
+            color: var(--text-main);
+        }
+
+        /* Alerts & Toasts */
+        .alert-box {
+            padding: 16px 20px;
+            border-radius: var(--radius-md);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 0.88rem;
+            line-height: 1.5;
+        }
+
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            color: #FCD34D;
+        }
+
+        .alert-danger {
+            background: rgba(244, 63, 94, 0.1);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: #FDA4AF;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #6EE7B7;
+        }
+
+        /* Toast Popup */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: #1E293B;
+            border: 1px solid var(--border-glass);
+            border-radius: var(--radius-md);
+            padding: 14px 20px;
+            color: white;
+            font-size: 0.88rem;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+        }
+
+        .toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .toast.toast-success { border-color: rgba(16, 185, 129, 0.5); }
+        .toast.toast-error { border-color: rgba(244, 63, 94, 0.5); }
+
+        /* Success Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(16px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            z-index: 1000;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal-card {
+            background: var(--bg-secondary);
+            border: 1px solid rgba(88, 101, 242, 0.4);
+            box-shadow: 0 0 50px rgba(88, 101, 242, 0.3);
+            border-radius: var(--radius-lg);
+            max-width: 520px;
+            width: 100%;
+            padding: 36px 32px;
+            text-align: center;
+            animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-icon-badge {
+            width: 68px;
+            height: 68px;
+            border-radius: 50%;
+            background: rgba(16, 185, 129, 0.15);
+            border: 2px solid var(--emerald);
+            color: var(--emerald);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            margin: 0 auto 20px;
+            box-shadow: 0 0 30px var(--emerald-glow);
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border-glass);
+            padding: 24px;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.82rem;
+        }
+
+        /* Mobile Adjustments */
+        @media (max-width: 640px) {
+            header { padding: 0 16px; }
+            main { padding: 24px 16px 60px; }
+            .hero-title { font-size: 1.8rem; }
+            .glass-card { padding: 22px 18px; }
+            .stepper-container { flex-direction: column; gap: 12px; align-items: flex-start; }
+            .step-arrow { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <a href="/" class="brand-container">
+            <div class="brand-logo">N</div>
+            <div>
+                <span class="brand-title">Nora Studio</span>
+                <span class="brand-badge">Testing Portal</span>
+            </div>
+        </a>
+        <div class="header-actions">
+            <a href="https://discord.gg/m9WPYV287q" target="_blank" rel="noopener" class="nav-btn">
+                <i class="fab fa-discord"></i> Milo's World
+            </a>
+            <a href="/" class="nav-btn">
+                <i class="fas fa-home"></i> Home
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Hero Header -->
+        <div class="hero-section">
+            <div class="hero-badge">
+                <i class="fas fa-flask"></i> Official Testing Assessment
+            </div>
+            <h1 class="hero-title">Become a Nora Studio Tester</h1>
+            <p class="hero-subtitle">
+                Help test upcoming Nora Bot features, catch bugs early, and work directly with Vaztinix to make Nora the top Discord bot.
+            </p>
+        </div>
+
+        <!-- Stepper Indicator -->
+        <div class="stepper-container">
+            <div class="step-item active" id="step-nav-1">
+                <div class="step-circle" id="circle-1">1</div>
+                <div class="step-info">
+                    <span class="step-num">Step 1</span>
+                    <span class="step-title">Connect Discord</span>
+                </div>
+            </div>
+            <div class="step-arrow"><i class="fas fa-chevron-right"></i></div>
+            <div class="step-item" id="step-nav-2">
+                <div class="step-circle" id="circle-2">2</div>
+                <div class="step-info">
+                    <span class="step-num">Step 2</span>
+                    <span class="step-title">Server Check</span>
+                </div>
+            </div>
+            <div class="step-arrow"><i class="fas fa-chevron-right"></i></div>
+            <div class="step-item" id="step-nav-3">
+                <div class="step-circle" id="circle-3">3</div>
+                <div class="step-info">
+                    <span class="step-num">Step 3</span>
+                    <span class="step-title">Access Code</span>
+                </div>
+            </div>
+            <div class="step-arrow"><i class="fas fa-chevron-right"></i></div>
+            <div class="step-item" id="step-nav-4">
+                <div class="step-circle" id="circle-4">4</div>
+                <div class="step-info">
+                    <span class="step-num">Step 4</span>
+                    <span class="step-title">Assessment</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 1: Discord Connection -->
+        <div class="step-panel active" id="panel-step-1">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fab fa-discord"></i></div>
+                    <div>
+                        <h2 class="card-title">Step 1 • Connect Your Discord Account</h2>
+                        <p class="card-desc">We need to link your Discord profile so your application can be verified and reviewed by Vaztinix.</p>
+                    </div>
+                </div>
+
+                <div id="auth-unlinked">
+                    <p style="color: var(--text-muted); font-size: 0.92rem; line-height: 1.6; margin-bottom: 24px;">
+                        Before you can take the assessment, please log in with your Discord account. This ensures you are a genuine member and lets us automatically link your Discord handle and ID.
+                    </p>
+                    <button class="btn-primary" onclick="loginWithDiscord()">
+                        <i class="fab fa-discord"></i> Log In with Discord to Begin
+                    </button>
+                </div>
+
+                <div id="auth-linked" style="display: none;">
+                    <div class="user-preview-card">
+                        <div class="user-preview-left">
+                            <img src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar" class="user-preview-avatar" id="discord-avatar">
+                            <div>
+                                <div class="user-preview-name" id="discord-display-name">Discord User</div>
+                                <div class="user-preview-handle" id="discord-username">@username • ID: 123456789</div>
+                            </div>
+                        </div>
+                        <div class="user-status-tag">
+                            <i class="fas fa-check-circle"></i> Linked
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="proceedToServerCheck()">
+                        Continue to Step 2 <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 2: Milo's World Server Check -->
+        <div class="step-panel" id="panel-step-2">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div>
+                        <h2 class="card-title">Step 2 • Milo's World Server Verification</h2>
+                        <p class="card-desc">Applicants must be active members of the Milo's World server (1487342521133830174).</p>
+                    </div>
+                </div>
+
+                <div id="server-checking" style="text-align: center; padding: 30px 0;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 2.2rem; color: var(--blurple); margin-bottom: 16px;"></i>
+                    <p style="font-weight: 600; font-size: 1rem;">Verifying your membership in Milo's World...</p>
+                    <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 6px;">Contacting Nora Verification Gateway</p>
+                </div>
+
+                <div id="server-not-in" style="display: none;">
+                    <div class="alert-box alert-warning">
+                        <i class="fas fa-exclamation-triangle" style="font-size: 1.25rem; margin-top: 2px;"></i>
+                        <div>
+                            <strong>Membership Required:</strong> Your linked Discord account is not currently in the <strong>Milo's World</strong> server (<code style="font-family: monospace;">1487342521133830174</code>).
+                            <p style="margin-top: 6px; font-size: 0.82rem;">Please join Milo's World using the invite link below, then click "Re-check Membership".</p>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; margin-top: 20px;">
+                        <a href="https://discord.gg/m9WPYV287q" target="_blank" rel="noopener" class="btn-primary" style="text-decoration: none;">
+                            <i class="fab fa-discord"></i> Join Milo's World Now
+                        </a>
+                        <button class="btn-secondary" onclick="checkEligibility()">
+                            <i class="fas fa-rotate"></i> Re-check Membership
+                        </button>
+                    </div>
+                </div>
+
+                <div id="server-in" style="display: none;">
+                    <div class="alert-box alert-success">
+                        <i class="fas fa-check-circle" style="font-size: 1.25rem; margin-top: 2px;"></i>
+                        <div>
+                            <strong>Verified Member:</strong> Great news! You are confirmed as a member of <strong>Milo's World</strong>.
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="proceedToPasswordGate()">
+                        Proceed to Access Code <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 3: Password Gate -->
+        <div class="step-panel" id="panel-step-3">
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-icon"><i class="fas fa-key"></i></div>
+                    <div>
+                        <h2 class="card-title">Step 3 • Enter Access Password</h2>
+                        <p class="card-desc">Enter the tester application access code to unlock the assessment form.</p>
+                    </div>
+                </div>
+
+                <div class="password-box">
+                    <p style="color: var(--text-muted); font-size: 0.92rem; max-width: 480px; margin: 0 auto;">
+                        Please enter the access code provided for the tester program.
+                    </p>
+
+                    <div class="password-input-wrapper">
+                        <input type="text" id="access-password" class="password-input" placeholder="ENTER CODE" autocomplete="off" maxlength="16">
+                    </div>
+
+                    <p class="password-hint">
+                        <i class="fas fa-info-circle"></i> Hint: Enter code <strong style="color: var(--text-main);">MILO</strong>
+                    </p>
+
+                    <div id="password-error" class="alert-box alert-danger" style="display: none; max-width: 380px; margin: 16px auto 0;">
+                        <i class="fas fa-times-circle"></i>
+                        <span>Incorrect password. Please enter <strong>MILO</strong> to continue.</span>
+                    </div>
+
+                    <div style="max-width: 380px; margin: 24px auto 0;">
+                        <button class="btn-primary" onclick="verifyPassword()">
+                            Unlock Assessment <i class="fas fa-lock-open"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- STEP 4: Full Tester Application Form -->
+        <div class="step-panel" id="panel-step-4">
+            <form id="tester-form" onsubmit="handleApplicationSubmit(event)">
+                <!-- Section 1: Basic Information -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-user-check"></i></div>
+                        <div>
+                            <h2 class="card-title">1. Basic Information</h2>
+                            <p class="card-desc">Tell us a little bit about yourself and what you test on.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="app-age">How old are you? <span style="color: var(--rose);">*</span></label>
+                        <span class="form-hint">Testers must be at least 13 years old in accordance with Discord terms.</span>
+                        <input type="number" id="app-age" class="form-control" placeholder="e.g. 16" min="13" max="99" required style="max-width: 180px;">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">What device(s) do you use most for Discord and testing? <span style="color: var(--rose);">*</span></label>
+                        <span class="form-hint">Check all devices that you regularly use so we know what you can test.</span>
+                        <div class="checkbox-grid">
+                            <label class="custom-check-card">
+                                <input type="checkbox" name="devices" value="Windows PC" checked>
+                                <span class="custom-check-label"><i class="fab fa-windows"></i> Windows PC</span>
+                            </label>
+                            <label class="custom-check-card">
+                                <input type="checkbox" name="devices" value="Mac">
+                                <span class="custom-check-label"><i class="fab fa-apple"></i> Mac / macOS</span>
+                            </label>
+                            <label class="custom-check-card">
+                                <input type="checkbox" name="devices" value="iPhone / iOS">
+                                <span class="custom-check-label"><i class="fas fa-mobile-alt"></i> iPhone / iPad</span>
+                            </label>
+                            <label class="custom-check-card">
+                                <input type="checkbox" name="devices" value="Android">
+                                <span class="custom-check-label"><i class="fab fa-android"></i> Android Phone</span>
+                            </label>
+                            <label class="custom-check-card">
+                                <input type="checkbox" name="devices" value="Chromebook">
+                                <span class="custom-check-label"><i class="fab fa-chrome"></i> Chromebook</span>
+                            </label>
+                            <label class="custom-check-card">
+                                <input type="checkbox" name="devices" value="Linux">
+                                <span class="custom-check-label"><i class="fab fa-linux"></i> Linux</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="app-activity">How active are you on Discord each week? <span style="color: var(--rose);">*</span></label>
+                        <select id="app-activity" class="form-control" required>
+                            <option value="A few hours a week">A few hours a week (Casual)</option>
+                            <option value="1-2 hours per day" selected>1-2 hours per day (Moderate)</option>
+                            <option value="3-5 hours per day">3-5 hours per day (Very Active)</option>
+                            <option value="5+ hours per day">5+ hours per day (Always around)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Section 2: Motivation & Experience -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-lightbulb"></i></div>
+                        <div>
+                            <h2 class="card-title">2. Motivation & Experience</h2>
+                            <p class="card-desc">Help us understand why you want to test Nora.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="app-motivation">Why would you like to be a Tester for Nora? <span style="color: var(--rose);">*</span></label>
+                        <span class="form-hint">What excites you about testing? What kind of features do you enjoy exploring?</span>
+                        <textarea id="app-motivation" class="form-control" placeholder="Share your thoughts in simple words..." required minlength="10"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="app-experience">Have you ever helped test a bot, game, or website before? <span style="color: var(--rose);">*</span></label>
+                        <span class="form-hint">It's completely okay if this is your first time! Just be honest.</span>
+                        <textarea id="app-experience" class="form-control" placeholder="e.g. Yes, I helped test beta bots for my friend's server, or No, this is my first time but I pay close attention to details." required></textarea>
+                    </div>
+                </div>
+
+                <!-- Section 3: Little Scenarios -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-puzzle-piece"></i></div>
+                        <div>
+                            <h2 class="card-title">3. Real Testing Scenarios</h2>
+                            <p class="card-desc">Here are 4 simple scenarios. Tell us how you would handle each one.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="app-scenario1">
+                            Scenario 1: You run a command like <code>/rank</code>, but Nora doesn't reply at all. What is the very first thing you check? <span style="color: var(--rose);">*</span>
+                        </label>
+                        <span class="form-hint">Think about permissions, channels, other commands, or server status.</span>
+                        <textarea id="app-scenario1" class="form-control" placeholder="What would you check first?" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="app-scenario2">
+                            Scenario 2: You find a glitch that lets users generate unlimited leveling XP or bypass channel slowmode. What do you do? <span style="color: var(--rose);">*</span>
+                        </label>
+                        <span class="form-hint">This tests your honesty and integrity as a trusted team member.</span>
+                        <textarea id="app-scenario2" class="form-control" placeholder="How would you handle finding an exploit?" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="app-scenario3">
+                            Scenario 3: A friend in the server asks you to tell them about secret features or test commands before they are officially released. What is your response? <span style="color: var(--rose);">*</span>
+                        </label>
+                        <span class="form-hint">This checks confidentiality and privacy.</span>
+                        <textarea id="app-scenario3" class="form-control" placeholder="What would you tell your friend?" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="app-scenario4">
+                            Scenario 4: Write a quick sample bug report for this issue: "Clicking the Erase Data button on the web dashboard gives a red error." <span style="color: var(--rose);">*</span>
+                        </label>
+                        <span class="form-hint">Write it in a way that gives developers enough details to fix it quickly.</span>
+                        <textarea id="app-scenario4" class="form-control" placeholder="Write your bug report with steps, expected result, and what device you were using..." required></textarea>
+                    </div>
+                </div>
+
+                <!-- Section 4: Small Knowledge Assessment -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-clipboard-check"></i></div>
+                        <div>
+                            <h2 class="card-title">4. Quick Skill & Integrity Assessment</h2>
+                            <p class="card-desc">Answer these 3 quick multiple-choice questions.</p>
+                        </div>
+                    </div>
+
+                    <!-- Question A -->
+                    <div class="form-group">
+                        <label class="form-label">Question A: Which of these is the BEST way to report a bug to developers? <span style="color: var(--rose);">*</span></label>
+                        <div class="quiz-option-card" onclick="selectRadio('qa', 'A', this)">
+                            <input type="radio" name="questionA" value="A" class="quiz-radio" id="qa_A" required>
+                            <label class="quiz-text" for="qa_A">"The bot is broken please fix it."</label>
+                        </div>
+                        <div class="quiz-option-card" onclick="selectRadio('qa', 'B', this)">
+                            <input type="radio" name="questionA" value="B" class="quiz-radio" id="qa_B">
+                            <label class="quiz-text" for="qa_B"><strong>[Bug]: /mycard gives an error.</strong> Steps to reproduce: 1. Run /mycard. 2. Click Erase Data. Expected: Confirmation dialog. Actual: Red 'Interaction Failed'. Device: Windows 11 Chrome.</label>
+                        </div>
+                        <div class="quiz-option-card" onclick="selectRadio('qa', 'C', this)">
+                            <input type="radio" name="questionA" value="C" class="quiz-radio" id="qa_C">
+                            <label class="quiz-text" for="qa_C">Ping the owner 10 times in general chat with all-caps.</label>
+                        </div>
+                    </div>
+
+                    <!-- Question B -->
+                    <div class="form-group" style="margin-top: 28px;">
+                        <label class="form-label">Question B: If you accidentally did something during testing that caused a command or feature to crash, what should you do? <span style="color: var(--rose);">*</span></label>
+                        <div class="quiz-option-card" onclick="selectRadio('qb', 'A', this)">
+                            <input type="radio" name="questionB" value="A" class="quiz-radio" id="qb_A" required>
+                            <label class="quiz-text" for="qb_A">Hide it, delete your message, and pretend you didn't do anything.</label>
+                        </div>
+                        <div class="quiz-option-card" onclick="selectRadio('qb', 'B', this)">
+                            <input type="radio" name="questionB" value="B" class="quiz-radio" id="qb_B">
+                            <label class="quiz-text" for="qb_B">Tell Vaztinix / Lead Developers honestly what you clicked or typed so they can reproduce and patch the crash safely.</label>
+                        </div>
+                        <div class="quiz-option-card" onclick="selectRadio('qb', 'C', this)">
+                            <input type="radio" name="questionB" value="C" class="quiz-radio" id="qb_C">
+                            <label class="quiz-text" for="qb_C">Blame it on Discord's API without saying what happened.</label>
+                        </div>
+                    </div>
+
+                    <!-- Question C -->
+                    <div class="form-group" style="margin-top: 28px;">
+                        <label class="form-label">Question C: In software testing, what does "reproducing a bug" mean? <span style="color: var(--rose);">*</span></label>
+                        <div class="quiz-option-card" onclick="selectRadio('qc', 'A', this)">
+                            <input type="radio" name="questionC" value="A" class="quiz-radio" id="qc_A" required>
+                            <label class="quiz-text" for="qc_A">Making a duplicate copy of the bot code.</label>
+                        </div>
+                        <div class="quiz-option-card" onclick="selectRadio('qc', 'B', this)">
+                            <input type="radio" name="questionC" value="B" class="quiz-radio" id="qc_B">
+                            <label class="quiz-text" for="qc_B">Finding the exact, step-by-step actions that make the same glitch happen again reliably.</label>
+                        </div>
+                        <div class="quiz-option-card" onclick="selectRadio('qc', 'C', this)">
+                            <input type="radio" name="questionC" value="C" class="quiz-radio" id="qc_C">
+                            <label class="quiz-text" for="qc_C">Asking another user to fix the issue for you.</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 5: Extra Notes -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="fas fa-comment-dots"></i></div>
+                        <div>
+                            <h2 class="card-title">5. Extra Notes for Vaztinix</h2>
+                            <p class="card-desc">Anything else you want to tell Vaztinix directly? (Optional)</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <textarea id="app-extra" class="form-control" placeholder="Any special skills, hobbies, or nice words you'd like to share..."></textarea>
+                    </div>
+
+                    <div style="margin-top: 32px;">
+                        <button type="submit" class="btn-primary" id="submit-btn" style="padding: 16px;">
+                            <i class="fas fa-paper-plane"></i> Submit Tester Application to Vaztinix
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Success Modal -->
+    <div class="modal-overlay" id="success-modal">
+        <div class="modal-card">
+            <div class="modal-icon-badge">
+                <i class="fas fa-check"></i>
+            </div>
+            <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 12px;">Application Forwarded!</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 24px;">
+                Your tester application has been successfully delivered directly to <strong>Vaztinix's Discord DMs</strong> via Nora!
+            </p>
+            <div class="alert-box alert-success" style="text-align: left; margin-bottom: 24px;">
+                <i class="fas fa-paper-plane" style="font-size: 1.1rem; margin-top: 2px;"></i>
+                <div>
+                    <strong>What happens next?</strong><br>
+                    Vaztinix will review your answers and scenarios. If accepted, you will receive a notification in your Discord DMs and special access in <strong>Milo's World</strong>!
+                </div>
+            </div>
+            <a href="/" class="btn-primary" style="text-decoration: none;">
+                Return to Home <i class="fas fa-home"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast">
+        <i class="fas fa-info-circle"></i> <span id="toast-text">Message</span>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        Nora Studio Testing Program • Created & Operated by Vaztinix • Zero-Access Privacy Standards
+    </footer>
+
+    <script>
+        const CLIENT_ID = "1375943730951098549";
+        const REDIRECT_URI = encodeURIComponent(
+            (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000')
+                ? window.location.origin + '/tester-application'
+                : 'https://vaztinix.dev/tester-application'
+        );
+
+        let currentUser = null;
+        let isEligible = false;
+        let hasUnlockedPassword = false;
+
+        function getApiBaseUrl() {
+            const host = window.location.hostname;
+            if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.') || host.startsWith('172.') || !host || window.location.protocol === 'file:') {
+                return (window.location.protocol.startsWith('http') && window.location.origin && window.location.origin !== 'null')
+                    ? window.location.origin
+                    : 'http://localhost:3000';
+            }
+            if (host === 'api.vaztinix.dev') return window.location.origin;
+            return 'https://api.vaztinix.dev';
+        }
+
+        function showToast(message, isSuccess = false) {
+            const toast = document.getElementById('toast');
+            const text = document.getElementById('toast-text');
+            text.textContent = message;
+            toast.className = `toast show ${isSuccess ? 'toast-success' : 'toast-error'}`;
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3800);
+        }
+
+        function loginWithDiscord() {
+            const authUrl = `https://discord.com/oauth2/authorize?client_id=${CLIENT_ID}&response_type=token&redirect_uri=${REDIRECT_URI}&scope=identify`;
+            window.location.href = authUrl;
+        }
+
+        function setStep(stepNumber) {
+            for (let i = 1; i <= 4; i++) {
+                const nav = document.getElementById(`step-nav-${i}`);
+                const panel = document.getElementById(`panel-step-${i}`);
+
+                if (i < stepNumber) {
+                    nav.className = 'step-item completed';
+                } else if (i === stepNumber) {
+                    nav.className = 'step-item active';
+                } else {
+                    nav.className = 'step-item';
+                }
+
+                if (panel) {
+                    panel.className = i === stepNumber ? 'step-panel active' : 'step-panel';
+                }
+            }
+            window.scrollTo({ top: 120, behavior: 'smooth' });
+        }
+
+        function proceedToServerCheck() {
+            setStep(2);
+            checkEligibility();
+        }
+
+        function proceedToPasswordGate() {
+            setStep(3);
+            setTimeout(() => {
+                const passInput = document.getElementById('access-password');
+                if (passInput) passInput.focus();
+            }, 200);
+        }
+
+        async function checkEligibility() {
+            const token = sessionStorage.getItem('discord_token');
+            if (!token) {
+                setStep(1);
+                return;
+            }
+
+            document.getElementById('server-checking').style.display = 'block';
+            document.getElementById('server-not-in').style.display = 'none';
+            document.getElementById('server-in').style.display = 'none';
+
+            try {
+                const res = await fetch(`${getApiBaseUrl()}/api/tester-application/check-eligibility`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                const data = await res.json();
+                document.getElementById('server-checking').style.display = 'none';
+
+                if (res.ok && data.inMilosWorld) {
+                    isEligible = true;
+                    document.getElementById('server-in').style.display = 'block';
+                } else {
+                    isEligible = false;
+                    document.getElementById('server-not-in').style.display = 'block';
+                }
+            } catch (err) {
+                console.error('[Eligibility check error]:', err);
+                document.getElementById('server-checking').style.display = 'none';
+                document.getElementById('server-not-in').style.display = 'block';
+            }
+        }
+
+        function verifyPassword() {
+            const input = document.getElementById('access-password');
+            const errorDiv = document.getElementById('password-error');
+            const val = (input?.value || '').trim().toUpperCase();
+
+            if (val === 'MILO') {
+                hasUnlockedPassword = true;
+                errorDiv.style.display = 'none';
+                showToast('Access code verified! Unlocking application...', true);
+                setStep(4);
+            } else {
+                errorDiv.style.display = 'flex';
+                input.classList.add('shake');
+                setTimeout(() => input.classList.remove('shake'), 400);
+            }
+        }
+
+        document.getElementById('access-password')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                verifyPassword();
+            }
+        });
+
+        function selectRadio(groupName, value, element) {
+            const radio = element.querySelector(`input[type="radio"]`);
+            if (radio) {
+                radio.checked = true;
+            }
+            // Clear siblings selected state
+            const parent = element.parentElement;
+            parent.querySelectorAll('.quiz-option-card').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        async function verifyDiscordSession(token) {
+            try {
+                const res = await fetch(`${getApiBaseUrl()}/api/user/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    currentUser = await res.json();
+                    document.getElementById('auth-unlinked').style.display = 'none';
+                    document.getElementById('auth-linked').style.display = 'block';
+
+                    document.getElementById('discord-display-name').textContent = currentUser.global_name || currentUser.username || 'Discord User';
+                    document.getElementById('discord-username').textContent = `@${currentUser.username} • ID: ${currentUser.id}`;
+                    
+                    const avatarImg = document.getElementById('discord-avatar');
+                    if (currentUser.avatar) {
+                        const isAnimated = currentUser.avatar.startsWith('a_');
+                        avatarImg.src = `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.${isAnimated ? 'gif' : 'png'}?size=128`;
+                    } else {
+                        avatarImg.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    }
+                } else {
+                    sessionStorage.removeItem('discord_token');
+                    document.getElementById('auth-unlinked').style.display = 'block';
+                    document.getElementById('auth-linked').style.display = 'none';
+                }
+            } catch (err) {
+                console.error('[Session verify fault]:', err);
+                document.getElementById('auth-unlinked').style.display = 'block';
+                document.getElementById('auth-linked').style.display = 'none';
+            }
+        }
+
+        // Handle Application Form Submit
+        async function handleApplicationSubmit(e) {
+            e.preventDefault();
+            const token = sessionStorage.getItem('discord_token');
+            if (!token || !currentUser) {
+                showToast('Please log in with Discord first.');
+                setStep(1);
+                return;
+            }
+
+            if (!isEligible) {
+                showToast('You must be in Milo\'s World to apply.');
+                setStep(2);
+                return;
+            }
+
+            if (!hasUnlockedPassword) {
+                showToast('Please enter the password MILO first.');
+                setStep(3);
+                return;
+            }
+
+            const age = document.getElementById('app-age').value;
+            const motivation = document.getElementById('app-motivation').value;
+            const experience = document.getElementById('app-experience').value;
+            const scenario1 = document.getElementById('app-scenario1').value;
+            const scenario2 = document.getElementById('app-scenario2').value;
+            const scenario3 = document.getElementById('app-scenario3').value;
+            const scenario4 = document.getElementById('app-scenario4').value;
+            const activity = document.getElementById('app-activity').value;
+            const extraNotes = document.getElementById('app-extra').value;
+
+            // Devices checkboxes
+            const deviceCheckboxes = document.querySelectorAll('input[name="devices"]:checked');
+            const devices = Array.from(deviceCheckboxes).map(cb => cb.value);
+
+            // Assessment Radio choices
+            const qA = document.querySelector('input[name="questionA"]:checked')?.value || '';
+            const qB = document.querySelector('input[name="questionB"]:checked')?.value || '';
+            const qC = document.querySelector('input[name="questionC"]:checked')?.value || '';
+
+            if (!qA || !qB || !qC) {
+                showToast('Please answer all 3 assessment multiple-choice questions.');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Forwarding Application to Vaztinix's DMs...`;
+
+            try {
+                const res = await fetch(`${getApiBaseUrl()}/api/tester-application/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        password: 'MILO',
+                        age,
+                        devices,
+                        activity,
+                        motivation,
+                        experience,
+                        scenario1,
+                        scenario2,
+                        scenario3,
+                        scenario4,
+                        questionA: qA,
+                        questionB: qB,
+                        questionC: qC,
+                        extraNotes
+                    })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    document.getElementById('success-modal').classList.add('show');
+                } else {
+                    showToast(data.error || 'Failed to submit application. Please try again.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<i class="fas fa-paper-plane"></i> Submit Tester Application to Vaztinix`;
+                }
+            } catch (err) {
+                console.error('[Submit Error]:', err);
+                showToast('Network error while submitting. Please check connection and try again.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `<i class="fas fa-paper-plane"></i> Submit Tester Application to Vaztinix`;
+            }
+        }
+
+        // On Page Load: Handle OAuth hash or saved token
+        window.addEventListener('DOMContentLoaded', () => {
+            const fragment = new URLSearchParams(window.location.hash.slice(1));
+            const accessToken = fragment.get('access_token');
+
+            if (accessToken) {
+                sessionStorage.setItem('discord_token', accessToken);
+                window.history.replaceState(null, null, window.location.pathname);
+                verifyDiscordSession(accessToken);
+            } else {
+                const savedToken = sessionStorage.getItem('discord_token');
+                if (savedToken) {
+                    verifyDiscordSession(savedToken);
+                }
+            }
+        });
+    </script>
+</body>
+</html>

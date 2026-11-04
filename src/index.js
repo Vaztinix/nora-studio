@@ -4821,6 +4821,124 @@ app.get(['/verify', '/verify.html'], ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('verify.html'));
 });
 
+// 🧪 Nora Studio Tester Application Portal & Verification Endpoints
+app.get(['/tester-application', '/tester-application.html'], ipRateLimiter, (req, res) => {
+    res.sendFile(getWebFilePath('tester-application.html'));
+});
+
+app.get('/api/tester-application/check-eligibility', ipRateLimiter, async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Please connect your Discord account first.', eligible: false, inMilosWorld: false });
+    }
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const user = await getDiscordUser(token);
+        if (!user || !user.id) {
+            return res.status(401).json({ error: 'Invalid or expired Discord session.', eligible: false, inMilosWorld: false });
+        }
+
+        const noraTesterManager = require('./utils/noraTesterManager');
+        const inMilosWorld = await noraTesterManager.isUserInMilosWorld(client, user.id);
+
+        return res.json({
+            eligible: inMilosWorld,
+            inMilosWorld,
+            guildId: noraTesterManager.MILOS_WORLD_GUILD_ID,
+            user: {
+                id: user.id,
+                username: user.username,
+                global_name: user.global_name || user.username,
+                avatar: user.avatar
+            }
+        });
+    } catch (err) {
+        return res.status(500).json({ error: 'Unable to check eligibility at this time.', details: err.message, eligible: false, inMilosWorld: false });
+    }
+});
+
+app.post('/api/tester-application/submit', ipRateLimiter, async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Please connect your Discord account first.' });
+    }
+    const token = authHeader.split(' ')[1];
+
+    try {
+        const user = await getDiscordUser(token);
+        if (!user || !user.id) {
+            return res.status(401).json({ error: 'Invalid or expired Discord session.' });
+        }
+
+        const noraTesterManager = require('./utils/noraTesterManager');
+
+        // 1. Verify Milo's World membership (1487342521133830174)
+        const inMilosWorld = await noraTesterManager.isUserInMilosWorld(client, user.id);
+        if (!inMilosWorld) {
+            return res.status(403).json({
+                error: "You must be a member of the Milo's World server (1487342521133830174) to submit a tester application."
+            });
+        }
+
+        // 2. Verify password MILO
+        const { password, age, devices, activity, motivation, experience, scenario1, scenario2, scenario3, scenario4, questionA, questionB, questionC, extraNotes } = req.body || {};
+        if (!noraTesterManager.validatePassword(password)) {
+            return res.status(400).json({
+                error: 'Invalid access password. You must enter the correct password (MILO) to take this assessment.'
+            });
+        }
+
+        // 3. Basic validation
+        const parsedAge = parseInt(age, 10);
+        if (isNaN(parsedAge) || parsedAge < 13 || parsedAge > 100) {
+            return res.status(400).json({ error: 'Please provide a valid age (13 or older).' });
+        }
+
+        if (!motivation || motivation.trim().length < 10) {
+            return res.status(400).json({ error: 'Please explain why you would like to be a tester (minimum 10 characters).' });
+        }
+
+        if (!scenario1 || !scenario2 || !scenario3 || !scenario4) {
+            return res.status(400).json({ error: 'Please answer all scenario questions so we can assess your testing skills.' });
+        }
+
+        if (!questionA || !questionB || !questionC) {
+            return res.status(400).json({ error: 'Please answer all 3 assessment multiple-choice questions.' });
+        }
+
+        // 4. Forward to Vaztinix's DMs
+        const result = await noraTesterManager.submitApplication(client, {
+            user,
+            age: parsedAge,
+            devices,
+            activity,
+            motivation,
+            experience,
+            scenario1,
+            scenario2,
+            scenario3,
+            scenario4,
+            questionA,
+            questionB,
+            questionC,
+            extraNotes
+        });
+
+        if (!result.success) {
+            return res.status(500).json({ error: 'Failed to deliver application to staff. Please try again later.' });
+        }
+
+        return res.json({
+            success: true,
+            message: 'Your tester application has been successfully forwarded to Vaztinix in his Discord DMs via Nora!'
+        });
+    } catch (err) {
+        console.error('[TesterApp Submit Error]:', err);
+        return res.status(500).json({ error: 'An unexpected error occurred while processing your application.' });
+    }
+});
+
 app.get(['/status', '/status.html'], ipRateLimiter, (req, res) => {
     res.sendFile(getWebFilePath('status.html'));
 });
