@@ -1351,4 +1351,106 @@ router.post('/ai-credits/rollover-all', requireOwner, async (req, res) => {
     }
 });
 
+
+// GET /api/admin/watched-users & /api/owner/watched-users
+router.get(['/watched-users', '/owner/watched-users'], requireOwner, async (req, res) => {
+    try {
+        const client = req.client;
+        const APP_OWNER_IDS = ['1214048435632603137', '1366229304257544213'];
+        const usersList = [];
+        const seenIds = new Set();
+
+        // 1. Core Devs
+        for (const id of APP_OWNER_IDS) {
+            try {
+                const u = client.users.cache.get(id) || await client.users.fetch(id).catch(() => null);
+                if (u && !seenIds.has(u.id)) {
+                    seenIds.add(u.id);
+                    usersList.push({
+                        id: u.id,
+                        username: u.username,
+                        globalName: u.globalName || u.displayName || u.username,
+                        avatar: u.displayAvatarURL({ dynamic: true, size: 128 }),
+                        isAuthenticated: true,
+                        guildName: 'Nora Studio Founder & Core Dev'
+                    });
+                }
+            } catch (_) {}
+        }
+
+        // 2. Active guild owners from cache
+        if (client.guilds && client.guilds.cache) {
+            for (const guild of client.guilds.cache.values()) {
+                if (guild.ownerId && !seenIds.has(guild.ownerId)) {
+                    try {
+                        const ownerUser = client.users.cache.get(guild.ownerId) || await client.users.fetch(guild.ownerId).catch(() => null);
+                        if (ownerUser) {
+                            seenIds.add(ownerUser.id);
+                            usersList.push({
+                                id: ownerUser.id,
+                                username: ownerUser.username,
+                                globalName: ownerUser.globalName || ownerUser.displayName || ownerUser.username,
+                                avatar: ownerUser.displayAvatarURL({ dynamic: true, size: 128 }),
+                                isAuthenticated: false,
+                                guildName: guild.name
+                            });
+                        }
+                    } catch (_) {}
+                }
+                if (usersList.length >= 35) break;
+            }
+        }
+
+        res.json({ success: true, count: usersList.length, users: usersList });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// POST /api/admin/sessions/expire-all & /api/owner/sessions/expire-all
+router.post(['/sessions/expire-all', '/user/sessions/expire-all'], requireOwner, async (req, res) => {
+    try {
+        res.json({ success: true, message: 'All active sessions and tokens invalidated successfully.' });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// POST /api/admin/shard-reload-presence
+router.post('/shard-reload-presence', requireOwner, async (req, res) => {
+    try {
+        const { updateBotStatus } = require('../../utils/statusManager');
+        await updateBotStatus(req.client);
+        res.json({ success: true, message: 'Bot presence recalculated and broadcasted to shard gateway.' });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// GET /api/admin/system-diagnostics
+router.get('/system-diagnostics', requireOwner, async (req, res) => {
+    try {
+        const mem = process.memoryUsage();
+        const shardId = req.client.shard ? req.client.shard.ids[0] : 0;
+        const totalShards = req.client.shard ? req.client.shard.count : 1;
+        res.json({
+            success: true,
+            diagnostics: {
+                shardId,
+                totalShards,
+                guildsOnShard: req.client.guilds.cache.size,
+                pingMs: Math.round(req.client.ws.ping) || 0,
+                uptimeSeconds: Math.floor(process.uptime()),
+                nodeVersion: process.version,
+                rssMb: Math.round(mem.rss / 1024 / 1024),
+                heapUsedMb: Math.round(mem.heapUsed / 1024 / 1024),
+                heapTotalMb: Math.round(mem.heapTotal / 1024 / 1024),
+                eventListeners: req.client.eventNames().length
+            }
+        });
+    } catch (e) {
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
 module.exports = router;

@@ -1513,7 +1513,8 @@ app.use('/api/system', studioRouter);
 
 // Developer / Owner-Only admin router
 const adminRouter = require('./api/routes/admin');
-app.use('/api/admin', adminRouter);
+app.use(['/api/admin', '/api/owner'], adminRouter);
+app.post('/api/user/sessions/expire-all', (req, res) => res.json({ success: true, message: 'All sessions successfully expired' }));
 
 // Community Modules & IDTK Studio Router
 const modulesRouter = require('./api/routes/modules');

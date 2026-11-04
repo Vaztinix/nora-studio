@@ -268,6 +268,34 @@ module.exports = {
                         { 
                             name: 'Support & Utility', 
                             value: '`n!ticket`, `n!apply`, `n!avatar`, `n!info`, `n!ping`, `n!translate`, `n!invite`' 
+                        },
+                        {
+                            name: '🔒 Privacy, Data Sovereignty & Conduct',
+                            value: 'Zero-Access ephemeral RAM processing • `/mycard` inspection & 1-click erase • [vaztinix.dev/legal](https://vaztinix.dev/legal)'
+                        }
+                    );
+                        } else if (category === 'privacy') {
+                embed.setTitle('🔒 Nora Privacy & Data Sovereignty Manual')
+                    .setDescription(
+                        'Nora is built upon an uncompromising **Zero-Access Architecture** designed to preserve privacy across all Discord servers.\n\n' +
+                        '**Key Principles & Policies:**'
+                    )
+                    .addFields(
+                        {
+                            name: '🧠 Ephemeral Volatile RAM Processing',
+                            value: '• Messages analyzed for AutoMod, AI chat, or moderation are processed strictly in volatile RAM and immediately discarded.\n' +
+                                   '• Nora **never logs, stores, archives, or sells** message content.'
+                        },
+                        {
+                            name: '🗄️ Instant Self-Service Data Control',
+                            value: '• Use **`/mycard`** to inspect every piece of data associated with your user ID.\n' +
+                                   '• Click **"Erase Data"** on your card for immediate, permanent, irreversible data erasure without needing to email staff.'
+                        },
+                        {
+                            name: '📋 Expected Community Conduct',
+                            value: '• Users are expected to respect Discord TOS and Community Guidelines.\n' +
+                                   '• Malicious exploitation, raid coordination, hate speech, and harassment are strictly prohibited.\n' +
+                                   '• Full Legal Center: [vaztinix.dev/legal](https://vaztinix.dev/legal)'
                         }
                     );
             } else if (category === 'counting') {

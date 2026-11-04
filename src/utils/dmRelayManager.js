@@ -38,6 +38,12 @@ class DMRelayManager {
     constructor() {
         // In-memory cache of messageId -> targetUserId
         this.relayCache = new Map();
+        // In-memory pending messages awaiting user confirmation: userId -> { content, attachments, timestamp, messageId, author }
+        this.pendingUserDMs = new Map();
+        // In-memory message history: userId -> Array<{ content, timestamp, isFromUser, attachments }>
+        this.userMessageHistory = new Map();
+        // Set of highlighted user IDs (marked by staff for priority attention)
+        this.highlightedUsers = new Set();
     }
 
     /**
@@ -140,15 +146,382 @@ class DMRelayManager {
         }
 
         // ========================================================
-        // CASE B: Regular user DMing Nora (Appeal or General Support)
+        // CASE B: Regular user DMing Nora (Support vs AI Prompt)
         // ========================================================
-        return await this.forwardUserDMToDeveloper(message, client);
+        return await this.handleUserDMIncoming(message, client);
     }
 
     /**
      * Forwards a regular user's DM to the developer (Vaztinix) with full image & appeal support
      */
-    async forwardUserDMToDeveloper(message, client) {
+    /**
+     * Intercepts incoming user DMs and asks every time if they wish to forward to Support or chat with Nora
+     * @param {import('discord.js').Message} message
+     * @param {import('discord.js').Client} client
+     */
+    async handleUserDMIncoming(message, client) {
+        try {
+            // Check if user has an active underage suspension record
+            let suspension = null;
+            try {
+                suspension = await UnderageSuspension.findOne({
+                    where: { userId: message.author.id },
+                    order: [['createdAt', 'DESC']]
+                });
+            } catch (err) {}
+
+            // Record into volatile user message history
+            let userHistory = this.userMessageHistory.get(message.author.id);
+            if (!userHistory) {
+                userHistory = [];
+                this.userMessageHistory.set(message.author.id, userHistory);
+            }
+            userHistory.push({
+                content: message.content || '',
+                timestamp: Date.now(),
+                isFromUser: true
+            });
+            if (userHistory.length > 25) userHistory.shift();
+
+            const isHighlighted = this.highlightedUsers.has(message.author.id);
+            const appealKeywords = /\b(appeal|unban|unmute|suspension|suspended|suspend|proof|dob|birthday|birthdate|age|underage|13|id|passport|license|reinstate|re-appeal)\b/i;
+            const isAppeal = Boolean(suspension) || appealKeywords.test(message.content || '');
+
+            // Formal suspension appeals bypass the prompt and forward immediately
+            if (isAppeal) {
+                return await this.forwardUserDMToDeveloper(message, client, true);
+            }
+
+            // Save pending DM awaiting user confirmation
+            this.pendingUserDMs.set(message.author.id, {
+                content: message.content || '',
+                attachments: message.attachments,
+                timestamp: Date.now(),
+                messageId: message.id,
+                author: message.author
+            });
+
+            const previewText = message.content && message.content.trim().length > 0
+                ? (message.content.length > 500 ? message.content.slice(0, 497) + '...' : message.content)
+                : (message.attachments && message.attachments.size > 0 ? '*[Image/File Attachment]*' : '*[Empty Message]*');
+
+            const promptEmbed = new EmbedBuilder()
+                .setColor(0x5865F2)
+                .setAuthor({
+                    name: 'Nora Support & Direct Message Relay',
+                    iconURL: client.user.displayAvatarURL()
+                })
+                .setTitle('📬 Direct Message Received')
+                .setDescription(
+                    `Hey **${message.author.username}**! I received your message.\n\n` +
+                    `Would you like to **forward this directly to Support** so **Vaztinix** (<@${DEVELOPER_ID}>) can assist you personally, or would you like to **chat with Nora**?`
+                )
+                .addFields({
+                    name: '💬 Your Message',
+                    value: `>>> ${previewText}`,
+                    inline: false
+                })
+                .setFooter({ text: 'Choose an option below • Nora Zero-Access Privacy' })
+                .setTimestamp();
+
+            const promptRow = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setCustomId(`dm_forward_support_${message.author.id}`)
+                    .setLabel('Forward to Support')
+                    .setStyle(ButtonStyle.Primary)
+                    .setEmoji('📩'),
+                new ButtonBuilder()
+                    .setCustomId(`dm_chat_nora_${message.author.id}`)
+                    .setLabel('Chat with Nora')
+                    .setStyle(ButtonStyle.Secondary)
+                    .setEmoji('💬'),
+                new ButtonBuilder()
+                    .setCustomId(`dm_cancel_${message.author.id}`)
+                    .setLabel('Cancel')
+                    .setStyle(ButtonStyle.Danger)
+                    .setEmoji('✖️')
+            );
+
+            await message.reply({ embeds: [promptEmbed], components: [promptRow] });
+            return true;
+        } catch (err) {
+            console.error('[DMRelayManager] Error in handleUserDMIncoming:', err);
+            return false;
+        }
+    }
+
+    /**
+     * Handles user clicking one of the 3 choice buttons on the DM prompt
+     */
+    async handleUserPromptChoice(interaction, client) {
+        const userId = interaction.user.id;
+        const customId = interaction.customId;
+
+        if (!customId.endsWith(userId)) {
+            return interaction.reply({ content: '❌ This prompt is not for your account.', ephemeral: true });
+        }
+
+        const pending = this.pendingUserDMs.get(userId);
+
+        if (customId.startsWith('dm_cancel_')) {
+            this.pendingUserDMs.delete(userId);
+            const cancelEmbed = new EmbedBuilder()
+                .setColor(0x6B7280)
+                .setTitle('✖️ Message Cancelled')
+                .setDescription('Your message was not forwarded and no data was retained.')
+                .setTimestamp();
+            return await interaction.update({ embeds: [cancelEmbed], components: [] }).catch(() => {});
+        }
+
+        if (customId.startsWith('dm_chat_nora_')) {
+            this.pendingUserDMs.delete(userId);
+            await interaction.deferUpdate().catch(() => {});
+
+            const userPrompt = pending ? pending.content : '';
+            let responseText = null;
+
+            try {
+                const { getBuiltInResponse } = require('./builtInBrain');
+                responseText = await getBuiltInResponse(userPrompt || 'Hello Nora!', {
+                    authorName: interaction.user.username,
+                    isVoiceMode: false
+                });
+            } catch (aiErr) {
+                const { getPrivacyResponse } = require('./privateBrain');
+                responseText = await getPrivacyResponse(userPrompt || 'Hello Nora!');
+            }
+
+            if (!responseText || typeof responseText !== 'string') {
+                responseText = `Hey ${interaction.user.username}! I'm here. How can I help you today?`;
+            }
+
+            const chatEmbed = new EmbedBuilder()
+                .setColor(0x5865F2)
+                .setAuthor({
+                    name: 'Nora',
+                    iconURL: client.user.displayAvatarURL()
+                })
+                .setDescription(responseText)
+                .setFooter({ text: 'Nora Companion AI • Direct Chat' })
+                .setTimestamp();
+
+            return await interaction.editReply({ embeds: [chatEmbed], components: [] }).catch(() => {});
+        }
+
+        if (customId.startsWith('dm_forward_support_')) {
+            if (!pending) {
+                return await interaction.update({
+                    content: '⚠️ Message session expired. Please type your message again in this chat.',
+                    embeds: [],
+                    components: []
+                }).catch(() => {});
+            }
+
+            this.pendingUserDMs.delete(userId);
+            await interaction.deferUpdate().catch(() => {});
+
+            // Package as simulated message and forward strictly to Vaztinix's DMs
+            const simulatedMessage = {
+                author: pending.author || interaction.user,
+                content: pending.content,
+                attachments: pending.attachments || new Map(),
+                id: pending.messageId || interaction.id
+            };
+
+            const success = await this.forwardUserDMToDeveloper(simulatedMessage, client, false);
+
+            if (success) {
+                const deliveredEmbed = new EmbedBuilder()
+                    .setTitle('✅ Delivered to Vaztinix')
+                    .setColor(0x10B981)
+                    .setDescription(
+                        `Your message has been delivered directly to **Vaztinix** (<@${DEVELOPER_ID}>)!\n\n` +
+                        `When they reply, Nora will deliver their message right here in this DM chat. You can reply anytime to send more details or images.`
+                    )
+                    .setFooter({ text: 'Nora Support Relay • Zero-Access RAM Architecture' })
+                    .setTimestamp();
+
+                return await interaction.editReply({ embeds: [deliveredEmbed], components: [] }).catch(() => {});
+            } else {
+                return await interaction.editReply({
+                    content: '⚠️ Failed to deliver message to support at this moment. Please try again shortly or join our Discord server at https://discord.gg/m9WPYV287q',
+                    embeds: [],
+                    components: []
+                }).catch(() => {});
+            }
+        }
+    }
+
+    /**
+     * Handles developer / staff buttons on forwarded DMs
+     */
+    async handleStaffAction(interaction, client) {
+        if (interaction.user.id !== DEVELOPER_ID) {
+            return interaction.reply({ content: '❌ You are not authorized to use staff DM controls.', ephemeral: true });
+        }
+
+        const customId = interaction.customId;
+        const targetUserId = customId.split('_').pop();
+        const targetUser = client.users.cache.get(targetUserId) || await client.users.fetch(targetUserId).catch(() => null);
+
+        // 1. Quick Reply Modal
+        if (customId.startsWith('dm_quick_reply_')) {
+            const { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder } = require('discord.js');
+            const modal = new ModalBuilder()
+                .setCustomId(`dm_modal_reply_${targetUserId}`)
+                .setTitle(`Reply to ${targetUser ? targetUser.username : targetUserId}`.slice(0, 45));
+
+            const replyInput = new TextInputBuilder()
+                .setCustomId('quick_reply_text')
+                .setLabel('Your Message to User')
+                .setStyle(TextInputStyle.Paragraph)
+                .setPlaceholder('Type your response here... It will be sent via Nora in their DMs.')
+                .setRequired(true)
+                .setMaxLength(1900);
+
+            modal.addComponents(new ActionRowBuilder().addComponents(replyInput));
+            return await interaction.showModal(modal);
+        }
+
+        // 2. View Last 5 Forwarded Messages
+        if (customId.startsWith('dm_last_5_')) {
+            const history = this.userMessageHistory.get(targetUserId) || [];
+            const last5 = history.slice(-5);
+
+            const historyEmbed = new EmbedBuilder()
+                .setTitle(`📜 Forwarded Message History • ${targetUser ? targetUser.username : targetUserId}`)
+                .setColor(0x3B82F6)
+                .setThumbnail(targetUser ? targetUser.displayAvatarURL({ dynamic: true }) : null);
+
+            if (last5.length === 0) {
+                historyEmbed.setDescription('No previous message history recorded for this user in volatile memory.');
+            } else {
+                const historyLines = last5.map((item, idx) => {
+                    const sender = item.isFromUser ? '👤 **User**' : '🛡️ **Vaztinix**';
+                    const time = `<t:${Math.floor(item.timestamp / 1000)}:R>`;
+                    const snippet = item.content ? (item.content.length > 250 ? item.content.slice(0, 247) + '...' : item.content) : '*[Attachment / Media]*';
+                    return `${sender} (${time}):\n> ${snippet}`;
+                }).join('\n\n');
+
+                historyEmbed.setDescription(historyLines);
+            }
+
+            historyEmbed.setFooter({ text: `Showing last ${last5.length} of ${history.length} stored messages • User ID: ${targetUserId}` })
+                .setTimestamp();
+
+            return await interaction.reply({ embeds: [historyEmbed], ephemeral: true });
+        }
+
+        // 3. Create Conversation Thread Summary
+        if (customId.startsWith('dm_create_convo_')) {
+            const history = this.userMessageHistory.get(targetUserId) || [];
+            const isHighlighted = this.highlightedUsers.has(targetUserId);
+
+            const convoEmbed = new EmbedBuilder()
+                .setTitle(`🧵 Conversation Log & Overview • ${targetUser ? targetUser.tag : targetUserId}`)
+                .setColor(isHighlighted ? 0xF59E0B : 0x8B5CF6)
+                .setThumbnail(targetUser ? targetUser.displayAvatarURL({ dynamic: true }) : null)
+                .addFields(
+                    { name: '👤 User', value: `${targetUser ? targetUser.tag : 'Unknown'} (\`${targetUserId}\`)`, inline: true },
+                    { name: '⭐ Highlighted', value: isHighlighted ? '🌟 Yes (Priority)' : 'No', inline: true },
+                    { name: '📊 Total Messages', value: `**${history.length}** exchanged in this session`, inline: true }
+                );
+
+            if (history.length > 0) {
+                const firstContact = `<t:${Math.floor(history[0].timestamp / 1000)}:F>`;
+                const latestContact = `<t:${Math.floor(history[history.length - 1].timestamp / 1000)}:R>`;
+                convoEmbed.addFields(
+                    { name: '⏱️ First Contact', value: firstContact, inline: true },
+                    { name: '⚡ Latest Activity', value: latestContact, inline: true }
+                );
+
+                const recentSnippets = history.slice(-3).map(m => {
+                    return `${m.isFromUser ? '👤' : '🛡️'} <t:${Math.floor(m.timestamp / 1000)}:t>: ${m.content.slice(0, 100)}`;
+                }).join('\n');
+
+                convoEmbed.addFields({
+                    name: '📝 Recent Dialogue',
+                    value: `>>> ${recentSnippets}`,
+                    inline: false
+                });
+            } else {
+                convoEmbed.setDescription('No messages exchanged in this session yet.');
+            }
+
+            convoEmbed.setFooter({ text: 'Nora Support Desk • Embeds v2 Engine' })
+                .setTimestamp();
+
+            return await interaction.reply({ embeds: [convoEmbed], ephemeral: true });
+        }
+
+        // 4. Highlight / Un-highlight User
+        if (customId.startsWith('dm_highlight_')) {
+            let nowHighlighted = false;
+            if (this.highlightedUsers.has(targetUserId)) {
+                this.highlightedUsers.delete(targetUserId);
+                nowHighlighted = false;
+            } else {
+                this.highlightedUsers.add(targetUserId);
+                nowHighlighted = true;
+            }
+
+            return await interaction.reply({
+                content: nowHighlighted 
+                    ? `⭐ <@${targetUserId}> has been marked as a **Highlighted / Priority** user! All subsequent messages from them will display a gold highlight badge.`
+                    : `Removed priority highlight from <@${targetUserId}>.`,
+                ephemeral: true
+            });
+        }
+    }
+
+    /**
+     * Handles developer submitting the quick reply modal
+     */
+    async handleStaffModalReply(interaction, client) {
+        if (interaction.user.id !== DEVELOPER_ID) {
+            return interaction.reply({ content: '❌ Unauthorized.', ephemeral: true });
+        }
+
+        const targetUserId = interaction.customId.replace('dm_modal_reply_', '');
+        const replyText = interaction.fields.getTextInputValue('quick_reply_text');
+
+        await interaction.deferReply({ ephemeral: true });
+
+        const fakeMessage = {
+            author: interaction.user,
+            content: replyText,
+            attachments: new Map(),
+            reply: async (obj) => interaction.followUp(obj),
+            react: async () => {}
+        };
+
+        const success = await this.sendReplyToUser(fakeMessage, client, targetUserId, replyText);
+
+        if (success) {
+            // Record in message history
+            let history = this.userMessageHistory.get(targetUserId);
+            if (!history) {
+                history = [];
+                this.userMessageHistory.set(targetUserId, history);
+            }
+            history.push({
+                content: replyText,
+                timestamp: Date.now(),
+                isFromUser: false
+            });
+            if (history.length > 25) history.shift();
+
+            return await interaction.editReply({
+                content: `✅ **Quick Reply Delivered to <@${targetUserId}>!**\n>>> ${replyText.length > 200 ? replyText.slice(0, 197) + '...' : replyText}`
+            });
+        } else {
+            return await interaction.editReply({
+                content: `❌ Failed to deliver message to <@${targetUserId}>. Their DMs may be closed.`
+            });
+        }
+    }
+
+    async forwardUserDMToDeveloper(message, client, bypassSuspension = false) {
         try {
             const devUser = client.users.cache.get(DEVELOPER_ID) || await client.users.fetch(DEVELOPER_ID).catch(() => null);
             if (!devUser) {
@@ -195,7 +568,7 @@ class DMRelayManager {
 
             const relayEmbed = new EmbedBuilder()
                 .setTitle(isAppeal ? '⚖️ Underage Suspension Appeal / Proof Received' : '📩 Support DM / Inquiry Received')
-                .setColor(isAppeal ? 0xE67E22 : 0x3498DB)
+                .setColor(isAppeal ? 0xE67E22 : (isHighlighted ? 0xF59E0B : 0x5865F2))
                 .setThumbnail(message.author.displayAvatarURL({ dynamic: true, size: 256 }))
                 .addFields(
                     { name: '👤 User', value: `${message.author.tag} (\`${message.author.username}\`)`, inline: true },
@@ -256,6 +629,29 @@ class DMRelayManager {
                         .setStyle(ButtonStyle.Danger)
                         .setEmoji('🛑')
                 ));
+            } else {
+                components.push(new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId(`dm_quick_reply_${message.author.id}`)
+                        .setLabel('Quick Reply')
+                        .setStyle(ButtonStyle.Primary)
+                        .setEmoji('💬'),
+                    new ButtonBuilder()
+                        .setCustomId(`dm_last_5_${message.author.id}`)
+                        .setLabel('Last 5 Msgs')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setEmoji('📜'),
+                    new ButtonBuilder()
+                        .setCustomId(`dm_create_convo_${message.author.id}`)
+                        .setLabel('Conversation')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setEmoji('🧵'),
+                    new ButtonBuilder()
+                        .setCustomId(`dm_highlight_${message.author.id}`)
+                        .setLabel(isHighlighted ? 'Un-Highlight' : 'Highlight')
+                        .setStyle(isHighlighted ? ButtonStyle.Danger : ButtonStyle.Secondary)
+                        .setEmoji('⭐')
+                ));
             }
 
             // Send to Developer
@@ -288,6 +684,7 @@ class DMRelayManager {
                 this.relayCache.set(forwardedMsg.id, message.author.id);
             }
 
+            if (isAppeal) {
             // Dual Dispatch: Mirror to the dedicated staff audit log channel so the appeal is visible in Milo's World
             try {
                 const targetGuildId = (suspension && suspension.guildId) ? suspension.guildId : '1487342521133830174';
@@ -309,6 +706,7 @@ class DMRelayManager {
                 }
             } catch (auditErr) {
                 console.error('[DMRelayManager] Failed to mirror to audit log channel:', auditErr.message);
+            }
             }
 
             // Acknowledge receipt to the user

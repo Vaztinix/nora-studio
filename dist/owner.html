@@ -668,6 +668,47 @@
                 <button class="btn-action btn-danger" onclick="executeGlobalBan()">Execute Security Action</button>
             </div>
 
+            
+            <!-- 📡 Shard Gateway & Cluster Host Diagnostics Desk -->
+            <div class="card span-full" style="border-color: rgba(139, 92, 246, 0.35); background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.09) 0%, rgba(13, 16, 27, 0.95) 70%);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
+                    <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; color: #a78bfa;">
+                        <i class="fas fa-network-wired"></i> Shard Gateway & Cluster Host Diagnostics
+                    </h3>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem; background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.4); color: #c4b5fd; width: auto;" onclick="forceShardPresenceReload()">
+                            <i class="fas fa-satellite-dish"></i> Recalculate Shard Status
+                        </button>
+                        <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; width: auto;" onclick="loadSystemDiagnostics()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 12px;">
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Shard Routing</div>
+                        <div id="diag-shard-id" style="font-size: 1.15rem; font-weight: 700; color: #a78bfa; margin-top: 4px;">Shard #0</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Gateway Ping</div>
+                        <div id="diag-ping" style="font-size: 1.15rem; font-weight: 700; color: #10b981; margin-top: 4px;">-- ms</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Host RSS Memory</div>
+                        <div id="diag-rss" style="font-size: 1.15rem; font-weight: 700; color: #38bdf8; margin-top: 4px;">-- MB</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">V8 Heap Used</div>
+                        <div id="diag-heap" style="font-size: 1.15rem; font-weight: 700; color: #fbbf24; margin-top: 4px;">-- / -- MB</div>
+                    </div>
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Cluster Uptime</div>
+                        <div id="diag-uptime" style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-top: 4px;">--</div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 🧠 Gemini AI Engine & Quota Balancing Desk -->
             <div class="card span-full" style="border-color: rgba(56, 189, 248, 0.25); background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.08) 0%, rgba(15, 15, 17, 0.95) 70%);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
@@ -1300,6 +1341,55 @@
                 loadAiCreditsDesk();
             } catch (e) {
                 console.error("Failed to load admin desk data:", e);
+            }
+        }
+
+
+        async function loadSystemDiagnostics() {
+            try {
+                const apiBase = window.getApiBaseUrl();
+                const authToken = localStorage.getItem('nora_admin_token');
+                const res = await fetch(`${apiBase}/api/admin/system-diagnostics`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const d = data.diagnostics;
+                    if (d) {
+                        const shardEl = document.getElementById('diag-shard-id');
+                        if (shardEl) shardEl.textContent = `Shard #${d.shardId} of ${d.totalShards}`;
+                        const pingEl = document.getElementById('diag-ping');
+                        if (pingEl) pingEl.textContent = `${d.pingMs} ms`;
+                        const rssEl = document.getElementById('diag-rss');
+                        if (rssEl) rssEl.textContent = `${d.rssMb} MB`;
+                        const heapEl = document.getElementById('diag-heap');
+                        if (heapEl) heapEl.textContent = `${d.heapUsedMb} / ${d.heapTotalMb} MB`;
+                        const uptimeEl = document.getElementById('diag-uptime');
+                        if (uptimeEl) {
+                            const hrs = Math.floor(d.uptimeSeconds / 3600);
+                            const mins = Math.floor((d.uptimeSeconds % 3600) / 60);
+                            uptimeEl.textContent = `${hrs}h ${mins}m`;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load system diagnostics:', e);
+            }
+        }
+
+        async function forceShardPresenceReload() {
+            try {
+                const apiBase = window.getApiBaseUrl();
+                const authToken = localStorage.getItem('nora_admin_token');
+                const res = await fetch(`${apiBase}/api/admin/shard-reload-presence`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await res.json();
+                alert(data.message || 'Shard presence recalculated successfully.');
+                loadSystemDiagnostics();
+            } catch (e) {
+                alert('Error reloading shard presence: ' + e.message);
             }
         }
 

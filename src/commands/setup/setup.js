@@ -106,7 +106,8 @@ module.exports = {
             counting: 'view_counting',
             ai: 'view_ai',
             moderation: 'view_moderation',
-            adaptiveslowmode: 'view_adaptiveslowmode'
+            adaptiveslowmode: 'view_adaptiveslowmode',
+            privacy: 'view_privacy'
         };
 
         const targetView = routeMap[subcommand] || 'main';
@@ -1159,6 +1160,50 @@ module.exports = {
             // ==========================================
             // 📺 ROKU SMART TV HARDWARE CONTROLS
             // ==========================================
+            
+            // ==========================================
+            // 🔒 ZERO-ACCESS PRIVACY & DATA SOVEREIGNTY
+            // ==========================================
+            if (viewName === 'view_privacy') {
+                embed.setTitle('🔒 Nora Data Privacy & Zero-Access Architecture')
+                    .setColor(0x10B981)
+                    .setDescription(
+                        `Nora is engineered from the ground up as Discord's **#1 Privacy-First Assistant & Bot**.\n\n` +
+                        `We adhere to an uncompromising **Zero-Access Architecture**, ensuring user messages, data, and community interactions remain private, secure, and ephemeral.`
+                    )
+                    .addFields(
+                        {
+                            name: '🧠 Zero-Access Ephemeral RAM Processing',
+                            value: '• Messages processed by Nora are analyzed strictly inside **volatile memory (RAM)** and immediately purged.\n' +
+                                   '• Nora **NEVER permanently logs, retains, or sells** message content or chat logs.\n' +
+                                   '• No user messages or server discussions are ever used to train AI models.',
+                            inline: false
+                        },
+                        {
+                            name: '🗄️ User Sovereignty & 1-Click Erasure',
+                            value: '• Any user can execute **`/mycard`** anytime to inspect all data and preferences stored on their account.\n' +
+                                   '• A single click on the **"Erase Data"** button instantly and permanently purges their record.\n' +
+                                   '• Server owners can execute **`/settings data-delete`** to wipe server configurations.',
+                            inline: false
+                        },
+                        {
+                            name: '🔐 Enterprise Security & Token Encryption',
+                            value: '• Sensitive tokens and API credentials are kept encrypted using **AES-256-GCM**.\n' +
+                                   '• Zero backdoors: There are no developer inspection routes or hidden telemetry backchannels.',
+                            inline: false
+                        },
+                        {
+                            name: '📋 Expected Community Conduct & Terms',
+                            value: '• **Safe Interaction:** Nora strictly forbids harassment, hate speech, raid coordination, and malicious bypass attempts.\n' +
+                                   '• **Server Governance:** Server admins are expected to use AutoMod, anti-raid, and verification tools responsibly.\n' +
+                                   '• Full terms & privacy legal center: [vaztinix.dev/legal](https://vaztinix.dev/legal)',
+                            inline: false
+                        }
+                    );
+
+                return { embeds: [embed], components: [backRow] };
+            }
+
             if (viewName === 'view_adaptiveslowmode') {
                 const isEnabled = settings.adaptiveSlowmodeEnabled === true;
                 const isAiEnabled = settings.adaptiveSlowmodeAiEnabled !== false;

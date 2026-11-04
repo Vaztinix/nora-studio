@@ -2,10 +2,31 @@ const { ActivityType } = require('discord.js');
 
 /**
  * Nora Dynamic Status & Presence Controller
- * Includes motivational quotes, shard metrics, site advertisements, and feature tips.
+ * Includes dynamic shard routing, personality/life statuses, motivational quotes,
+ * site promotions, and feature tips.
  */
 
 let statusIndex = 0;
+
+const LIVELY_PERSONALITY_STATUSES = [
+    '🌸 Humming quietly in voice chat',
+    '☕ Sipping iced matcha & moderating chats',
+    '✨ Zero-Access RAM Architecture • Ephemeral & Private',
+    '🎮 Exploring Roblox worlds with the community',
+    '🎵 Vibing to lo-fi beats with Vaztinix',
+    '💡 Powered by Google Gemini 2.0 Flash',
+    '📺 Helping Vaztinix control the Roku TV',
+    '🛡️ Watching over servers with Sentinel AI',
+    '🐾 Patting cute dogs in Milo\'s World',
+    '🧩 Solving math equations in counting channels',
+    '💬 What\'s on your mind? Mention me to chat!',
+    '🌟 Level up your community with /setup',
+    '⚡ Ultra-low latency | 0.0% background idle',
+    '🔒 Inspect and erase your data anytime with /mycard',
+    '🎨 Rendering custom canvas rank cards',
+    '⭐ Watching the Starboard for top community moments',
+    '🤝 Built with love by Vaztinix & Nora Studio Team'
+];
 
 const MOTIVATIONAL_QUOTES = [
     '✨ "Small steps every day lead to big results."',
@@ -40,7 +61,9 @@ const FEATURE_TIPS = [
     '🛡️ Native Discord AutoMod ready via /setup automod',
     '🎫 Private Support Tickets ready via /setup ticket',
     '⭐ Starboard community voting via /setup starboard',
-    '🔗 Safe Roblox account linking via /verify'
+    '🔗 Safe Roblox account linking via /verify',
+    '🔒 1-Click Data Erasure available via /mycard',
+    '📬 Contact Vaztinix anytime by DMing me!'
 ];
 
 function formatUptime(seconds) {
@@ -56,12 +79,16 @@ async function updateBotStatus(client) {
     if (!client.user) return;
 
     try {
+        // Dynamic Sharding Telemetry:
+        // Ensures servers only see their shard specific metrics, working dynamically whether single or multi-shard
+        const shardId = client.shard ? client.shard.ids[0] : 0;
+        const totalShards = client.shard ? client.shard.count : 1;
+        const shardServerCount = client.guilds.cache.size;
 
-        const serverCount = client.guilds.cache.size;
-        let guildMemberSum = 0;
+        let shardMemberSum = 0;
         const uniqueMembers = new Set();
         client.guilds.cache.forEach(g => {
-            guildMemberSum += (g.memberCount || g.approximateMemberCount || 0);
+            shardMemberSum += (g.memberCount || g.approximateMemberCount || 0);
             if (g.members && g.members.cache) {
                 g.members.cache.forEach((_, id) => uniqueMembers.add(id));
             }
@@ -69,22 +96,25 @@ async function updateBotStatus(client) {
         if (client.users && client.users.cache) {
             client.users.cache.forEach((_, id) => uniqueMembers.add(id));
         }
-        const memberCount = Math.max(guildMemberSum, uniqueMembers.size, client.users?.cache?.size || 0);
-        const shardId = client.shard ? client.shard.ids[0] : 0;
+        const memberCount = Math.max(shardMemberSum, uniqueMembers.size, client.users?.cache?.size || 0);
         const pingMs = Math.round(client.ws.ping) || 0;
         const uptimeStr = formatUptime(process.uptime());
 
+        const shardTag = totalShards > 1 ? `Shard #${shardId}/${totalShards}` : `Shard #${shardId}`;
+
         const SHARD_METRICS = [
-            `📡 Shard #${shardId} | Serving ${serverCount} servers`,
-            `👥 Shard #${shardId} | Protecting ${memberCount.toLocaleString()} unique members`,
-            `⚡ Shard #${shardId} | Ping: ${pingMs}ms • Uptime: ${uptimeStr}`,
-            `🛡️ Shard #${shardId} | 100% Online`
+            `📡 ${shardTag} | Serving ${shardServerCount} servers`,
+            `👥 ${shardTag} | Protecting ${memberCount.toLocaleString()} members`,
+            `⚡ ${shardTag} | Ping: ${pingMs}ms • Uptime: ${uptimeStr}`,
+            `🛡️ ${shardTag} | Zero-Access Architecture 100% Online`
         ];
 
-        // Group status pools
+        // Group status pools with high weight on lively & personality statuses
         const pools = [
-            SITE_PROMOTIONS,
+            LIVELY_PERSONALITY_STATUSES,
             SHARD_METRICS,
+            LIVELY_PERSONALITY_STATUSES,
+            SITE_PROMOTIONS,
             MOTIVATIONAL_QUOTES,
             FEATURE_TIPS
         ];

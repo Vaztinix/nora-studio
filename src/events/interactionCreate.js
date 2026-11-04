@@ -130,6 +130,33 @@ module.exports = {
             return dmRelayManager.confirmDeveloperDenyAppeal(interaction, client, targetUserId, reason);
         }
 
+        // 📬 Nora Support DM Relay: User prompt choices (Support vs AI)
+        if (interaction.isButton() && (
+            interaction.customId.startsWith('dm_forward_support_') ||
+            interaction.customId.startsWith('dm_chat_nora_') ||
+            interaction.customId.startsWith('dm_cancel_')
+        )) {
+            const dmRelayManager = require('../utils/dmRelayManager');
+            return dmRelayManager.handleUserPromptChoice(interaction, client);
+        }
+
+        // 📬 Nora Support DM Relay: Staff buttons (Quick reply, Last 5, Convo, Highlight)
+        if (interaction.isButton() && (
+            interaction.customId.startsWith('dm_quick_reply_') ||
+            interaction.customId.startsWith('dm_last_5_') ||
+            interaction.customId.startsWith('dm_create_convo_') ||
+            interaction.customId.startsWith('dm_highlight_')
+        )) {
+            const dmRelayManager = require('../utils/dmRelayManager');
+            return dmRelayManager.handleStaffAction(interaction, client);
+        }
+
+        // 📬 Nora Support DM Relay: Staff quick reply modal submit
+        if (interaction.isModalSubmit() && interaction.customId.startsWith('dm_modal_reply_')) {
+            const dmRelayManager = require('../utils/dmRelayManager');
+            return dmRelayManager.handleStaffModalReply(interaction, client);
+        }
+
         // ---- Application Builder Interaction Handlers ----
         // 1. Handle Application Start button or Select menu selection
         if ((interaction.isButton() && interaction.customId.startsWith('app_start_')) || 
