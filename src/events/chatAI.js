@@ -799,21 +799,19 @@ ${deviceSpecsContext}
                         try {
                             response = await runOpenAI();
                         } catch (e2) {
-                            response = geminiKeyManager.areAllKeysOnCooldown() 
-                                ? geminiKeyManager.getQuotaNotice() 
-                                : await getPrivacyResponse(plainContent, deepKnowledgeStr);
+                            response = await getPrivacyResponse(plainContent, deepKnowledgeStr);
                         }
                     } else {
-                        response = geminiKeyManager.areAllKeysOnCooldown() 
-                            ? geminiKeyManager.getQuotaNotice() 
-                            : await getPrivacyResponse(plainContent, deepKnowledgeStr);
+                        response = await getPrivacyResponse(plainContent, deepKnowledgeStr);
                     }
                 }
             }
         } catch (err) {
-            response = geminiKeyManager.areAllKeysOnCooldown() 
-                ? geminiKeyManager.getQuotaNotice() 
-                : await getPrivacyResponse(plainContent, deepKnowledgeStr);
+            response = await getPrivacyResponse(plainContent, deepKnowledgeStr);
+        }
+
+        if (!response || typeof response !== 'string' || response.includes('Nora AI Quota Limit Reached')) {
+            response = await getPrivacyResponse(plainContent, deepKnowledgeStr);
         }
 
         if (!response || typeof response !== 'string') {

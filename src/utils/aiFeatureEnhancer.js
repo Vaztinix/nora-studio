@@ -15,12 +15,12 @@ class AIFeatureEnhancer {
                 const keys = geminiKeyManager.getRotatedAvailableKeys();
                 if (!keys || keys.length === 0) return null;
 
-                // Prioritize ultra-lightweight, high-throughput models for background enhancements
+                // Prioritize ultra-lightweight, high-throughput official Gemini models
                 const models = [
-                    'gemini-flash-lite-latest',
-                    'gemini-3.5-flash-lite',
-                    'gemini-flash-latest',
-                    'gemini-3.5-flash'
+                    'gemini-2.0-flash-lite',
+                    'gemini-1.5-flash-8b',
+                    'gemini-2.0-flash',
+                    'gemini-1.5-flash'
                 ];
 
                 for (const apiKey of keys) {

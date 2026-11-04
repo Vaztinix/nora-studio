@@ -278,7 +278,7 @@ class GeminiKeyManager {
     reportQuotaLimit(key, errorOrMs) {
         if (!key) return;
 
-        let cooldownMs = 60000;
+        let cooldownMs = 15000;
         let isDaily = false;
 
         if (typeof errorOrMs === 'number') {
@@ -298,27 +298,36 @@ class GeminiKeyManager {
                 if (!isNaN(parsedSecs) && parsedSecs > 0) {
                     cooldownMs = (parsedSecs + 2) * 1000;
                 }
-            } else if (errLower.includes('per day') || errLower.includes('daily') || errLower.includes('requests per day') || errLower.includes('check your plan and quota')) {
+            } else if (
+                errLower.includes('generatereqsperday') ||
+                errLower.includes('requests_per_day') ||
+                errLower.includes('per day per project') ||
+                errLower.includes('daily limit exceeded') ||
+                errLower.includes('exceeded your daily quota')
+            ) {
+                // Genuine daily quota exhaustion (resets at midnight UTC)
                 isDaily = true;
                 cooldownMs = this.getMsUntilDailyReset();
             } else {
+                // Short agile burst cooldown for standard 15-RPM / 30-RPM limits
+                // Quota buckets refresh every 60 seconds; brief staggered cooldowns allow other keys to take over
                 const curStrikes = (this.strikes.get(key) || 0) + 1;
                 this.strikes.set(key, curStrikes);
 
                 if (curStrikes === 1) {
-                    cooldownMs = 60000; // 1 min
+                    cooldownMs = 15000; // 15s
                 } else if (curStrikes === 2) {
-                    cooldownMs = 300000; // 5 mins
+                    cooldownMs = 30000; // 30s
                 } else if (curStrikes === 3) {
-                    cooldownMs = 900000; // 15 mins
+                    cooldownMs = 45000; // 45s
                 } else {
-                    cooldownMs = 1800000; // 30 mins
+                    cooldownMs = 60000; // 60s max
                 }
             }
         } else {
             const curStrikes = (this.strikes.get(key) || 0) + 1;
             this.strikes.set(key, curStrikes);
-            cooldownMs = curStrikes > 1 ? Math.min(curStrikes * 120000, 1800000) : 60000;
+            cooldownMs = Math.min(curStrikes * 15000, 60000);
         }
 
         const expiry = Date.now() + cooldownMs;
