@@ -819,26 +819,8 @@ app.use((req, res, next) => {
     next();
 });
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 🛡️ ANTI-TRACKING & STRICT ZERO-ACCESS PRIVACY HEADERS
-// Strictly blocks browser behavioral tracking (FLoC, Topics API, Ad Auctions, Referrer leakage)
-// ─────────────────────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
-    // 1. Block browser behavioral tracking, Topics API, and ad-targeting telemetry
-    res.setHeader('Permissions-Policy', 'interest-cohort=(), browsing-topics=(), attribution-reporting=(), run-ad-auction=(), join-ad-group=(), private-aggregation=()');
-
-    // 2. Prevent leaking URL paths, search queries, or tokens to third parties
-    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-
-    // 3. Block MIME-type confusion attacks
-    res.setHeader('X-Content-Type-Options', 'nosniff');
-
-    // 4. Disable DNS prefetching to avoid passive DNS snooping
-    res.setHeader('X-DNS-Prefetch-Control', 'off');
-
-    // 5. Clickjacking / iframe embedding protection
-    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-
+    // Host header pass-through to ensure all mobile devices, local IPs, and tunnels connect smoothly
     next();
 });
 
@@ -991,12 +973,13 @@ const recordFail2ban404 = (ip, reqPath = '') => {
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
-// 🛡️ SECURE HTTP HEADERS + CSP
+// 🛡️ SECURE HTTP HEADERS + CSP + ANTI-TRACKING
 // ─────────────────────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+    res.setHeader('X-DNS-Prefetch-Control', 'off');
+    res.setHeader('Permissions-Policy', 'geolocation=(), microphone=(), camera=(), interest-cohort=(), browsing-topics=(), attribution-reporting=(), run-ad-auction=(), join-ad-group=(), private-aggregation=()');
     // Content Security Policy — applied to HTML page responses only
     if (!req.path.startsWith('/api/')) {
         const isArcadeEmbed = /^\/(arcade|game|play)(\.html)?$/i.test(req.path);
@@ -1005,8 +988,8 @@ app.use((req, res, next) => {
         }
         res.setHeader('Content-Security-Policy',
             "default-src 'self' https://discord.com https://cdn.discordapp.com https://*.discordsays.com; " +
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " +
-            "font-src 'self' data: https://fonts.gstatic.com https://cdnjs.cloudflare.com; " +
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
+            "font-src 'self' data: https://fonts.gstatic.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; " +
             "img-src 'self' data: blob: https: http:; " +
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.tailwindcss.com https://cdnjs.cloudflare.com; " +
             "connect-src 'self' https://discord.com https://cdn.discordapp.com https://*.discordsays.com https://api.vaztinix.dev https://vaztinix.dev https://*.vaztinix.dev http://localhost:3000 http://127.0.0.1:3000 https://users.roblox.com https://presence.roblox.com https://thumbnails.roblox.com https://api.klipy.com https://*.klipy.com https://tenor.googleapis.com https://api.giphy.com; " +
