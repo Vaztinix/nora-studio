@@ -819,8 +819,26 @@ app.use((req, res, next) => {
     next();
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// 🛡️ ANTI-TRACKING & STRICT ZERO-ACCESS PRIVACY HEADERS
+// Strictly blocks browser behavioral tracking (FLoC, Topics API, Ad Auctions, Referrer leakage)
+// ─────────────────────────────────────────────────────────────────────────────
 app.use((req, res, next) => {
-    // Host header pass-through to ensure all mobile devices, local IPs, and tunnels connect smoothly
+    // 1. Block browser behavioral tracking, Topics API, and ad-targeting telemetry
+    res.setHeader('Permissions-Policy', 'interest-cohort=(), browsing-topics=(), attribution-reporting=(), run-ad-auction=(), join-ad-group=(), private-aggregation=()');
+
+    // 2. Prevent leaking URL paths, search queries, or tokens to third parties
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+    // 3. Block MIME-type confusion attacks
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+
+    // 4. Disable DNS prefetching to avoid passive DNS snooping
+    res.setHeader('X-DNS-Prefetch-Control', 'off');
+
+    // 5. Clickjacking / iframe embedding protection
+    res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+
     next();
 });
 
