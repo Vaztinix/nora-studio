@@ -83,13 +83,8 @@
             width: 38px;
             height: 38px;
             border-radius: 10px;
-            background: linear-gradient(135deg, #5865F2, #818CF8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            font-size: 1.25rem;
-            color: white;
+            object-fit: cover;
+            display: block;
             box-shadow: 0 0 20px rgba(88, 101, 242, 0.4);
         }
 
@@ -733,11 +728,8 @@
     <!-- Header Navigation -->
     <header>
         <a href="/" class="brand-container">
-            <div class="brand-logo">N</div>
-            <div>
-                <span class="brand-title">Nora Studio</span>
-                <span class="brand-badge">Testing Portal</span>
-            </div>
+            <img src="/nora.png" alt="Nora Logo" class="brand-logo" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/app-icons/1247000104670265354/a_14f3b8909893d56d9be253d8bc6110f2.png';" style="width: 38px; height: 38px; border-radius: 10px; object-fit: cover; box-shadow: 0 0 20px rgba(88, 101, 242, 0.4);">
+            <span class="brand-title">Nora Studio</span>
         </a>
         <div class="header-actions">
             <a href="https://discord.gg/m9WPYV287q" target="_blank" rel="noopener" class="nav-btn">
@@ -820,7 +812,7 @@
                 <div id="auth-linked" style="display: none;">
                     <div class="user-preview-card">
                         <div class="user-preview-left">
-                            <img src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar" class="user-preview-avatar" id="discord-avatar">
+                            <img src="https://cdn.discordapp.com/embed/avatars/0.png" alt="Avatar" class="user-preview-avatar" id="discord-avatar" onerror="this.onerror=null; this.src='https://cdn.discordapp.com/embed/avatars/0.png';">
                             <div>
                                 <div class="user-preview-name" id="discord-display-name">Discord User</div>
                                 <div class="user-preview-handle" id="discord-username">@username • ID: 123456789</div>
@@ -1230,6 +1222,70 @@
             window.scrollTo({ top: 120, behavior: 'smooth' });
         }
 
+        function getStoredAuthToken() {
+            try {
+                return sessionStorage.getItem('discord_token') ||
+                       localStorage.getItem('nora_discord_token') ||
+                       localStorage.getItem('discord_token') ||
+                       localStorage.getItem('discord_token_val') ||
+                       localStorage.getItem('token') ||
+                       localStorage.getItem('nora_auth_token') ||
+                       '';
+            } catch(e) {
+                return '';
+            }
+        }
+
+        function saveAuthToken(tok) {
+            if (!tok) return;
+            try { sessionStorage.setItem('discord_token', tok); } catch(e) {}
+            try { localStorage.setItem('nora_discord_token', tok); } catch(e) {}
+            try { localStorage.setItem('discord_token', tok); } catch(e) {}
+        }
+
+        function resolveDiscordUserAvatarUrl(user) {
+            if (!user) return 'https://cdn.discordapp.com/embed/avatars/0.png';
+            const rawAvatar = typeof user === 'string' ? user : (user.avatar || '');
+            const userId = typeof user === 'object' && user ? user.id : '';
+
+            if (!rawAvatar) {
+                if (userId) {
+                    try {
+                        const index = Number(BigInt(userId) % 5n);
+                        return `https://cdn.discordapp.com/embed/avatars/${index}.png`;
+                    } catch (e) {
+                        return 'https://cdn.discordapp.com/embed/avatars/0.png';
+                    }
+                }
+                return 'https://cdn.discordapp.com/embed/avatars/0.png';
+            }
+
+            if (typeof rawAvatar === 'string' && (rawAvatar.startsWith('http://') || rawAvatar.startsWith('https://') || rawAvatar.startsWith('data:'))) {
+                return rawAvatar;
+            }
+
+            if (typeof rawAvatar === 'string' && userId) {
+                const isAnimated = rawAvatar.startsWith('a_');
+                return `https://cdn.discordapp.com/avatars/${userId}/${rawAvatar}.${isAnimated ? 'gif' : 'png'}?size=128`;
+            }
+
+            return 'https://cdn.discordapp.com/embed/avatars/0.png';
+        }
+
+        function renderUserProfile(user) {
+            if (!user) return;
+            document.getElementById('auth-unlinked').style.display = 'none';
+            document.getElementById('auth-linked').style.display = 'block';
+
+            document.getElementById('discord-display-name').textContent = user.global_name || user.username || 'Discord User';
+            document.getElementById('discord-username').textContent = `@${user.username} • ID: ${user.id}`;
+            
+            const avatarImg = document.getElementById('discord-avatar');
+            if (avatarImg) {
+                avatarImg.src = resolveDiscordUserAvatarUrl(user);
+            }
+        }
+
         function proceedToServerCheck() {
             setStep(2);
             checkEligibility();
@@ -1244,7 +1300,7 @@
         }
 
         async function checkEligibility() {
-            const token = sessionStorage.getItem('discord_token');
+            const token = getStoredAuthToken();
             if (!token) {
                 setStep(1);
                 return;
@@ -1312,6 +1368,7 @@
         }
 
         async function verifyDiscordSession(token) {
+            if (!token) return;
             try {
                 const res = await fetch(`${getApiBaseUrl()}/api/user/me`, {
                     headers: { 'Authorization': `Bearer ${token}` }
@@ -1319,35 +1376,32 @@
 
                 if (res.ok) {
                     currentUser = await res.json();
-                    document.getElementById('auth-unlinked').style.display = 'none';
-                    document.getElementById('auth-linked').style.display = 'block';
+                    saveAuthToken(token);
+                    try {
+                        localStorage.setItem('nora_cached_tester_user', JSON.stringify(currentUser));
+                    } catch(e) {}
 
-                    document.getElementById('discord-display-name').textContent = currentUser.global_name || currentUser.username || 'Discord User';
-                    document.getElementById('discord-username').textContent = `@${currentUser.username} • ID: ${currentUser.id}`;
-                    
-                    const avatarImg = document.getElementById('discord-avatar');
-                    if (currentUser.avatar) {
-                        const isAnimated = currentUser.avatar.startsWith('a_');
-                        avatarImg.src = `https://cdn.discordapp.com/avatars/${currentUser.id}/${currentUser.avatar}.${isAnimated ? 'gif' : 'png'}?size=128`;
-                    } else {
-                        avatarImg.src = 'https://cdn.discordapp.com/embed/avatars/0.png';
-                    }
+                    renderUserProfile(currentUser);
                 } else {
                     sessionStorage.removeItem('discord_token');
-                    document.getElementById('auth-unlinked').style.display = 'block';
-                    document.getElementById('auth-linked').style.display = 'none';
+                    if (!currentUser) {
+                        document.getElementById('auth-unlinked').style.display = 'block';
+                        document.getElementById('auth-linked').style.display = 'none';
+                    }
                 }
             } catch (err) {
                 console.error('[Session verify fault]:', err);
-                document.getElementById('auth-unlinked').style.display = 'block';
-                document.getElementById('auth-linked').style.display = 'none';
+                if (!currentUser) {
+                    document.getElementById('auth-unlinked').style.display = 'block';
+                    document.getElementById('auth-linked').style.display = 'none';
+                }
             }
         }
 
         // Handle Application Form Submit
         async function handleApplicationSubmit(e) {
             e.preventDefault();
-            const token = sessionStorage.getItem('discord_token');
+            const token = getStoredAuthToken();
             if (!token || !currentUser) {
                 showToast('Please log in with Discord first.');
                 setStep(1);
@@ -1437,15 +1491,24 @@
 
         // On Page Load: Handle OAuth hash or saved token
         window.addEventListener('DOMContentLoaded', () => {
+            // Instant cache hydration for lightning-fast UI rendering
+            try {
+                const cached = JSON.parse(localStorage.getItem('nora_cached_tester_user') || localStorage.getItem('nora_cached_verify_user') || 'null');
+                if (cached && cached.id) {
+                    currentUser = cached;
+                    renderUserProfile(cached);
+                }
+            } catch (e) {}
+
             const fragment = new URLSearchParams(window.location.hash.slice(1));
             const accessToken = fragment.get('access_token');
 
             if (accessToken) {
-                sessionStorage.setItem('discord_token', accessToken);
+                saveAuthToken(accessToken);
                 window.history.replaceState(null, null, window.location.pathname);
                 verifyDiscordSession(accessToken);
             } else {
-                const savedToken = sessionStorage.getItem('discord_token');
+                const savedToken = getStoredAuthToken();
                 if (savedToken) {
                     verifyDiscordSession(savedToken);
                 }
