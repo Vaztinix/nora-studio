@@ -144,7 +144,10 @@ class GeminiKeyManager {
      * @returns {string}
      */
     getQuotaNotice() {
-        const resetMs = this.getEarliestResetTimestamp();
+        let resetMs = this.getEarliestResetTimestamp();
+        if (resetMs <= Date.now()) {
+            resetMs = Date.now() + 60000;
+        }
         const resetUnix = Math.floor(resetMs / 1000);
         const secondsRemaining = Math.max(1, Math.ceil((resetMs - Date.now()) / 1000));
 
@@ -161,13 +164,7 @@ class GeminiKeyManager {
             formattedTime = `${secondsRemaining}s`;
         }
 
-        const isAnyDaily = Array.from(this.isDailyQuota.values()).some(Boolean);
-
-        return `⏳ **Nora AI Quota Limit Reached**: My AI processing quota is currently cooling down.\n` +
-               `⏱️ **Ready Again:** <t:${resetUnix}:R> (<t:${resetUnix}:t> • \`${formattedTime}\`)\n` +
-               (isAnyDaily 
-                   ? `📅 *Note: Daily request limit reached on upstream Gemini API. Quotas refresh at next midnight UTC window (<t:${Math.floor((Date.now() + this.getMsUntilDailyReset()) / 1000)}:R>).*` 
-                   : `💡 *Keys automatically rotate and cooldowns adjust dynamically.*`);
+        return `Hey, I am running a little low on energy right now. I will be sleeping for <t:${resetUnix}:R> (<t:${resetUnix}:t> • \`${formattedTime}\`). Wake me up afterwards! 💤`;
     }
 
     /**

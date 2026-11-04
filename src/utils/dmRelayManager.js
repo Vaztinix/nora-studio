@@ -287,12 +287,17 @@ class DMRelayManager {
                     isVoiceMode: false
                 });
             } catch (aiErr) {
-                const { getPrivacyResponse } = require('./privateBrain');
-                responseText = await getPrivacyResponse(userPrompt || 'Hello Nora!');
+                responseText = null;
             }
 
             if (!responseText || typeof responseText !== 'string') {
-                responseText = `Hey ${interaction.user.username}! I'm here. How can I help you today?`;
+                const geminiKeyManager = require('./geminiKeyManager');
+                if (geminiKeyManager.areAllKeysOnCooldown()) {
+                    responseText = geminiKeyManager.getQuotaNotice();
+                } else {
+                    const { getPrivacyResponse } = require('./privateBrain');
+                    responseText = await getPrivacyResponse(userPrompt || 'Hello Nora!');
+                }
             }
 
             const chatEmbed = new EmbedBuilder()

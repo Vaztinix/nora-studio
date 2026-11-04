@@ -213,9 +213,11 @@ class NoraV12Engine {
 
         // 9. Conversational Fallback
         const catchAlls = [
-            `I've noted that! What else would you like to explore or discuss?`,
-            `Got it! Did you want to look into that further, or should we talk about something else?`,
-            `Interesting thought! What's the next move?`
+            `I hear you! What's on your mind?`,
+            `Makes sense! Anything specific you'd like to dive into?`,
+            `I'm listening! Tell me more about that.`,
+            `Gotcha! What should we tackle next?`,
+            `Always here! What's up?`
         ];
         
         return catchAlls[Math.floor(Math.random() * catchAlls.length)];

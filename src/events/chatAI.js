@@ -23,6 +23,7 @@ const { getSanitizedSpecsSummary } = require('../utils/deviceSpecs');
  * Nora is female (she/her) created and developed by Vaztinix (1214048435632603137).
  */
 const activeChannelQueues = new Map();
+const serverQuotaNoticeCooldowns = new Map(); // guildId -> timestamp of last sent quota notice
 
 /**
  * Resolves AI-generated <@username> / <@displayName> or @username tags into real <@USER_ID> mentions
@@ -263,6 +264,27 @@ async function processMessageInternal(message, client) {
         // Nora AI is officially released across all servers (no longer in private beta)!
         // Milo's World (1487342521133830174) retains priority unlimited quota (no rate limit).
         const isMilosWorld = message.guild.id === '1487342521133830174';
+
+        // Check if all Gemini keys are currently cooling down (Quota Exhaustion Guard)
+        const serverAiPref = (settings?.aiPreference || 'BUILT_IN').toUpperCase();
+        const hasOpenAiKey = Boolean(process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_1);
+        if (geminiKeyManager.areAllKeysOnCooldown() && (serverAiPref !== 'OPENAI' || !hasOpenAiKey)) {
+            const serverId = message.guild?.id || message.channel?.id;
+            const now = Date.now();
+            const lastNoticeTime = serverQuotaNoticeCooldowns.get(serverId) || 0;
+
+            if (now - lastNoticeTime >= 60000) {
+                serverQuotaNoticeCooldowns.set(serverId, now);
+                const quotaMsg = geminiKeyManager.getQuotaNotice();
+                return message.reply({
+                    content: quotaMsg,
+                    allowedMentions: { parse: ['users'], repliedUser: false }
+                }).catch(() => {});
+            } else {
+                // Per-server 1-minute cooldown: If messages keep getting sent, wait 1 minute before sending another notice
+                return;
+            }
+        }
 
         // Check for Discord Stickers
         const hasStickers = Boolean(message.stickers && message.stickers.size > 0);
@@ -799,18 +821,36 @@ ${deviceSpecsContext}
                         try {
                             response = await runOpenAI();
                         } catch (e2) {
-                            response = await getPrivacyResponse(plainContent, deepKnowledgeStr);
+                            response = null;
                         }
                     } else {
-                        response = await getPrivacyResponse(plainContent, deepKnowledgeStr);
+                        response = null;
                     }
                 }
             }
         } catch (err) {
-            response = await getPrivacyResponse(plainContent, deepKnowledgeStr);
+            response = null;
         }
 
         if (!response || typeof response !== 'string' || response.includes('Nora AI Quota Limit Reached')) {
+            if (geminiKeyManager.areAllKeysOnCooldown() && (aiPref !== 'OPENAI' || (!process.env.OPENAI_API_KEY && !process.env.OPENAI_API_KEY_1))) {
+                const serverId = message.guild?.id || message.channel?.id;
+                const now = Date.now();
+                const lastNoticeTime = serverQuotaNoticeCooldowns.get(serverId) || 0;
+
+                if (now - lastNoticeTime >= 60000) {
+                    serverQuotaNoticeCooldowns.set(serverId, now);
+                    const quotaMsg = geminiKeyManager.getQuotaNotice();
+                    return message.reply({
+                        content: quotaMsg,
+                        allowedMentions: { parse: ['users'], repliedUser: false }
+                    }).catch(() => {});
+                } else {
+                    // Per-server 1-minute cooldown: If messages keep getting sent, wait 1 minute before sending another notice
+                    return;
+                }
+            }
+
             response = await getPrivacyResponse(plainContent, deepKnowledgeStr);
         }
 
