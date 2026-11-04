@@ -56,6 +56,20 @@
             --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
+        /* ⚡ ULTRA-LOW RESOURCE ENGINE (Minimization & Low-Spec Mode) */
+        body.tab-minimized *,
+        body.tab-minimized *::before,
+        body.tab-minimized *::after {
+            animation-play-state: paused !important;
+            transition: none !important;
+        }
+        body.low-resource-mode * {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -1487,7 +1501,7 @@
                             <span class="stat-label">Active Servers</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value" id="stat-members">14,138+</span>
+                            <span class="stat-value" id="stat-members">14,144+</span>
                             <span class="stat-label">Total Members</span>
                         </div>
                         <div class="stat-item">
@@ -1495,7 +1509,7 @@
                             <span class="stat-label">Commands</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value" id="stat-ping">45ms</span>
+                            <span class="stat-value" id="stat-ping">39ms</span>
                             <span class="stat-label">Gateway Ping</span>
                         </div>
                     </div>
@@ -2040,6 +2054,18 @@
 
         // Initialize Command Grid
         renderCommands('all');
+
+        // ⚡ Ultra-Low Resource Engine for Landing Page
+        (function() {
+            const isLowEnd = /CrOS|Chromebook|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+                || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+            if (isLowEnd) document.body.classList.add('low-resource-mode');
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) document.body.classList.add('tab-minimized');
+                else document.body.classList.remove('tab-minimized');
+            });
+        })();
     </script>
 </body>
 </html>

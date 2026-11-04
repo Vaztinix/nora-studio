@@ -68,11 +68,33 @@
         .ambient-blob {
             position: fixed;
             border-radius: 50%;
-            filter: blur(90px);
             pointer-events: none;
             z-index: 0;
             opacity: 0.55;
             transition: transform 1.2s ease, opacity 1.2s ease;
+        }
+
+        /* ⚡ ULTRA-LOW RESOURCE ENGINE (Minimization & Low-Spec Mode) */
+        body.tab-minimized *,
+        body.tab-minimized *::before,
+        body.tab-minimized *::after {
+            animation-play-state: paused !important;
+            transition: none !important;
+        }
+        body.low-resource-mode * {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            box-shadow: none !important;
+            text-shadow: none !important;
+        }
+        body.low-resource-mode .ambient-blob {
+            display: none !important;
+        }
+        body.low-resource-mode .portal-card,
+        body.low-resource-mode .topbar {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            background: rgba(14, 16, 26, 0.98) !important;
         }
 
         .ambient-blob-1 {
@@ -1348,6 +1370,22 @@
                 toggleLoading(false);
             }
         }
+
+        // ⚡ Ultra-Low Resource Engine for Verify Portal
+        (function() {
+            const isLowEnd = /CrOS|Chromebook|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+                || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+                || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+            if (isLowEnd) document.body.classList.add('low-resource-mode');
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    document.body.classList.add('tab-minimized');
+                } else {
+                    document.body.classList.remove('tab-minimized');
+                }
+            });
+        })();
     </script>
 </body>
 

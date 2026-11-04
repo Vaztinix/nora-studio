@@ -1622,8 +1622,8 @@
         }
 
         @keyframes auth-logo-pulse {
-            0%, 100% { opacity: 0.4; filter: blur(14px); transform: scale(0.96); }
-            50% { opacity: 0.75; filter: blur(22px); transform: scale(1.04); }
+            0%, 100% { opacity: 0.4; transform: scale(0.96); }
+            50% { opacity: 0.75; transform: scale(1.04); }
         }
 
         .auth-logo {
@@ -2163,8 +2163,8 @@
             animation: pulseInhale 2s infinite ease-in-out;
         }
         @keyframes pulseInhale {
-            0%, 100% { transform: scale(0.8); opacity: 0.5; filter: blur(2px); }
-            50% { transform: scale(1.5); opacity: 1; filter: blur(0px); }
+            0%, 100% { transform: scale(0.8); opacity: 0.5; }
+            50% { transform: scale(1.3); opacity: 1; }
         }
 
         /* Solid Glass Theme */
@@ -2300,6 +2300,45 @@
         /* Performance: Liquid Blobs disabled to eliminate GPU thrashing */
         .liquid-blob {
             display: none !important;
+        }
+
+        /* ⚡ ULTRA-LOW RESOURCE ENGINE (Minimization & Low-Spec Mode) */
+        /* When minimized or backgrounded: 0% CPU usage by completely freezing all animations */
+        body.tab-minimized *,
+        body.tab-minimized *::before,
+        body.tab-minimized *::after {
+            animation-play-state: paused !important;
+            transition: none !important;
+        }
+
+        /* Low-Resource Profile: For Chromebooks, Mobile, and Low-Spec Devices */
+        body.low-resource-mode {
+            --blurple-glow: transparent !important;
+            --primary-glow: transparent !important;
+        }
+        body.low-resource-mode *,
+        body.low-resource-mode *::before,
+        body.low-resource-mode *::after {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            text-shadow: none !important;
+        }
+        body.low-resource-mode .server-card-ambient,
+        body.low-resource-mode .auth-logo-glow,
+        body.low-resource-mode .liquid-blob {
+            display: none !important;
+        }
+        body.low-resource-mode .auth-card,
+        body.low-resource-mode .panel,
+        body.low-resource-mode .card,
+        body.low-resource-mode .sidebar,
+        body.low-resource-mode .topbar,
+        body.low-resource-mode .v-tab,
+        body.low-resource-mode .global-nav-btn {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            background: rgba(14, 16, 26, 0.96) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
         }
 
         /* High-Performance Rendering & Offscreen Layout Containment */
@@ -5306,9 +5345,9 @@
             </div>
         </div>
 
-        <!-- Ambient decorative backdrop glows -->
-        <div style="position: absolute; width: 450px; height: 450px; background: rgba(88, 101, 242, 0.1); filter: blur(140px); border-radius: 50%; top: 15%; left: 15%; pointer-events: none; z-index: 1;"></div>
-        <div style="position: absolute; width: 400px; height: 400px; background: rgba(56, 189, 248, 0.06); filter: blur(130px); border-radius: 50%; bottom: 15%; right: 15%; pointer-events: none; z-index: 1;"></div>
+        <!-- Ambient decorative backdrop glows (Zero-cost radial gradients, no GPU filter blur) -->
+        <div style="position: absolute; width: 450px; height: 450px; background: radial-gradient(circle, rgba(88, 101, 242, 0.12) 0%, transparent 70%); border-radius: 50%; top: 15%; left: 15%; pointer-events: none; z-index: 1;"></div>
+        <div style="position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(56, 189, 248, 0.08) 0%, transparent 70%); border-radius: 50%; bottom: 15%; right: 15%; pointer-events: none; z-index: 1;"></div>
         
         <!-- Glassmorphic Login Card -->
         <div class="auth-card">
@@ -13494,9 +13533,12 @@
         };
 
         function startPairedDevicesPolling() {
+            if (document.hidden) return;
             loadPairedDevices();
             if (_pairedDevicesPollInterval) clearInterval(_pairedDevicesPollInterval);
-            _pairedDevicesPollInterval = setInterval(loadPairedDevices, 8000);
+            _pairedDevicesPollInterval = setInterval(() => {
+                if (!document.hidden) loadPairedDevices();
+            }, 30000);
         }
 
         window.disconnectPairedDevices = async function() {
@@ -15156,49 +15198,81 @@
                 if (typeof fetchUserProfile === 'function') fetchUserProfile().catch(err => console.warn('[Profile Fetch]:', err.message));
                 if (typeof startPeriodicRefresh === 'function') startPeriodicRefresh();
             } catch (e) { 
-                console.warn('[Nora Auth]: Session check failed:', e.message);
-                sessionStorage.removeItem('discord_token');
-                localStorage.removeItem('discord_token');
-                localStorage.removeItem('nora_discord_token');
-                localStorage.removeItem('nora_last_user_id');
-                localStorage.removeItem('nora_auth');
-                window.currentUser = null;
-                
-                const userNameEl = document.getElementById('user-name-top');
-                if (userNameEl) {
-                    userNameEl.textContent = 'Login with Discord';
-                    userNameEl.style.cursor = 'pointer';
-                    if (userNameEl.parentElement) {
-                        userNameEl.parentElement.style.cursor = 'pointer';
-                        userNameEl.parentElement.onclick = () => window.redirectToDiscordLogin();
+                console.warn('[Nora Auth]: Session check notice:', e.message);
+                const isExplicit401 = status === 401 || (e && (e.status === 401 || (typeof e.message === 'string' && e.message.includes('401'))));
+
+                if (isExplicit401) {
+                    sessionStorage.removeItem('discord_token');
+                    localStorage.removeItem('discord_token');
+                    localStorage.removeItem('nora_discord_token');
+                    localStorage.removeItem('nora_last_user_id');
+                    localStorage.removeItem('nora_auth');
+                    window.currentUser = null;
+                    
+                    const userNameEl = document.getElementById('user-name-top');
+                    if (userNameEl) {
+                        userNameEl.textContent = 'Login with Discord';
+                        userNameEl.style.cursor = 'pointer';
+                        if (userNameEl.parentElement) {
+                            userNameEl.parentElement.style.cursor = 'pointer';
+                            userNameEl.parentElement.onclick = () => window.redirectToDiscordLogin();
+                        }
                     }
-                }
 
-                const earlyHide = document.getElementById('nora-auth-early-hide');
-                if (earlyHide) earlyHide.remove();
+                    const earlyHide = document.getElementById('nora-auth-early-hide');
+                    if (earlyHide) earlyHide.remove();
 
-                const elAuth = authOverlay || document.getElementById('auth-overlay');
-                if (elAuth) {
-                    elAuth.style.setProperty('display', 'flex', 'important');
-                    elAuth.style.setProperty('opacity', '1', 'important');
-                    elAuth.style.setProperty('visibility', 'visible', 'important');
-                    elAuth.style.setProperty('pointer-events', 'auto', 'important');
-                }
+                    const elAuth = authOverlay || document.getElementById('auth-overlay');
+                    if (elAuth) {
+                        elAuth.style.setProperty('display', 'flex', 'important');
+                        elAuth.style.setProperty('opacity', '1', 'important');
+                        elAuth.style.setProperty('visibility', 'visible', 'important');
+                        elAuth.style.setProperty('pointer-events', 'auto', 'important');
+                    }
 
-                const container = document.getElementById('guilds-container');
-                if (container) {
-                    container.innerHTML = `
-                        <div class="panel" style="grid-column: 1/-1; text-align: center; padding: 48px 24px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 20px; backdrop-filter: blur(20px);">
-                            <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(88, 101, 242, 0.15); border: 1px solid rgba(88, 101, 242, 0.3); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
-                                <i class="fab fa-discord" style="font-size: 2rem; color: #5865f2;"></i>
+                    const container = document.getElementById('guilds-container');
+                    if (container) {
+                        container.innerHTML = `
+                            <div class="panel" style="grid-column: 1/-1; text-align: center; padding: 48px 24px; background: var(--panel-bg); border: 1px solid var(--border); border-radius: 20px; backdrop-filter: blur(20px);">
+                                <div style="width: 64px; height: 64px; border-radius: 20px; background: rgba(88, 101, 242, 0.15); border: 1px solid rgba(88, 101, 242, 0.3); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">
+                                    <i class="fab fa-discord" style="font-size: 2rem; color: #5865f2;"></i>
+                                </div>
+                                <h2 style="color: var(--text); margin-bottom: 8px; font-size: 1.4rem; font-weight: 800;">Discord Authorization Required</h2>
+                                <p style="color: var(--muted); font-size: 0.9rem; max-width: 480px; margin: 0 auto 24px auto; line-height: 1.5;">Connect your Discord account with Nora Studio to load and configure automations, moderation, and features across your servers.</p>
+                                <button onclick="window.redirectToDiscordLogin()" style="padding: 13px 32px; font-weight: 700; border-radius: 12px; background: #5865f2; color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-size: 0.95rem; box-shadow: 0 4px 18px rgba(88, 101, 242, 0.35); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
+                                    <i class="fab fa-discord"></i> Login with Discord
+                                </button>
                             </div>
-                            <h2 style="color: var(--text); margin-bottom: 8px; font-size: 1.4rem; font-weight: 800;">Discord Authorization Required</h2>
-                            <p style="color: var(--muted); font-size: 0.9rem; max-width: 480px; margin: 0 auto 24px auto; line-height: 1.5;">Connect your Discord account with Nora Studio to load and configure automations, moderation, and features across your servers.</p>
-                            <button onclick="window.redirectToDiscordLogin()" style="padding: 13px 32px; font-weight: 700; border-radius: 12px; background: #5865f2; color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-size: 0.95rem; box-shadow: 0 4px 18px rgba(88, 101, 242, 0.35); transition: transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='translateY(0)'">
-                                <i class="fab fa-discord"></i> Login with Discord
-                            </button>
-                        </div>
-                    `;
+                        `;
+                    }
+                } else {
+                    // Transient network hiccup or Chromebook throttling: PRESERVE SESSION & HYDRATE CACHE
+                    console.info('[Nora Auth]: Preserving credentials across transient network glitch. Hydrating cached profile...');
+                    const elAuth = authOverlay || document.getElementById('auth-overlay');
+                    if (elAuth) {
+                        elAuth.style.setProperty('display', 'none', 'important');
+                    }
+                    const sideEl = document.querySelector('.sidebar');
+                    if (sideEl) sideEl.style.display = 'flex';
+                    showTab('servers');
+                    
+                    try {
+                        const raw = localStorage.getItem('nora_cached_guilds');
+                        if (raw) {
+                            const cached = JSON.parse(raw);
+                            if (Array.isArray(cached) && cached.length) {
+                                renderAllGuilds(cached);
+                            }
+                        }
+                    } catch (_) {}
+                    
+                    // Silent background retry
+                    setTimeout(() => {
+                        const savedTok = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token');
+                        if (savedTok && !window.currentUser) {
+                            authenticateWithToken(savedTok);
+                        }
+                    }, 8000);
                 }
             } finally {
                 toggleLoading(false);
@@ -17475,6 +17549,7 @@
 
         window.extractServerIconColors = function(iconSrc, callback) {
             if (!iconSrc) return;
+            if (document.body.classList.contains('low-resource-mode')) return; // Low-resource mode saves RAM & CPU by using default palette
             if (window.serverIconColorCache[iconSrc]) {
                 callback(window.serverIconColorCache[iconSrc]);
                 return;
@@ -17630,7 +17705,7 @@
                 }
 
                 card.innerHTML = `
-                    <div class="server-card-ambient" style="position: absolute; inset: -20px; z-index: 0; pointer-events: none; filter: blur(32px); opacity: 0.65; background: radial-gradient(circle at 18% 22%, ${amb1} 0%, transparent 60%), radial-gradient(circle at 82% 28%, ${amb2} 0%, transparent 58%), radial-gradient(circle at 50% 88%, ${amb3} 0%, transparent 62%);"></div>
+                    <div class="server-card-ambient" style="position: absolute; inset: -20px; z-index: 0; pointer-events: none; opacity: 0.65; background: radial-gradient(circle at 18% 22%, ${amb1} 0%, transparent 60%), radial-gradient(circle at 82% 28%, ${amb2} 0%, transparent 58%), radial-gradient(circle at 50% 88%, ${amb3} 0%, transparent 62%);"></div>
                     ${badgeHtml}
                     <div style="display: flex; flex-direction: column; align-items: center; width: 100%; flex-grow: 1; justify-content: center; min-height: 0;">
                         ${(() => {
@@ -18429,7 +18504,9 @@
             loadSiteAlerts();
             renderPushNotificationWidget();
             loadNotificationToggles();
-            setInterval(loadSiteAlerts, 60000); // Check site alerts every minute
+            setInterval(() => {
+                if (!document.hidden) loadSiteAlerts();
+            }, 90000); // Check site alerts quietly every 90 seconds while tab is active
         }
 
         function urlBase64ToUint8Array(base64String) {
@@ -32992,7 +33069,9 @@ document.addEventListener('keydown', (e) => {
         } catch (e) {}
     }
     syncStatus();
-    setInterval(syncStatus, 30000);
+    setInterval(() => {
+        if (!document.hidden) syncStatus();
+    }, 60000);
 
     // Continuous Live Telemetry Pulse for Overview (updates quietly every 10 seconds while viewing Overview)
     setInterval(() => {
@@ -35250,7 +35329,69 @@ window.fetchRobloxStatus = async function(t) {
         }
     }, 400);
 };
-</script>
+
+// =========================================================================
+// ⚡ ULTRA-LOW RESOURCE ENGINE (Minimization & Background Sleep Protection)
+// =========================================================================
+(function initLowResourceEngine() {
+    let backgroundSince = 0;
+
+    // Detect Chromebooks, mobile devices, low-RAM, or low-core CPUs
+    const isLowEndDevice = /CrOS|Chromebook|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+        || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
+        || (navigator.deviceMemory && navigator.deviceMemory <= 4);
+
+    if (isLowEndDevice) {
+        document.body.classList.add('low-resource-mode');
+        console.info('[Nora Engine] Low-resource hardware profile engaged for optimal battery & smooth performance.');
+    }
+
+    function handleVisibilityChange() {
+        if (document.hidden) {
+            // Tab is MINIMIZED or in BACKGROUND: Enter Deep Sleep (0.0% CPU)
+            backgroundSince = Date.now();
+            document.body.classList.add('tab-minimized');
+
+            // Suspend audio synthesizer so it stops processing
+            if (window.noraAudioCtx && window.noraAudioCtx.state === 'running') {
+                window.noraAudioCtx.suspend().catch(() => {});
+            }
+
+            // Clear polling timers while minimized
+            if (window._pairedDevicesPollInterval) {
+                clearInterval(window._pairedDevicesPollInterval);
+                window._pairedDevicesPollInterval = null;
+            }
+            if (window.terminalFeedInterval) {
+                clearInterval(window.terminalFeedInterval);
+                window.terminalFeedInterval = null;
+            }
+            if (window._noraLoadingTimer) {
+                clearInterval(window._noraLoadingTimer);
+                window._noraLoadingTimer = null;
+            }
+        } else {
+            // Tab is RESTORED / ACTIVE: Resume cleanly
+            document.body.classList.remove('tab-minimized');
+            const wasAsleepFor = Date.now() - backgroundSince;
+
+            // Resume audio context if user was playing sound
+            if (window.noraAudioCtx && window.noraAudioCtx.state === 'suspended') {
+                window.noraAudioCtx.resume().catch(() => {});
+            }
+
+            // If asleep for more than 45 seconds, trigger a single quiet revalidation
+            if (backgroundSince > 0 && wasAsleepFor > 45000) {
+                if (typeof syncStatus === 'function') syncStatus();
+                if (typeof loadSiteAlerts === 'function') loadSiteAlerts();
+            }
+        }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('pagehide', () => document.body.classList.add('tab-minimized'));
+    window.addEventListener('pageshow', () => document.body.classList.remove('tab-minimized'));
+})();
 </script>
 </body>
 </html>

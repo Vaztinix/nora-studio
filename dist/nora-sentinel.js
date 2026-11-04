@@ -803,10 +803,17 @@
     window.addEventListener('offline', () => checkNoraHealth(true));
     window.addEventListener('online', () => checkNoraHealth(true));
 
-    // Continuous Heartbeat Polling (every 15 seconds in background)
+    // Heartbeat Polling: Sleeps when tab is minimized/backgrounded to save 100% CPU & bandwidth
     setInterval(() => {
-        if (!isCurrentlyOffline) {
+        if (!isCurrentlyOffline && !document.hidden) {
             checkNoraHealth(false);
         }
-    }, 15000);
+    }, 45000);
+
+    // Instant wake-up check upon restoring the tab
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && !isCurrentlyOffline) {
+            checkNoraHealth(false);
+        }
+    });
 })();
