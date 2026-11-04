@@ -24,6 +24,7 @@ const { getSanitizedSpecsSummary } = require('../utils/deviceSpecs');
  */
 const activeChannelQueues = new Map();
 const serverQuotaNoticeCooldowns = new Map(); // guildId -> timestamp of last sent quota notice
+const SERVER_QUOTA_NOTICE_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes (300,000ms) cooldown during active chat
 
 /**
  * Resolves AI-generated <@username> / <@displayName> or @username tags into real <@USER_ID> mentions
@@ -273,7 +274,7 @@ async function processMessageInternal(message, client) {
             const now = Date.now();
             const lastNoticeTime = serverQuotaNoticeCooldowns.get(serverId) || 0;
 
-            if (now - lastNoticeTime >= 60000) {
+            if (now - lastNoticeTime >= SERVER_QUOTA_NOTICE_COOLDOWN_MS) {
                 serverQuotaNoticeCooldowns.set(serverId, now);
                 const quotaMsg = geminiKeyManager.getQuotaNotice();
                 return message.reply({
@@ -281,7 +282,7 @@ async function processMessageInternal(message, client) {
                     allowedMentions: { parse: ['users'], repliedUser: false }
                 }).catch(() => {});
             } else {
-                // Per-server 1-minute cooldown: If messages keep getting sent, wait 1 minute before sending another notice
+                // Per-server 5-minute cooldown: If messages keep getting sent during active chat, wait 5 minutes before sending another notice
                 return;
             }
         }
@@ -838,7 +839,7 @@ ${deviceSpecsContext}
                 const now = Date.now();
                 const lastNoticeTime = serverQuotaNoticeCooldowns.get(serverId) || 0;
 
-                if (now - lastNoticeTime >= 60000) {
+                if (now - lastNoticeTime >= SERVER_QUOTA_NOTICE_COOLDOWN_MS) {
                     serverQuotaNoticeCooldowns.set(serverId, now);
                     const quotaMsg = geminiKeyManager.getQuotaNotice();
                     return message.reply({
@@ -846,7 +847,7 @@ ${deviceSpecsContext}
                         allowedMentions: { parse: ['users'], repliedUser: false }
                     }).catch(() => {});
                 } else {
-                    // Per-server 1-minute cooldown: If messages keep getting sent, wait 1 minute before sending another notice
+                    // Per-server 5-minute cooldown: If messages keep getting sent during active chat, wait 5 minutes before sending another notice
                     return;
                 }
             }
