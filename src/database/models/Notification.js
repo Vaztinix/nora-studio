@@ -38,6 +38,14 @@ const Notification = sequelize.define('Notification', {
     serverName: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    isTrial: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    cannotDismiss: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     }
 });
 

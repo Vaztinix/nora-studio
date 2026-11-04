@@ -69,6 +69,15 @@ const UserPrefs = sequelize.define('UserPrefs', {
         type: DataTypes.BIGINT,
         defaultValue: 0
     },
+    freeTrialClaimed: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    freeTrialExpiresAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+        defaultValue: null
+    },
     premiumExpiresAt: {
         type: DataTypes.DATE,
         allowNull: true,

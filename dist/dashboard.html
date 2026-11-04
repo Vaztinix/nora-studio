@@ -14761,6 +14761,11 @@
                 }
 
                 loadNotifications();
+                setTimeout(() => {
+                    if (typeof window.checkAndTriggerTrialAnnouncement === 'function') {
+                        window.checkAndTriggerTrialAnnouncement();
+                    }
+                }, 1200);
 
                 const prefSecureSession = document.getElementById('pref-secure-session');
                 if (prefSecureSession) {
@@ -18470,6 +18475,9 @@
                 if (res && res.ok && res.data) {
                     const data = res.data.notifications ? res.data.notifications : res.data;
                     renderNotifications(data);
+                    if (typeof window.checkAndTriggerTrialAnnouncement === 'function') {
+                        setTimeout(() => window.checkAndTriggerTrialAnnouncement(), 800);
+                    }
                 }
             } catch (e) {
                 console.warn('[loadNotifications Notice]:', e);
@@ -19449,9 +19457,19 @@
                         dropdownList.innerHTML = filtered.map(n => {
                             const timeStr = n.createdAt ? new Date(n.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : (n.timestamp ? new Date(n.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now');
                             const cat = getNotifCategory(n);
-                            const emoji = cat === 'error' ? '🔴' : (cat === 'warning' ? '🟡' : (cat === 'success' ? '🟢' : '🔵'));
+                            let emoji = cat === 'error' ? '🔴' : (cat === 'warning' ? '🟡' : (cat === 'success' ? '🟢' : '🔵'));
+                            if (n.isTrial) emoji = n.trialActive ? '💎' : '👑';
+
+                            const trialActionBtn = (n.isTrial && !n.trialActive) 
+                                ? `<div style="margin-top: 6px;"><button onclick="window.claimFreePremiumTrial(event)" style="background: linear-gradient(135deg, #8B5CF6, #EC4899); border: none; color: #fff; font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;"><i class="fas fa-gift"></i> Claim 7-Day Free Trial</button></div>` 
+                                : (n.isTrial && n.trialActive ? `<div style="margin-top: 5px;"><span style="font-size: 0.68rem; color: #34d399; font-weight: 700; background: rgba(16, 185, 129, 0.15); padding: 2px 7px; border-radius: 4px; border: 1px solid rgba(16, 185, 129, 0.3);"><i class="fas fa-lock"></i> Active Trial (Non-dismissible)</span></div>` : '');
+
+                            const dismissHtml = n.cannotDismiss 
+                                ? `<span style="font-size: 0.72rem; color: #34d399; padding: 4px;" title="Trial Active (Non-dismissible)"><i class="fas fa-lock"></i></span>`
+                                : `<button onclick="deleteNotification('${n.id || 0}', event)" style="background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 4px; font-size: 0.75rem;" title="Dismiss">&times;</button>`;
+
                             return `
-                                <div class="notif-item ${n.read ? 'read' : 'unread'}" style="padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 12px; align-items: flex-start; cursor: pointer;" onclick="markNotificationRead(${n.id || 0}, event)">
+                                <div class="notif-item ${n.read ? 'read' : 'unread'}" style="padding: 12px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 12px; align-items: flex-start; cursor: pointer; ${n.isTrial ? 'background: rgba(139, 92, 246, 0.08);' : ''}" onclick="markNotificationRead('${n.id || 0}', event)">
                                     <div style="font-size: 1.1rem; margin-top: 2px;">${emoji}</div>
                                     <div style="flex: 1; min-width: 0;">
                                         <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
@@ -19459,8 +19477,9 @@
                                             <span style="font-size: 0.7rem; color: var(--muted); white-space: nowrap;">${timeStr}</span>
                                         </div>
                                         <div style="font-size: 0.8rem; color: var(--muted); margin-top: 3px; word-break: break-word;">${escapeHtml(n.content || n.message || '')}</div>
+                                        ${trialActionBtn}
                                     </div>
-                                    <button onclick="deleteNotification(${n.id || 0}, event)" style="background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 4px; font-size: 0.75rem;" title="Dismiss">&times;</button>
+                                    ${dismissHtml}
                                 </div>
                             `;
                         }).join('');
@@ -19511,6 +19530,57 @@
         function renderNotifCardHtml(n, isRead) {
             const timeStr = n.createdAt ? new Date(n.createdAt).toLocaleString() : (n.timestamp ? new Date(n.timestamp).toLocaleString() : 'Recent');
             const cat = getNotifCategory(n);
+
+            if (n.isTrial) {
+                const isClaimed = !!n.trialActive;
+                const canDismiss = n.cannotDismiss !== true;
+                const cardBorder = isClaimed ? 'rgba(16, 185, 129, 0.45)' : 'rgba(139, 92, 246, 0.55)';
+                const cardBg = isClaimed 
+                    ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 78, 59, 0.12) 100%)' 
+                    : 'linear-gradient(135deg, rgba(139, 92, 246, 0.14) 0%, rgba(236, 72, 153, 0.09) 100%)';
+                const iconColor = isClaimed ? '#34d399' : '#ec4899';
+                const icon = isClaimed ? 'fas fa-gem' : 'fas fa-crown';
+
+                let actionHtml = '';
+                if (!isClaimed) {
+                    actionHtml = `
+                        <div style="margin-top: 10px;">
+                            <button onclick="window.claimFreePremiumTrial(event)" class="nora-trial-claim-btn" style="background: linear-gradient(135deg, #8B5CF6, #EC4899); border: none; color: #fff; padding: 7px 16px; border-radius: 8px; font-weight: 700; font-size: 0.8rem; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); transition: transform 0.2s;">
+                                <i class="fas fa-gift"></i> Claim 7-Day Free Trial
+                            </button>
+                        </div>
+                    `;
+                } else {
+                    actionHtml = `
+                        <div style="margin-top: 10px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                            <span style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px;">
+                                <i class="fas fa-lock"></i> Active Trial • Non-dismissible
+                            </span>
+                            <span style="font-size: 0.75rem; color: var(--muted);">Expires: ${n.trialExpiresAt ? new Date(n.trialExpiresAt).toLocaleDateString() : '7 days'}</span>
+                        </div>
+                    `;
+                }
+
+                return `
+                    <div style="padding: 18px; border-radius: 14px; border: 1px solid ${cardBorder}; background: ${cardBg}; display: flex; gap: 14px; align-items: flex-start; transition: 0.2s; position: relative; box-shadow: 0 6px 20px rgba(0,0,0,0.25);">
+                        <div style="width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,0.06); display: flex; align-items: center; justify-content: center; color: ${iconColor}; font-size: 1.25rem; flex-shrink: 0; box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);">
+                            <i class="${icon}"></i>
+                        </div>
+                        <div style="flex: 1; min-width: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                                <strong style="color: #fff; font-size: 0.95rem; display: flex; align-items: center; gap: 6px;">
+                                    ${escapeHtml(n.title || 'Special Premium Trial')}
+                                    <span style="font-size: 0.65rem; background: rgba(236, 72, 153, 0.2); color: #f472b6; border: 1px solid rgba(236, 72, 153, 0.4); padding: 1px 6px; border-radius: 4px; font-weight: 800; text-transform: uppercase;">1-Time Offer</span>
+                                </strong>
+                                <span style="font-size: 0.72rem; color: var(--muted); white-space: nowrap;">${timeStr}</span>
+                            </div>
+                            <p style="font-size: 0.84rem; color: #e2e8f0; margin: 6px 0 0 0; line-height: 1.5;">${escapeHtml(n.content || n.message || '')}</p>
+                            ${actionHtml}
+                        </div>
+                        ${canDismiss ? `<button onclick="deleteNotification('${n.id || 0}', event)" style="background: transparent; border: none; color: var(--muted); cursor: pointer; padding: 4px; font-size: 0.85rem;" title="Dismiss">&times;</button>` : ''}
+                    </div>
+                `;
+            }
             
             let icon = 'fas fa-bell';
             let iconColor = 'var(--primary, #5865f2)';
@@ -19604,7 +19674,7 @@
             if (!confirm('Clear all notifications?')) return;
             logToTerminal('Clearing notifications.', 'SYSTEM_ACTION');
             persistAllReadNotifs(notifications);
-            notifications = [];
+            notifications = notifications.filter(n => n.cannotDismiss === true);
             saveNotifications();
             renderNotifications();
 
@@ -19650,10 +19720,29 @@
         async function deleteNotification(id, event) {
             if (event) event.stopPropagation();
             const notif = notifications.find(n => n.id === id || String(n.id) === String(id));
+            if (notif && notif.cannotDismiss === true) {
+                showToast('This trial notification cannot be dismissed until your 7-day trial period has ended.', 'warning');
+                return;
+            }
             if (notif) persistReadNotif(notif);
             notifications = notifications.filter(n => n.id !== id && String(n.id) !== String(id));
             saveNotifications();
             renderNotifications();
+
+            try {
+                const apiBase = window.getApiBaseUrl ? window.getApiBaseUrl() : '';
+                const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token');
+                const uid = (typeof getDashboardUserId === 'function' ? getDashboardUserId() : null) || (window.currentUser ? window.currentUser.id : null);
+                await fetch(`${apiBase}/api/notifications/clear`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': t ? `Bearer ${t}` : '',
+                        'x-user-id': uid || ''
+                    },
+                    body: JSON.stringify({ id, userId: uid })
+                }).catch(() => {});
+            } catch (e) { console.error(e); }
         }
 
         function markNotificationRead(id, event) {
@@ -19681,6 +19770,184 @@
                 } catch (_) {}
             }
         }
+
+        // ==========================================
+        // ONE-TIME 7-DAY FREE TRIAL SYSTEM & ANNOUNCEMENT
+        // ==========================================
+        window.claimFreePremiumTrial = async function(event) {
+            if (event) event.stopPropagation();
+            const btn = event?.currentTarget || event?.target;
+            const originalContent = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Activating...`;
+            }
+
+            try {
+                const apiBase = window.getApiBaseUrl ? window.getApiBaseUrl() : '';
+                const token = sessionStorage.getItem('discord_token') ||
+                              localStorage.getItem('nora_discord_token') ||
+                              localStorage.getItem('discord_token') ||
+                              localStorage.getItem('discord_token_val') ||
+                              localStorage.getItem('token');
+
+                if (!token) {
+                    showToast('Please log in with Discord first to claim your 7-day free trial.', 'warning');
+                    if (btn) { btn.disabled = false; btn.innerHTML = originalContent; }
+                    return;
+                }
+
+                const uid = (typeof getDashboardUserId === 'function' ? getDashboardUserId() : null) || (window.currentUser ? window.currentUser.id : null);
+
+                const res = await fetch(`${apiBase}/api/notifications/claim-free-trial`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                        ...(uid ? { 'x-user-id': uid } : {})
+                    },
+                    body: JSON.stringify({ userId: uid })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    showToast('🎉 Nora Premium activated for 7 days! Enjoy all features without spending a single dollar!', 'success');
+                    
+                    if (window.currentUser) {
+                        window.currentUser.noraPremium = true;
+                        window.currentUser.isPremium = true;
+                        window.currentUser.freeTrialClaimed = true;
+                        window.currentUser.freeTrialExpiresAt = data.expiresAt;
+                        window.currentUser.isTrialActive = true;
+                        if (!window.currentUser.prefs) window.currentUser.prefs = {};
+                        window.currentUser.prefs.freeTrialClaimed = true;
+                        window.currentUser.prefs.freeTrialExpiresAt = data.expiresAt;
+                        window.currentUser.prefs.paidExpiresAt = data.expiresAt;
+                    }
+
+                    // Remove trial announcement popup if visible
+                    const trialBanner = document.getElementById('premium-trial-announcement-banner');
+                    if (trialBanner) {
+                        trialBanner.style.animation = 'noraBubblePopOut 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+                        setTimeout(() => trialBanner.remove(), 280);
+                    }
+
+                    // Reload notifications to display active non-dismissible state
+                    if (typeof loadNotifications === 'function') {
+                        await loadNotifications();
+                    }
+
+                    // Refresh premium locks and CTAs across dashboard
+                    if (typeof checkAndHidePremiumCTAs === 'function') {
+                        checkAndHidePremiumCTAs(true);
+                    }
+                    if (typeof updateSubscriptionUI === 'function') {
+                        updateSubscriptionUI();
+                    }
+                } else {
+                    showToast(data.error || 'Could not activate trial. Please try again.', 'error');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = originalContent;
+                    }
+                }
+            } catch (err) {
+                console.error('[Trial Claim Error]:', err);
+                showToast('Network error while activating trial. Please try again.', 'error');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                }
+            }
+        };
+
+        window.renderPremiumTrialAnnouncement = function() {
+            // Check if user is logged in
+            if (!window.currentUser || !window.currentUser.id) return;
+            // Check if trial already claimed
+            if (window.currentUser.freeTrialClaimed || window.currentUser.prefs?.freeTrialClaimed) return;
+            // Check if already dismissed this session
+            if (sessionStorage.getItem('nora_trial_announcement_dismissed')) return;
+            // Check if already on screen
+            if (document.getElementById('premium-trial-announcement-banner')) return;
+
+            const banner = document.createElement('div');
+            banner.id = 'premium-trial-announcement-banner';
+            banner.dataset.isTrialAlert = 'true';
+            banner.style.cssText = `
+                position: fixed;
+                bottom: 26px;
+                left: 50%;
+                transform: translate(-50%, 0);
+                z-index: 999995;
+                width: calc(100% - 32px);
+                max-width: 680px;
+                border-radius: 22px;
+                padding: 20px 22px;
+                background: linear-gradient(135deg, rgba(26, 16, 44, 0.94) 0%, rgba(15, 18, 32, 0.96) 100%);
+                backdrop-filter: blur(24px) saturate(180%);
+                -webkit-backdrop-filter: blur(24px) saturate(180%);
+                color: #ffffff;
+                box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(236, 72, 153, 0.35) inset, 0 0 30px rgba(139, 92, 246, 0.25);
+                animation: noraBubblePopIn 0.52s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+                display: flex;
+                flex-direction: column;
+                gap: 12px;
+            `;
+
+            banner.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #ec4899; box-shadow: 0 0 10px #ec4899; animation: noraAlertPulseDot 1.8s infinite;"></span>
+                        <span style="font-size: 0.72rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: #f472b6; background: rgba(236, 72, 153, 0.15); border: 1px solid rgba(236, 72, 153, 0.35); padding: 2px 9px; border-radius: 999px;">
+                            <i class="fas fa-crown"></i> Exclusive 1-Time Opportunity
+                        </span>
+                    </div>
+                    <button type="button" onclick="window.dismissTrialAnnouncement()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: var(--muted); border-radius: 50%; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 0.85rem;" title="Maybe Later">&times;</button>
+                </div>
+                <div style="display: flex; gap: 16px; align-items: flex-start;">
+                    <div style="width: 44px; height: 44px; border-radius: 14px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(236, 72, 153, 0.3)); border: 1px solid rgba(236, 72, 153, 0.4); display: flex; align-items: center; justify-content: center; color: #f472b6; font-size: 1.4rem; flex-shrink: 0; box-shadow: 0 0 20px rgba(236, 72, 153, 0.35);">
+                        <i class="fas fa-gem"></i>
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <h3 style="font-size: 1.08rem; font-weight: 800; color: #fff; margin: 0 0 4px 0; letter-spacing: -0.01em;">
+                            Try Nora Premium Free for 7 Days!
+                        </h3>
+                        <p style="font-size: 0.86rem; color: rgba(255, 255, 255, 0.82); line-height: 1.5; margin: 0;">
+                            Experience all of Nora's exclusive features without having to spend a single dollar. Enjoy priority AI speeds, custom rank cards, extended slowmodes, custom embed styling, and full server management on us for an entire week!
+                        </p>
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end; align-items: center; gap: 10px; margin-top: 4px; flex-wrap: wrap;">
+                    <button type="button" onclick="window.dismissTrialAnnouncement()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; border-radius: 8px; padding: 7px 14px; font-size: 0.78rem; font-weight: 600; cursor: pointer;">
+                        Maybe Later
+                    </button>
+                    <button type="button" onclick="window.claimFreePremiumTrial(event)" class="btn-primary" style="background: linear-gradient(135deg, #8B5CF6, #EC4899); border: none; color: #fff; border-radius: 8px; padding: 7px 18px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 18px rgba(236, 72, 153, 0.45);">
+                        <i class="fas fa-gift"></i> Activate 7-Day Free Premium
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(banner);
+        };
+
+        window.dismissTrialAnnouncement = function() {
+            sessionStorage.setItem('nora_trial_announcement_dismissed', 'true');
+            const banner = document.getElementById('premium-trial-announcement-banner');
+            if (banner) {
+                banner.style.animation = 'noraBubblePopOut 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards';
+                setTimeout(() => banner.remove(), 280);
+            }
+        };
+
+        window.checkAndTriggerTrialAnnouncement = function() {
+            try {
+                if (window.currentUser && !window.currentUser.freeTrialClaimed && !window.currentUser.prefs?.freeTrialClaimed) {
+                    window.renderPremiumTrialAnnouncement();
+                }
+            } catch (_) {}
+        };
 
         window.clickTab = function(tabId) {
             const btn = document.querySelector(`.h-tab[data-tab="${tabId}"]`);
@@ -21107,6 +21374,11 @@
                     }
                     if (tabId === 'notifications') {
                         loadNotifications();
+                setTimeout(() => {
+                    if (typeof window.checkAndTriggerTrialAnnouncement === 'function') {
+                        window.checkAndTriggerTrialAnnouncement();
+                    }
+                }, 1200);
                     }
                     if (tabId === 'profile') {
                         if (typeof fetchUserProfile === 'function') fetchUserProfile();
@@ -29976,6 +30248,11 @@
         }
 
                 loadNotifications();
+                setTimeout(() => {
+                    if (typeof window.checkAndTriggerTrialAnnouncement === 'function') {
+                        window.checkAndTriggerTrialAnnouncement();
+                    }
+                }, 1200);
 
         // ----------------- AUTORESPONDER CLIENT LOGIC -----------------
         let activeAutoresponders = [];

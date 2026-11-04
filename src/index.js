@@ -440,6 +440,10 @@ async function runPreSyncMigrations() {
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `guessNumberGuessLimit` INTEGER DEFAULT 6;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `embedsVersion` VARCHAR(50) DEFAULT 'v2';"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `stickyMessages` TEXT DEFAULT '[]';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `freeTrialClaimed` TINYINT(1) DEFAULT 0;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `freeTrialExpiresAt` DATETIME NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `Notifications` ADD COLUMN `isTrial` TINYINT(1) DEFAULT 0;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `Notifications` ADD COLUMN `cannotDismiss` TINYINT(1) DEFAULT 0;"); } catch (e) { }
 }
 
 runPreSyncMigrations().then(() => {
@@ -2013,8 +2017,11 @@ app.get('/api/user/me', async (req, res) => {
             if (p.isManualPremium || p.isPremium) return true;
             const paidTime = p.paidExpiresAt ? new Date(p.paidExpiresAt).getTime() : 0;
             const expandedMs = p.expandedTimeMs ? Number(p.expandedTimeMs) : 0;
-            return (paidTime + expandedMs) > Date.now();
+            const trialTime = p.freeTrialExpiresAt ? new Date(p.freeTrialExpiresAt).getTime() : 0;
+            return (paidTime + expandedMs) > Date.now() || trialTime > Date.now();
         };
+
+        const isTrialActive = Boolean(prefs.freeTrialExpiresAt && new Date(prefs.freeTrialExpiresAt).getTime() > Date.now());
 
         const responseUser = {
             ...user,
@@ -2022,7 +2029,10 @@ app.get('/api/user/me', async (req, res) => {
             isOwner,
             prefs,
             sessionHardened: !!prefs.sessionHardened,
-            noraPremium: checkPremium(prefs)
+            noraPremium: checkPremium(prefs),
+            freeTrialClaimed: !!prefs.freeTrialClaimed,
+            freeTrialExpiresAt: prefs.freeTrialExpiresAt,
+            isTrialActive
         };
 
         res.json(responseUser);

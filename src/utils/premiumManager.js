@@ -156,8 +156,9 @@ module.exports = {
             if (!p || !p.userId) continue;
             prefsByUserId.set(String(p.userId), p);
             const activePaid = p.paidExpiresAt && (new Date(p.paidExpiresAt).getTime() + (p.expandedTimeMs ? Number(p.expandedTimeMs) : 0) > now);
+            const activeTrial = p.freeTrialExpiresAt && (new Date(p.freeTrialExpiresAt).getTime() > now);
             const activeLegacy = p.premiumExpiresAt && (new Date(p.premiumExpiresAt).getTime() > now);
-            if (p.isPremium || p.isManualPremium || activePaid || activeLegacy) {
+            if (p.isPremium || p.isManualPremium || activePaid || activeTrial || activeLegacy) {
                 candidateUserIds.add(String(p.userId));
             }
         }
