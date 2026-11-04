@@ -164,7 +164,7 @@ class GeminiKeyManager {
             formattedTime = `${secondsRemaining}s`;
         }
 
-        return `Hey, I am running a little low on energy right now. I will be sleeping for <t:${resetUnix}:R> (<t:${resetUnix}:t> • \`${formattedTime}\`). Wake me up afterwards! 💤`;
+        return `Hey, I am running a little low on energy right now. I will be sleeping until <t:${resetUnix}:t> (energy reset: <t:${resetUnix}:R>). Wake me up afterwards! 💤`;
     }
 
     /**
