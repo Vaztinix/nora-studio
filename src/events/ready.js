@@ -101,7 +101,7 @@ module.exports = {
                         if (guildObj) {
                             const localCmds = await guildObj.commands.fetch().catch(() => null);
                             if (localCmds && localCmds.size > 0) {
-                                await rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: [] });
+                                await client.rest.put(Routes.applicationGuildCommands(client.user.id, guildId), { body: [] });
                             }
                         }
                     } catch (e) {}
