@@ -732,7 +732,7 @@
             <span class="brand-title">Nora Studio</span>
         </a>
         <div class="header-actions">
-            <a href="https://discord.gg/m9WPYV287q" target="_blank" rel="noopener" class="nav-btn">
+            <a href="https://discord.gg/qCUxAWNB5X" target="_blank" rel="noopener" class="nav-btn">
                 <i class="fab fa-discord"></i> Milo's World
             </a>
             <a href="/" class="nav-btn">
@@ -856,7 +856,7 @@
                     </div>
 
                     <div style="display: flex; gap: 12px; margin-top: 20px;">
-                        <a href="https://discord.gg/m9WPYV287q" target="_blank" rel="noopener" class="btn-primary" style="text-decoration: none;">
+                        <a href="https://discord.gg/qCUxAWNB5X" target="_blank" rel="noopener" class="btn-primary" style="text-decoration: none;">
                             <i class="fab fa-discord"></i> Join Milo's World Now
                         </a>
                         <button class="btn-secondary" onclick="checkEligibility()">
@@ -900,13 +900,9 @@
                         <input type="text" id="access-password" class="password-input" placeholder="ENTER CODE" autocomplete="off" maxlength="16">
                     </div>
 
-                    <p class="password-hint">
-                        <i class="fas fa-info-circle"></i> Hint: Enter code <strong style="color: var(--text-main);">MILO</strong>
-                    </p>
-
                     <div id="password-error" class="alert-box alert-danger" style="display: none; max-width: 380px; margin: 16px auto 0;">
                         <i class="fas fa-times-circle"></i>
-                        <span>Incorrect password. Please enter <strong>MILO</strong> to continue.</span>
+                        <span>Incorrect access code. Please enter the valid code provided to you.</span>
                     </div>
 
                     <div style="max-width: 380px; margin: 24px auto 0;">
@@ -1415,7 +1411,7 @@
             }
 
             if (!hasUnlockedPassword) {
-                showToast('Please enter the password MILO first.');
+                showToast('Please enter the access code first.');
                 setStep(3);
                 return;
             }
