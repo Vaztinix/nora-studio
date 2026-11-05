@@ -5,12 +5,27 @@ const axios = require('axios');
 const GuildSettings = require('../../database/models/GuildSettings');
 const UserLevel = require('../../database/models/UserLevel');
 const UserPrefs = require('../../database/models/UserPrefs');
+const VerificationLog = require('../../database/models/VerificationLog');
 
-// Owner-only authentication middleware using axios
+// Fast in-memory token cache to prevent outbound Discord API request storms and eliminate latency
+const ownerAuthCache = new Map();
+
+// Owner-only authentication middleware using axios with fast-path caching
 const requireOwner = async (req, res, next) => {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return res.status(401).json({ error: 'Unauthorized: Missing or invalid token' });
+    }
+    const token = authHeader.split(' ')[1];
+
+    // Fast path: Check cache
+    const cached = ownerAuthCache.get(token);
+    if (cached && cached.expiresAt > Date.now()) {
+        if (!cached.isOwner) {
+            return res.status(403).json({ error: 'Forbidden: Owner-only access.' });
+        }
+        req.user = cached.user;
+        return next();
     }
     try {
         let response;
@@ -40,6 +55,13 @@ const requireOwner = async (req, res, next) => {
         if (APP_OWNER_IDS.includes(user.id)) {
             isOwner = true;
         }
+
+        // Cache for 5 minutes
+        ownerAuthCache.set(token, {
+            user,
+            isOwner,
+            expiresAt: Date.now() + 5 * 60 * 1000
+        });
 
         if (!isOwner) {
             return res.status(403).json({ error: 'Forbidden: Owner-only access.' });
@@ -1450,6 +1472,88 @@ router.get('/system-diagnostics', requireOwner, async (req, res) => {
         });
     } catch (e) {
         res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+
+// GET /api/admin/insite-verifications - Fetch In-Site verifications & Alt Intelligence (Owner Only)
+router.get('/insite-verifications', requireOwner, async (req, res) => {
+    try {
+        const logs = await VerificationLog.findAll({
+            where: {
+                guildId: { [Op.in]: ['1487342521133830174', '1515800329889779954'] }
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 100
+        });
+
+        const flaggedLogs = await VerificationLog.findAll({
+            where: {
+                [Op.or]: [
+                    { altDetected: true },
+                    { vpnDetected: true },
+                    { riskLevel: { [Op.in]: ['High', 'Critical'] } }
+                ]
+            },
+            order: [['createdAt', 'DESC']],
+            limit: 100
+        });
+
+        const map = new Map();
+        for (const l of [...logs, ...flaggedLogs]) {
+            map.set(l.id, l);
+        }
+
+        const combined = Array.from(map.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+        res.json({ success: true, verifications: combined });
+    } catch (e) {
+        console.error('Error fetching insite verifications:', e);
+        res.status(500).json({ success: false, error: e.message });
+    }
+});
+
+// POST /api/admin/insite-verifications/ban-alt - Ban flagged alt from guild
+router.post('/insite-verifications/ban-alt', requireOwner, async (req, res) => {
+    try {
+        const { guildId, userId, reason } = req.body;
+        if (!guildId || !userId) {
+            return res.status(400).json({ error: 'Missing guildId or userId' });
+        }
+        const guild = await req.client.guilds.fetch(guildId).catch(() => null);
+        if (!guild) return res.status(404).json({ error: 'Guild not found' });
+
+        await guild.members.ban(userId, { reason: reason || '[Nora Owner Desk] Manual alt ban action' });
+        res.json({ success: true, message: `Successfully banned user ${userId} from ${guild.name}` });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// POST /api/admin/insite-verifications/revoke-role - Revoke verified role from user
+router.post('/insite-verifications/revoke-role', requireOwner, async (req, res) => {
+    try {
+        const { guildId, userId } = req.body;
+        if (!guildId || !userId) {
+            return res.status(400).json({ error: 'Missing guildId or userId' });
+        }
+        const guild = await req.client.guilds.fetch(guildId).catch(() => null);
+        if (!guild) return res.status(404).json({ error: 'Guild not found' });
+        const member = await guild.members.fetch(userId).catch(() => null);
+        if (!member) return res.status(404).json({ error: 'Member not found in guild' });
+
+        if (guildId === '1487342521133830174') {
+            await member.roles.remove('1545240828354633819').catch(() => {});
+            await member.roles.add('1539017864709669054').catch(() => {});
+        } else {
+            const GuildSettings = require('../../database/models/GuildSettings');
+            const gs = await GuildSettings.findOne({ where: { guildId } });
+            if (gs && gs.verifyRoleId) {
+                await member.roles.remove(gs.verifyRoleId).catch(() => {});
+            }
+        }
+        res.json({ success: true, message: `Successfully revoked verification role from ${member.user.tag}` });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
     }
 });
 

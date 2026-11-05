@@ -558,6 +558,66 @@ module.exports = {
             return;
         }
 
+        // Handle In-Site Security Pass Buttons (Milo's World & Nora's Hub)
+        if (interaction.isButton() && interaction.customId === 'verify_insite_start') {
+            const guildId = interaction.guildId;
+            if (guildId !== '1487342521133830174' && guildId !== '1515800329889779954') {
+                return interaction.reply({
+                    content: '⚠️ In-site verification is exclusively active for Milo\'s World and Nora\'s Hub.',
+                    ephemeral: true
+                });
+            }
+
+            const member = interaction.member || (interaction.guild ? await interaction.guild.members.fetch(interaction.user.id).catch(() => null) : null);
+            if (guildId === '1487342521133830174' && member && member.roles.cache.has('1545240828354633819')) {
+                return interaction.reply({
+                    content: '✅ You are already verified in **Milo\'s World** with the Verified role! No further action is required.',
+                    ephemeral: true
+                });
+            }
+
+            const insiteVerify = require('../api/routes/insiteVerify');
+            const ticketId = insiteVerify.createTicket(guildId);
+            const slug = guildId === '1487342521133830174' ? 'milos-world' : 'noras-hub';
+            const portalUrl = `https://vaztinix.dev/verify/security/${slug}?ticket=${ticketId}`;
+
+            const ticketEmbed = new EmbedBuilder()
+                .setTitle('🎫 Your One-Time Security Pass is Ready')
+                .setColor(0x5865F2)
+                .setDescription(
+                    `Welcome, <@${interaction.user.id}>!\n\n` +
+                    `Click the button below to complete your **In-Site Security Pass** for **${interaction.guild?.name || 'this server'}**.\n\n` +
+                    `⏱️ **Session Expiry:** This private pass is valid for <t:${Math.floor(Date.now() / 1000) + 900}:R> (15 minutes).\n` +
+                    `🔒 **Zero-Trust Pass:** This link is uniquely tied to your Discord session. Do not share this URL with anyone.`
+                )
+                .setFooter({ text: 'Nora In-Site Gatekeeper • Anti-Alt & Proxy Shield' });
+
+            const row = new ActionRowBuilder().addComponents(
+                new ButtonBuilder()
+                    .setLabel('Open Verification Portal')
+                    .setStyle(ButtonStyle.Link)
+                    .setURL(portalUrl)
+                    .setEmoji('🛡️')
+            );
+
+            return interaction.reply({
+                embeds: [ticketEmbed],
+                components: [row],
+                ephemeral: true
+            });
+        }
+
+        if (interaction.isButton() && interaction.customId === 'verify_insite_help') {
+            return interaction.reply({
+                content: `🛡️ **Why In-Site Security Verification?**\n\n` +
+                         `To protect **${interaction.guild?.name || 'our community'}** against automated raid scripts, spam bots, and known malicious network ban-evasion groups (such as UTTP), we require a secure browser connection pass.\n\n` +
+                         `• **What we check:** Routine network health (detecting datacenter proxies & Tor tunnels) and hardware uniqueness.\n` +
+                         `• **Privacy Guarantee:** Telemetry is processed securely in volatile RAM, stored strictly in our encrypted local SQLite database on our private machine, and never published or shared.\n\n` +
+                         `Click **Start In-Site Verification** on the panel whenever you're ready!`,
+                ephemeral: true
+            });
+        }
+
         // Handle Security Alert Quick-Actions (Staff Buttons on Flagged Incident Embeds)
         if (interaction.isButton() && (
             interaction.customId.startsWith('security_ban_') || 

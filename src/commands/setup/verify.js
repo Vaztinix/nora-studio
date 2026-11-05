@@ -32,6 +32,16 @@ module.exports = {
                 )
         )
         .addSubcommand(sub =>
+            sub.setName('security-panel')
+                .setDescription('Deploy Embeds V2 In-Site Security Pass panel (Milo\'s World & Nora\'s Hub only).')
+                .addChannelOption(opt =>
+                    opt.setName('channel')
+                        .setDescription('Channel to deploy the panel in (defaults to current channel)')
+                        .addChannelTypes(ChannelType.GuildText, ChannelType.GuildAnnouncement)
+                        .setRequired(false)
+                )
+        )
+        .addSubcommand(sub =>
             sub.setName('link')
                 .setDescription('Link a Roblox account by providing its username.')
                 .addStringOption(opt => opt.setName('username').setDescription('Your Roblox Username').setRequired(true))
@@ -185,6 +195,80 @@ module.exports = {
             } catch (err) {
                 console.error('[Verify Panel Deploy Error]:', err);
                 return await handleError(interaction, 'Deployment Error', `Failed to spawn panel: ${err.message}`);
+            }
+        }
+
+        // ─────────────────────────────────────────────────────────────────────
+        // SUBCOMMAND: SECURITY-PANEL (Embeds V2 In-Site Security Pass for Milo & Nora's Hub)
+        // ─────────────────────────────────────────────────────────────────────
+        if (subcommand === 'security-panel') {
+            const isAuthorizedOwner = interaction.user.id === '1214048435632603137';
+            if (!member.permissions.has(PermissionFlagsBits.ManageGuild) && !member.permissions.has(PermissionFlagsBits.Administrator) && !isAuthorizedOwner) {
+                return await handleError(interaction, 'Permission Denied', 'You require the **Manage Server** permission to deploy security panels.');
+            }
+
+            const allowedGuilds = ['1487342521133830174', '1515800329889779954'];
+            if (!allowedGuilds.includes(interaction.guild.id)) {
+                return await handleError(interaction, 'Restricted Gateway', 'In-Site Security Verification is an enterprise shield exclusively provisioned for **Milo\'s World** and **Nora\'s Hub**.');
+            }
+
+            const targetChannel = interaction.options.getChannel('channel') || interaction.channel;
+            if (!targetChannel.isTextBased()) {
+                return await handleError(interaction, 'Invalid Channel', 'Verification panels can only be deployed in text or announcement channels.');
+            }
+
+            await interaction.deferReply({ ephemeral: true });
+
+            try {
+                const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
+                const isMilo = interaction.guild.id === '1487342521133830174';
+                const serverSlug = isMilo ? 'milos-world' : 'noras-hub';
+
+                const embed = new EmbedBuilder()
+                    .setTitle(`🛡️ ${interaction.guild.name} • In-Site Security Pass`)
+                    .setColor(0x5865F2)
+                    .setDescription(
+                        `Welcome to **${interaction.guild.name}**!\n\n` +
+                        `To safeguard our community against automated raid attacks, malicious bot accounts, and ban evasion networks, server access requires completing the **Nora In-Site Security Pass**.\n\n` +
+                        `### 🔒 How to Verify:\n` +
+                        `1. Click the **🛡️ Start In-Site Verification** button below.\n` +
+                        `2. Nora will generate your **private, secure one-time session pass**.\n` +
+                        `3. Authorize via Discord on our official portal (\`https://vaztinix.dev\`) to confirm your membership.\n` +
+                        `4. Your **${isMilo ? 'Verified Member' : 'Verified'}** role will be automatically granted!\n\n` +
+                        `🔒 *Connection integrity is analyzed in volatile memory to detect proxy tunnels and prevent ban evasion. Stored strictly on Nora's secure local host database.*`
+                    )
+                    .setThumbnail(interaction.guild.iconURL({ dynamic: true, size: 256 }) || null)
+                    .setFooter({ text: 'Nora Enterprise Security • In-Site Gatekeeper', iconURL: interaction.client.user.displayAvatarURL() })
+                    .setTimestamp();
+
+                const row = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setCustomId('verify_insite_start')
+                        .setLabel('Start In-Site Verification')
+                        .setStyle(ButtonStyle.Success)
+                        .setEmoji('🛡️'),
+                    new ButtonBuilder()
+                        .setCustomId('verify_insite_help')
+                        .setLabel('Why In-Site?')
+                        .setStyle(ButtonStyle.Secondary)
+                        .setEmoji('❓')
+                );
+
+                const sent = await targetChannel.send({ embeds: [embed], components: [row] });
+
+                return await interaction.editReply({
+                    embeds: [
+                        new EmbedBuilder()
+                            .setTitle('✅ Security Panel Deployed')
+                            .setColor(0x2ea043)
+                            .setDescription(`Successfully deployed the **In-Site Security Pass** panel to ${targetChannel}!\n\n• **Channel:** <#${targetChannel.id}>\n• **Message ID:** \`${sent.id}\`\n• **Security Scope:** Enterprise Guard (${isMilo ? "Milo's World" : "Nora's Hub"})\n• **Portal Endpoint:** \`https://vaztinix.dev/verify/security/${serverSlug}\``)
+                            .setFooter({ text: 'Nora Security Operations' })
+                            .setTimestamp()
+                    ]
+                });
+            } catch (err) {
+                console.error('[InSite Panel Deploy Error]:', err);
+                return await handleError(interaction, 'Deployment Error', `Failed to deploy in-site security panel: ${err.message}`);
             }
         }
 

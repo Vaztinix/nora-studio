@@ -62,6 +62,42 @@ const VerificationLog = sequelize.define('VerificationLog', {
     evidenceData: {
         type: DataTypes.TEXT, // JSON array of evidence points
         allowNull: true
+    },
+    ipAddress: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    vpnDetected: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    altDetected: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    linkedAltIds: {
+        type: DataTypes.TEXT, // JSON array of linked user IDs
+        allowNull: true
+    },
+    browserFingerprint: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    locationData: {
+        type: DataTypes.TEXT, // JSON object: country, region, city, timezone
+        allowNull: true
+    },
+    correlationRationale: {
+        type: DataTypes.TEXT, // Step-by-step breakdown of how the user was determined to be the same person
+        allowNull: true
+    },
+    serverSlug: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    ticketToken: {
+        type: DataTypes.STRING,
+        allowNull: true
     }
 }, {
     timestamps: true,

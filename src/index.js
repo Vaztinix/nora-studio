@@ -1236,6 +1236,31 @@ function serveVerify(req, res) {
 
 app.get('/verify', ipRateLimiter, serveVerify);
 
+function serveSecurityVerify(req, res) {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    const distPath = path.join(__dirname, '../dist/security-verify.html');
+    const webPath = path.join(__dirname, 'web/security-verify.html');
+    const filePath = fs.existsSync(distPath) ? distPath : webPath;
+
+    try {
+        let html = fs.readFileSync(filePath, 'utf8');
+        const apiBase = getApiBaseForReq(req);
+        const clientId = getResolvedClientId();
+        const injection = `\n<script>window.__NORA_API_BASE_URL__ = '${apiBase}'; window.__NORA_CLIENT_ID__ = '${clientId}';</script>\n`;
+        html = html.replace('</head>', injection + '</head>');
+        res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        res.send(html);
+    } catch (err) {
+        console.error('[Security Verify] Failed to serve security-verify.html:', err.message);
+        res.status(500).send('Security verification portal unavailable.');
+    }
+}
+
+app.get(['/verify/security', '/verify/security/:serverSlug', '/verify/security/:serverSlug/*'], ipRateLimiter, serveSecurityVerify);
+
 function serveOwner(req, res) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -1518,8 +1543,18 @@ app.use('/api/system', studioRouter);
 
 // Developer / Owner-Only admin router
 const adminRouter = require('./api/routes/admin');
-app.use(['/api/admin', '/api/owner'], adminRouter);
+app.use(['/api/admin', '/api/owner'], (req, res, next) => {
+    req.client = client;
+    next();
+}, adminRouter);
 app.post('/api/user/sessions/expire-all', (req, res) => res.json({ success: true, message: 'All sessions successfully expired' }));
+
+// In-Site Secure Verification Router (Milo's World & Nora's Hub)
+const insiteVerifyRouter = require('./api/routes/insiteVerify');
+app.use('/api/verify/insite', (req, res, next) => {
+    req.client = client;
+    next();
+}, insiteVerifyRouter);
 
 // Community Modules & IDTK Studio Router
 const modulesRouter = require('./api/routes/modules');

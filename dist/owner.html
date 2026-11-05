@@ -1035,6 +1035,74 @@
 
 
 
+        
+        <!-- In-Site Anti-Alt & Ban Evasion Intelligence Panel (Milo's World & Nora's Hub) -->
+        <div class="card" style="padding: 24px; margin-bottom: 30px; border-color: rgba(88, 101, 242, 0.4); box-shadow: 0 12px 36px rgba(88, 101, 242, 0.15);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px; flex-wrap: wrap; gap: 12px;">
+                <div>
+                    <h3 style="font-size: 1.25rem; margin: 0; display: flex; align-items: center; gap: 12px; font-weight: 800; color: #fff;">
+                        <span class="card-icon-badge" style="background: rgba(88, 101, 242, 0.2); border: 1px solid rgba(88, 101, 242, 0.45); color: #818cf8;"><i class="fas fa-user-shield"></i></span>
+                        In-Site Verification & Forensic Intelligence Center
+                    </h3>
+                    <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
+                        Full Telemetry, Automated Ban-Evasion, Subnet & Canvas Correlation for <strong style="color: #cbd5e1;">Milo's World</strong> & <strong style="color: #cbd5e1;">Nora's Hub</strong>
+                    </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-size: 0.75rem; background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 5px 10px; border-radius: var(--radius-full); font-weight: 700;">
+                        <i class="fas fa-database"></i> Captured: <span id="insite-total-count">0</span>
+                    </span>
+                    <span style="font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 5px 10px; border-radius: var(--radius-full); font-weight: 700;">
+                        <i class="fas fa-exclamation-triangle"></i> Flagged Alts: <span id="insite-alts-count">0</span>
+                    </span>
+                    <span style="font-size: 0.75rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 5px 10px; border-radius: var(--radius-full); font-weight: 700;">
+                        <i class="fas fa-shield-virus"></i> VPN/Tor: <span id="insite-vpn-count">0</span>
+                    </span>
+                    <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 10px; border-radius: var(--radius-full); font-weight: 700;">
+                        <i class="fas fa-check-circle"></i> Clean: <span id="insite-clean-count">0</span>
+                    </span>
+                    <button onclick="fetchInsiteVerifications()" class="btn-action" style="padding: 6px 14px; font-size: 0.8rem; margin-left: 4px;">
+                        <i class="fas fa-sync-alt"></i> Refresh Stream
+                    </button>
+                </div>
+            </div>
+
+            <div style="padding: 12px 16px; background: rgba(88, 101, 242, 0.08); border: 1px solid rgba(88, 101, 242, 0.22); border-radius: var(--radius-sm); font-size: 0.82rem; color: #c7d2fe; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; line-height: 1.45;">
+                <i class="fas fa-lock" style="font-size: 1.25rem; flex-shrink: 0; color: #818cf8;"></i>
+                <span><strong>Lead Developer Vaztinix Exclusive (<code style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px;">1214048435632603137</code>):</strong> Unredacted IP addresses, GPU canvas hashes, and cross-account links are stored strictly in the local host SQLite database. Never exposed on GitHub or to public staff.</span>
+            </div>
+
+            <!-- Filter and Search Toolbar -->
+            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
+                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button id="insite-tab-all" class="logout" style="padding: 5px 12px; font-size: 0.78rem; background: rgba(88, 101, 242, 0.25); border-color: #5865F2; color: #fff; font-weight: 700;" onclick="filterInsiteTab('all')">
+                        All Stream
+                    </button>
+                    <button id="insite-tab-alts" class="logout" style="padding: 5px 12px; font-size: 0.78rem; border-color: rgba(239, 68, 68, 0.4); color: #f87171;" onclick="filterInsiteTab('alts')">
+                        🚨 Flagged Alts
+                    </button>
+                    <button id="insite-tab-vpn" class="logout" style="padding: 5px 12px; font-size: 0.78rem; border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;" onclick="filterInsiteTab('vpn')">
+                        🛡️ VPN / Proxy
+                    </button>
+                    <button id="insite-tab-clean" class="logout" style="padding: 5px 12px; font-size: 0.78rem; border-color: rgba(16, 185, 129, 0.4); color: #34d399;" onclick="filterInsiteTab('clean')">
+                        ✅ Clean
+                    </button>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center; flex: 1; max-width: 520px; justify-content: flex-end;">
+                    <select id="insite-server-filter" onchange="renderInsiteVerificationsTable()" style="padding: 6px 10px; font-size: 0.78rem; background: rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); border-radius: 6px; color: #fff; outline: none; cursor: pointer;">
+                        <option value="all">All Servers</option>
+                        <option value="1487342521133830174">Milo's World</option>
+                        <option value="1515800329889779954">Nora's Hub</option>
+                    </select>
+                    <input type="text" id="insite-search-input" oninput="renderInsiteVerificationsTable()" placeholder="Search user, ID, IP, GPU, or canvas hash..." style="width: 100%; max-width: 280px; padding: 6px 12px; font-size: 0.78rem; background: rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); border-radius: 6px; color: #fff; outline: none;">
+                </div>
+            </div>
+
+            <div id="insite-verifications-container" style="display: flex; flex-direction: column; gap: 14px; max-height: 560px; overflow-y: auto; padding-right: 6px;">
+                <div style="color: var(--text-muted); font-size: 0.88rem; padding: 20px 0; text-align: center;">Loading in-site verification and alt intelligence stream...</div>
+            </div>
+        </div>
+
         <!-- Lists Grid (Vertical Stack) -->
         <div style="display: flex; flex-direction: column; gap: 30px; margin-bottom: 30px; width: 100%;">
             <!-- Active & Revoked Servers List -->
@@ -1293,6 +1361,294 @@
         }
         window.fetchWatchedUsers = fetchWatchedUsers;
     
+
+        
+        let insiteVerifications = [];
+        let activeInsiteTab = 'all';
+
+        function filterInsiteTab(tab) {
+            activeInsiteTab = tab;
+            ['all', 'alts', 'vpn', 'clean'].forEach(t => {
+                const btn = document.getElementById(`insite-tab-${t}`);
+                if (!btn) return;
+                if (t === tab) {
+                    btn.style.background = 'rgba(88, 101, 242, 0.25)';
+                    btn.style.borderColor = '#5865F2';
+                    btn.style.color = '#fff';
+                    btn.style.fontWeight = '700';
+                } else {
+                    btn.style.background = 'transparent';
+                    btn.style.borderColor = 'var(--border-subtle)';
+                    btn.style.color = 'var(--text-muted)';
+                    btn.style.fontWeight = 'normal';
+                }
+            });
+            renderInsiteVerificationsTable();
+        }
+
+        async function fetchInsiteVerifications() {
+            const container = document.getElementById('insite-verifications-container');
+            if (!container) return;
+            try {
+                const authToken = localStorage.getItem('nora_admin_token');
+                const apiBase = window.getApiBaseUrl();
+                const res = await fetch(`${apiBase}/api/admin/insite-verifications`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    insiteVerifications = data.verifications || [];
+                    renderInsiteVerificationsTable();
+                } else {
+                    container.innerHTML = '<div style="color: #f87171; padding: 20px; font-size: 0.85rem;">Failed to fetch verification stream (HTTP ' + res.status + ')</div>';
+                }
+            } catch (e) {
+                console.error('Failed to load insite verifications:', e);
+                container.innerHTML = '<div style="color: #f87171; padding: 20px; font-size: 0.85rem;">Error loading stream: ' + e.message + '</div>';
+            }
+        }
+
+        function copyForensicsJson(id) {
+            const record = insiteVerifications.find(v => String(v.id) === String(id));
+            if (!record) return alert('Forensic record not found.');
+            const formatted = JSON.stringify(record, null, 2);
+            navigator.clipboard.writeText(formatted).then(() => {
+                alert(`Forensics for ${record.username || record.userId} copied to clipboard!`);
+            }).catch(() => {
+                prompt('Copy raw forensics JSON:', formatted);
+            });
+        }
+
+        async function revokeInsiteRole(guildId, userId, username) {
+            if (!confirm(`Revoke verified role from ${username || userId} (${userId})?`)) return;
+            try {
+                const authToken = localStorage.getItem('nora_admin_token');
+                const apiBase = window.getApiBaseUrl();
+                const res = await fetch(`${apiBase}/api/admin/insite-verifications/revoke-role`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ guildId, userId })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message || 'Verified role revoked.');
+                    fetchInsiteVerifications();
+                } else {
+                    alert('Failed to revoke role: ' + (data.error || 'Unknown error'));
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
+
+        function renderInsiteVerificationsTable() {
+            const container = document.getElementById('insite-verifications-container');
+            const totalCountEl = document.getElementById('insite-total-count');
+            const altsCountEl = document.getElementById('insite-alts-count');
+            const vpnCountEl = document.getElementById('insite-vpn-count');
+            const cleanCountEl = document.getElementById('insite-clean-count');
+            if (!container) return;
+
+            const flaggedAlts = insiteVerifications.filter(v => v.altDetected || v.riskLevel === 'Critical');
+            const vpnBlocked = insiteVerifications.filter(v => v.vpnDetected || v.status === 'BLOCKED');
+            const cleanPasses = insiteVerifications.filter(v => v.status === 'VERIFIED' && !v.altDetected && !v.vpnDetected);
+
+            if (totalCountEl) totalCountEl.textContent = insiteVerifications.length;
+            if (altsCountEl) altsCountEl.textContent = flaggedAlts.length;
+            if (vpnCountEl) vpnCountEl.textContent = vpnBlocked.length;
+            if (cleanCountEl) cleanCountEl.textContent = cleanPasses.length;
+
+            if (insiteVerifications.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted); padding: 32px; text-align: center; font-size: 0.9rem;"><i class="fas fa-shield-alt" style="font-size: 2rem; margin-bottom: 10px; display: block; opacity: 0.5;"></i>No in-site security verifications logged yet for Milo\'s World or Nora\'s Hub.</div>';
+                return;
+            }
+
+            // Filtering
+            const searchVal = (document.getElementById('insite-search-input')?.value || '').toLowerCase().trim();
+            const serverFilter = document.getElementById('insite-server-filter')?.value || 'all';
+
+            let filtered = insiteVerifications.filter(v => {
+                if (serverFilter !== 'all' && v.guildId !== serverFilter) return false;
+
+                if (activeInsiteTab === 'alts') {
+                    if (!v.altDetected && v.riskLevel !== 'Critical') return false;
+                } else if (activeInsiteTab === 'vpn') {
+                    if (!v.vpnDetected && v.status !== 'BLOCKED') return false;
+                } else if (activeInsiteTab === 'clean') {
+                    if (v.altDetected || v.vpnDetected || v.status !== 'VERIFIED') return false;
+                }
+
+                if (searchVal) {
+                    const matchUser = (v.username || '').toLowerCase().includes(searchVal);
+                    const matchId = (v.userId || '').includes(searchVal);
+                    const matchIp = (v.ipAddress || '').includes(searchVal);
+                    const matchFps = (v.browserFingerprint || '').toLowerCase().includes(searchVal);
+                    const matchRationale = (v.correlationRationale || '').toLowerCase().includes(searchVal);
+                    if (!matchUser && !matchId && !matchIp && !matchFps && !matchRationale) return false;
+                }
+
+                return true;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-muted); padding: 28px; text-align: center; font-size: 0.88rem;">No records match your selected filter or search query.</div>';
+                return;
+            }
+
+            let output = '';
+            filtered.forEach(v => {
+                const isMilo = v.guildId === '1487342521133830174';
+                const guildBadge = isMilo 
+                    ? '<span style="background: rgba(88, 101, 242, 0.2); color: #818cf8; border: 1px solid rgba(88, 101, 242, 0.4); padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;"><i class="fab fa-discord"></i> Milo\'s World</span>'
+                    : '<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;"><i class="fas fa-heart"></i> Nora\'s Hub</span>';
+
+                let statusBadge = '<span style="background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;"><i class="fas fa-check-circle"></i> VERIFIED CLEAN</span>';
+                let borderHighlight = 'border-color: rgba(255,255,255,0.08);';
+
+                if (v.altDetected || v.riskLevel === 'Critical') {
+                    statusBadge = '<span style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 3px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 800;"><i class="fas fa-exclamation-triangle"></i> BAN EVASION ALT</span>';
+                    borderHighlight = 'border-color: rgba(239, 68, 68, 0.35); box-shadow: 0 4px 18px rgba(239, 68, 68, 0.08);';
+                } else if (v.vpnDetected || v.status === 'BLOCKED') {
+                    statusBadge = '<span style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 3px 9px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;"><i class="fas fa-shield-virus"></i> PROXY / VPN BLOCKED</span>';
+                    borderHighlight = 'border-color: rgba(245, 158, 11, 0.3);';
+                }
+
+                // Parse Location Data
+                let loc = { city: 'Unknown', region: 'Unknown', country: 'US', timezone: 'UTC', asn: 'N/A' };
+                try { if (v.locationData) loc = JSON.parse(v.locationData); } catch (e) {}
+
+                // Parse Browser & Hardware Fingerprint
+                let fp = { userAgent: 'Unknown', platform: 'Unknown', screen: 'Unknown', canvasHash: 'N/A', webglRenderer: 'N/A' };
+                try { if (v.browserFingerprint) fp = JSON.parse(v.browserFingerprint); } catch (e) {}
+
+                // Parse Linked Alts
+                let linkedAltsHtml = '';
+                if (v.linkedAltIds) {
+                    try {
+                        const altIds = JSON.parse(v.linkedAltIds);
+                        if (Array.isArray(altIds) && altIds.length > 0) {
+                            const pills = altIds.map(aid => `<a href="https://discord.com/users/${aid}" target="_blank" style="font-family: monospace; background: rgba(239,68,68,0.2); color: #fca5a5; padding: 2px 7px; border-radius: 4px; text-decoration: none; border: 1px solid rgba(239,68,68,0.3); font-size: 0.74rem;">${aid} <i class="fas fa-external-link-alt" style="font-size: 0.65rem;"></i></a>`).join(' ');
+                            linkedAltsHtml = `
+                                <div style="margin-top: 10px; padding: 10px 14px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.28); border-radius: 8px; font-size: 0.8rem;">
+                                    <div style="font-weight: 700; color: #f87171; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-network-wired"></i> Correlated Accounts Detected (${altIds.length}):
+                                    </div>
+                                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">${pills}</div>
+                                </div>
+                            `;
+                        }
+                    } catch (e) {}
+                }
+
+                // Correlation Rationale Block
+                const rationaleText = v.correlationRationale || v.findingsSummary || 'Routine verification completed.';
+                const rationaleBlock = `
+                    <div style="margin-top: 8px; padding: 10px 14px; background: rgba(0,0,0,0.35); border-left: 3px solid ${v.altDetected ? '#ef4444' : (v.vpnDetected ? '#f59e0b' : '#10b981')}; border-radius: 0 6px 6px 0; font-size: 0.8rem; line-height: 1.45; color: #cbd5e1;">
+                        <strong style="color: ${v.altDetected ? '#fca5a5' : (v.vpnDetected ? '#fde68a' : '#a7f3d0')};">
+                            <i class="fas fa-microchip"></i> Correlation & Logic Overview:
+                        </strong>
+                        <div style="margin-top: 4px; white-space: pre-wrap; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${rationaleText}</div>
+                    </div>
+                `;
+
+                output += `
+                    <div style="background: rgba(14, 16, 26, 0.92); border: 1px solid var(--border-subtle); padding: 18px 20px; border-radius: var(--radius-md); display: flex; flex-direction: column; gap: 10px; transition: border-color 0.2s; ${borderHighlight}">
+                        <!-- Top Header Row -->
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <img src="${v.userAvatar || '/nora.png'}" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.12); object-fit: cover;" onerror="this.src='/nora.png';">
+                                <div>
+                                    <div style="font-weight: 800; font-size: 0.98rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                        ${v.username || 'Unknown User'}
+                                        ${guildBadge}
+                                    </div>
+                                    <div style="font-size: 0.77rem; color: var(--text-muted); font-family: monospace; margin-top: 3px; display: flex; align-items: center; gap: 8px;">
+                                        <span>ID: ${v.userId}</span>
+                                        <button onclick="navigator.clipboard.writeText('${v.userId}'); alert('Copied User ID');" style="background: transparent; border: none; color: #818cf8; cursor: pointer; padding: 0; font-size: 0.75rem;" title="Copy User ID"><i class="far fa-copy"></i></button>
+                                        <span>•</span>
+                                        <span>${new Date(v.createdAt).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                ${statusBadge}
+                                <span style="font-size: 0.75rem; font-weight: 800; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; color: ${v.riskScore > 50 ? '#f87171' : '#34d399'};">
+                                    Risk: ${v.riskScore || 0}/100
+                                </span>
+                                <button onclick="banFlaggedAlt('${v.guildId}', '${v.userId}', '${v.username}')" class="btn-action btn-danger" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 6px;">
+                                    <i class="fas fa-ban"></i> Ban Alt
+                                </button>
+                                <button onclick="revokeInsiteRole('${v.guildId}', '${v.userId}', '${v.username}')" class="btn-action" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; border-color: rgba(245,158,11,0.4); color: #fbbf24;">
+                                    <i class="fas fa-user-minus"></i> Revoke Role
+                                </button>
+                                <button onclick="copyForensicsJson('${v.id}')" class="btn-action" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px;" title="Copy unredacted JSON forensics">
+                                    <i class="fas fa-code"></i> Forensics
+                                </button>
+                                <a href="https://discord.com/users/${v.userId}" target="_blank" class="btn-action" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; text-decoration: none;" title="Open Discord Profile">
+                                    <i class="fab fa-discord"></i> Profile
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- 2-Column Forensic Metadata Grid -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);">
+                            <!-- Column 1: Network & Geolocation -->
+                            <div style="background: rgba(0,0,0,0.22); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); font-size: 0.79rem; display: flex; flex-direction: column; gap: 4px;">
+                                <div style="font-weight: 700; color: #38bdf8; margin-bottom: 2px;"><i class="fas fa-globe-americas"></i> Network & Geolocation</div>
+                                <div><strong style="color: #94a3b8;">IP Address:</strong> <span style="font-family: monospace; color: #38bdf8; font-weight: 700;">${v.ipAddress || 'Protected'}</span> <button onclick="navigator.clipboard.writeText('${v.ipAddress}'); alert('Copied IP Address');" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0 4px;"><i class="far fa-copy"></i></button></div>
+                                <div><strong style="color: #94a3b8;">Location:</strong> <span style="color: #cbd5e1;">${loc.city || 'Unknown'}, ${loc.region || 'Unknown'}, ${loc.country || 'Unknown'}</span></div>
+                                <div><strong style="color: #94a3b8;">ASN / Network:</strong> <span style="color: #cbd5e1; font-family: monospace;">${loc.asn || 'N/A'}</span></div>
+                                <div><strong style="color: #94a3b8;">Tunnel/Tor:</strong> <span style="color: ${v.vpnDetected ? '#f87171; font-weight: 700;' : '#34d399;'}">${v.vpnDetected ? 'Detected (Tor/Hosting Proxy)' : 'Clean Residential Connection'}</span></div>
+                            </div>
+
+                            <!-- Column 2: Device & Browser Fingerprint -->
+                            <div style="background: rgba(0,0,0,0.22); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); font-size: 0.79rem; display: flex; flex-direction: column; gap: 4px;">
+                                <div style="font-weight: 700; color: #c084fc; margin-bottom: 2px;"><i class="fas fa-laptop-code"></i> Device & Hardware Signature</div>
+                                <div><strong style="color: #94a3b8;">Platform & OS:</strong> <span style="color: #cbd5e1;">${fp.platform || 'Unknown'}</span> • <span style="color: #94a3b8;">Screen:</span> <span style="color: #cbd5e1;">${fp.screen || 'N/A'}</span></div>
+                                <div><strong style="color: #94a3b8;">Canvas Hash:</strong> <span style="font-family: monospace; color: #f472b6;">${fp.canvasHash !== 'N/A' ? fp.canvasHash.slice(0, 18) + '...' : 'N/A'}</span></div>
+                                <div><strong style="color: #94a3b8;">GPU Renderer:</strong> <span style="color: #cbd5e1; font-size: 0.74rem;">${fp.webglRenderer !== 'N/A' ? fp.webglRenderer : 'Standard Display'}</span></div>
+                                <div><strong style="color: #94a3b8;">Method:</strong> <span style="color: #e2e8f0;">${v.method} (Ticket: <code style="font-family: monospace; font-size: 0.72rem;">${v.ticketToken ? v.ticketToken.slice(0, 8) + '...' : 'Direct Session'}</code>)</span></div>
+                            </div>
+                        </div>
+
+                        ${rationaleBlock}
+                        ${linkedAltsHtml}
+                    </div>
+                `;
+            });
+
+            container.innerHTML = output;
+        }
+
+        async function banFlaggedAlt(guildId, userId, username) {
+            if (!confirm(`Are you sure you want to permanently ban ${username || userId} (${userId}) from this server?`)) {
+                return;
+            }
+            try {
+                const authToken = localStorage.getItem('nora_admin_token');
+                const apiBase = window.getApiBaseUrl();
+                const res = await fetch(`${apiBase}/api/admin/insite-verifications/ban-alt`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ guildId, userId, reason: '[Nora Owner Desk] Banned for ban evasion / alt abuse' })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message || 'Alt successfully banned.');
+                    fetchInsiteVerifications();
+                } else {
+                    alert('Failed to ban alt: ' + (data.error || 'Unknown error'));
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            }
+        }
 
         async function loadAdminDeskData() {
             const authToken = localStorage.getItem('nora_admin_token');

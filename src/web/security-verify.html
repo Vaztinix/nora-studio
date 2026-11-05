@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nora Studio | Secure In-Site Verification</title>
+    <link rel="icon" type="image/png" href="/nora.png">
+    
+    <!-- Modern Typography & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-base: #03050a;
+            --bg-surface: rgba(14, 16, 26, 0.82);
+            --bg-surface-elevated: rgba(22, 24, 38, 0.92);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-hover: rgba(255, 255, 255, 0.18);
+            
+            --text-main: #F3F4F6;
+            --text-muted: #9CA3AF;
+            --text-dim: #6B7280;
+            
+            --blurple: #5865F2;
+            --blurple-hover: #4752C4;
+            --blurple-glow: rgba(88, 101, 242, 0.35);
+            
+            --emerald: #10B981;
+            --amber: #F59E0B;
+            --rose: #F43F5E;
+            
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 26px;
+            --radius-full: 9999px;
+            
+            --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            position: relative;
+            background-image: 
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.18) 0%, transparent 65%),
+                radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px;
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            width: 100%;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(3, 5, 10, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.05rem;
+        }
+
+        .brand img {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+        }
+
+        .portal-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .portal-card {
+            width: 100%;
+            max-width: 480px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: 36px 32px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(88, 101, 242, 0.12);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .radar-hero {
+            position: relative;
+            width: 76px;
+            height: 76px;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .radar-ring {
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 1.5px solid rgba(88, 101, 242, 0.4);
+            animation: pulseRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        .radar-ring.ring-2 {
+            inset: -18px;
+            animation-delay: 0.6s;
+            border-color: rgba(139, 92, 246, 0.25);
+        }
+
+        @keyframes pulseRing {
+            0% { transform: scale(0.85); opacity: 0.8; }
+            50% { transform: scale(1.08); opacity: 0.3; }
+            100% { transform: scale(0.85); opacity: 0.8; }
+        }
+
+        .hero-icon-box {
+            width: 76px;
+            height: 76px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(88, 101, 242, 0.35) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border: 1px solid rgba(88, 101, 242, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #818cf8;
+            box-shadow: 0 10px 24px rgba(88, 101, 242, 0.25);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px 22px;
+            border-radius: var(--radius-sm);
+            font-weight: 800;
+            border: none;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-decoration: none;
+            box-sizing: border-box;
+        }
+
+        .btn-discord {
+            background: linear-gradient(135deg, #5865F2 0%, #4752C4 100%);
+            color: #fff;
+            box-shadow: 0 6px 20px rgba(88, 101, 242, 0.38);
+        }
+
+        .btn-discord:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 28px rgba(88, 101, 242, 0.5);
+        }
+
+        .btn-discord:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .server-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: rgba(88, 101, 242, 0.12);
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            border-radius: var(--radius-full);
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #818cf8;
+            margin-bottom: 16px;
+        }
+
+        .identity-box {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .identity-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .identity-info img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            object-fit: cover;
+        }
+
+        .status-box {
+            display: none;
+            margin-top: 18px;
+            padding: 14px 18px;
+            border-radius: var(--radius-sm);
+            font-size: 0.88rem;
+            font-weight: 600;
+            line-height: 1.45;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="/" class="brand">
+            <img src="/nora.png" alt="Nora Studio">
+            <span>Nora Studio</span>
+        </a>
+        <div style="font-size: 0.78rem; color: var(--text-dim); display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-shield-alt" style="color: #10b981;"></i>
+            <span>Encrypted Tunnel Active</span>
+        </div>
+    </header>
+
+    <div class="portal-wrapper">
+        <div class="portal-card">
+
+            <!-- Hero Radar Animation -->
+            <div class="radar-hero">
+                <div class="radar-ring"></div>
+                <div class="radar-ring ring-2"></div>
+                <div class="hero-icon-box">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+            </div>
+
+            <!-- Server Badge -->
+            <div id="portal-server-badge" class="server-badge">
+                <i class="fas fa-lock"></i>
+                <span id="portal-server-name">Milo's World</span>
+            </div>
+
+            <h1 id="portal-title" style="font-size: 1.55rem; font-weight: 800; color: #fff; margin-bottom: 8px; letter-spacing: -0.02em;">
+                In-Site Member Verification
+            </h1>
+            <p id="portal-desc" style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin-bottom: 24px;">
+                Link and authenticate your Discord profile with Nora to instantly claim your member roles and unlock all channels.
+            </p>
+
+            <!-- Gate Screen (If opened directly without server redirect ticket) -->
+            <div id="gate-screen" style="display: none;">
+                <div style="padding: 18px; background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: var(--radius-md); text-align: left; margin-bottom: 22px;">
+                    <div style="font-weight: 800; color: #f87171; font-size: 0.95rem; display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                        <i class="fas fa-door-closed"></i> Server Redirect Required
+                    </div>
+                    <div style="font-size: 0.82rem; color: #cbd5e1; line-height: 1.45;">
+                        This security verification pass cannot be opened from a direct URL or search engine. You must click the <strong>Verify Account</strong> button directly inside the official Discord verification channel.
+                    </div>
+                </div>
+                <a href="https://discord.com/channels/@me" class="btn btn-discord">
+                    <i class="fab fa-discord"></i> Return to Discord
+                </a>
+            </div>
+
+            <!-- View 1: Login with Discord -->
+            <div id="view-login" style="display: none;">
+                <button id="discord-login-btn" class="btn btn-discord" onclick="startDiscordAuth()">
+                    <i class="fab fa-discord"></i> Authorize with Discord
+                </button>
+            </div>
+
+            <!-- View 2: Authenticated & Ready to Complete Verification -->
+            <div id="view-verify" style="display: none;">
+                <div class="identity-box">
+                    <div class="identity-info">
+                        <img id="user-avatar" src="/nora.png" alt="Avatar">
+                        <div>
+                            <div id="user-name" style="font-weight: 800; color: #fff; font-size: 0.92rem;">Username</div>
+                            <div id="user-id" style="font-size: 0.75rem; color: var(--text-dim); font-family: monospace;">ID: 000000000000000000</div>
+                        </div>
+                    </div>
+                    <span style="font-size: 0.72rem; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 3px 8px; border-radius: 999px; font-weight: 700;">
+                        Ready
+                    </span>
+                </div>
+
+                <button id="submit-verify-btn" class="btn btn-discord" onclick="executeInsiteVerification()">
+                    <i class="fas fa-shield-check"></i> Complete In-Site Verification
+                </button>
+            </div>
+
+            <!-- Status Output Box -->
+            <div id="status-box" class="status-box"></div>
+
+            <div style="font-size: 0.73rem; color: var(--text-dim); margin-top: 20px;">
+                By verifying, you agree to Nora Studio's <a href="/legal" target="_blank" style="color: var(--text-muted); text-decoration: underline;">Terms &amp; Privacy Policy</a>.
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Hidden Offscreen Canvas for Forensic Canvas Fingerprinting -->
+    <canvas id="forensic-canvas" width="200" height="50" style="display: none;"></canvas>
+
+    <script>
+        function getApiBaseUrl() {
+            const host = window.location.hostname;
+            if (host === 'localhost' || host === '127.0.0.1' || !host) {
+                return (window.location.origin && !window.location.origin.startsWith('file:')) ? window.location.origin : 'http://localhost:3000';
+            }
+            if (window.__NORA_API_BASE_URL__) return window.__NORA_API_BASE_URL__;
+            return 'https://api.vaztinix.dev';
+        }
+
+        // Extract server slug from URL path: /verify/security/:serverSlug
+        function getServerSlug() {
+            const parts = window.location.pathname.split('/').filter(Boolean);
+            const secIdx = parts.indexOf('security');
+            if (secIdx !== -1 && parts[secIdx + 1]) {
+                return parts[secIdx + 1].toLowerCase();
+            }
+            const querySlug = new URLSearchParams(window.location.search).get('server');
+            if (querySlug) return querySlug.toLowerCase();
+            return 'milos-world';
+        }
+
+        // Compute Hardware & Browser Forensics
+        function collectClientForensics() {
+            const forensics = {
+                userAgent: navigator.userAgent,
+                platform: navigator.platform || 'Unknown',
+                screenResolution: `${window.screen.width}x${window.screen.height}@${window.devicePixelRatio || 1}`,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+                languages: navigator.languages || [navigator.language],
+                canvasHash: 'N/A',
+                webglVendor: 'N/A',
+                webglRenderer: 'N/A'
+            };
+
+            // Canvas Hardware Fingerprint Hash
+            try {
+                const canvas = document.getElementById('forensic-canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.textBaseline = 'top';
+                ctx.font = "14px 'Arial'";
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillStyle = '#f60';
+                ctx.fillRect(125, 1, 62, 20);
+                ctx.fillStyle = '#069';
+                ctx.fillText('Nora-Shield v2.5 \ud83d\udee1\ufe0f', 2, 15);
+                ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+                ctx.fillText('Nora-Shield v2.5 \ud83d\udee1\ufe0f', 4, 17);
+                const dataUrl = canvas.toDataURL();
+                
+                // Simple fast hash of dataUrl string
+                let hash = 0;
+                for (let i = 0; i < dataUrl.length; i++) {
+                    hash = ((hash << 5) - hash) + dataUrl.charCodeAt(i);
+                    hash |= 0;
+                }
+                forensics.canvasHash = 'cv_' + Math.abs(hash).toString(16);
+            } catch (e) {}
+
+            // WebGL Hardware Fingerprint
+            try {
+                const gl = document.createElement('canvas').getContext('webgl');
+                if (gl) {
+                    const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                    if (debugInfo) {
+                        forensics.webglVendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
+                        forensics.webglRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                    }
+                }
+            } catch (e) {}
+
+            return forensics;
+        }
+
+        // Initialize OAuth & Session verification
+        document.addEventListener('DOMContentLoaded', async () => {
+            const slug = getServerSlug();
+            const urlParams = new URLSearchParams(window.location.search);
+            let ticket = urlParams.get('ticket');
+            if (ticket) {
+                sessionStorage.setItem('insite_ticket_' + slug, ticket);
+            } else {
+                ticket = sessionStorage.getItem('insite_ticket_' + slug);
+            }
+
+            // Check implicit token from hash
+            const hashParams = new URLSearchParams(window.location.hash.slice(1));
+            const accessToken = hashParams.get('access_token');
+            if (accessToken) {
+                localStorage.setItem('nora_auth_token', accessToken);
+                window.history.replaceState(null, null, window.location.pathname + (ticket ? `?ticket=${encodeURIComponent(ticket)}` : ''));
+            }
+
+            // 1. Session & Server Check
+            try {
+                const res = await fetch(`${getApiBaseUrl()}/api/verify/insite/session-check?serverSlug=${slug}&ticket=${ticket || ''}`, {
+                    headers: localStorage.getItem('nora_auth_token') ? { 'Authorization': `Bearer ${localStorage.getItem('nora_auth_token')}` } : {}
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.valid) {
+                    document.getElementById('gate-screen').style.display = 'block';
+                    document.getElementById('portal-server-name').textContent = slug === 'noras-hub' ? "Nora's Hub" : "Milo's World";
+                    return;
+                }
+
+                document.getElementById('portal-server-name').textContent = data.serverName;
+                document.getElementById('portal-desc').textContent = `Link and authenticate your Discord profile with Nora to instantly claim your member roles in ${data.serverName}.`;
+
+                const token = localStorage.getItem('nora_auth_token');
+                if (!token) {
+                    document.getElementById('view-login').style.display = 'block';
+                } else {
+                    await hydrateUserBadge(token);
+                }
+
+            } catch (err) {
+                console.error('Session verification error:', err);
+                document.getElementById('gate-screen').style.display = 'block';
+            }
+        });
+
+        async function hydrateUserBadge(token) {
+            try {
+                const res = await fetch('https://discord.com/api/v10/users/@me', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) {
+                    localStorage.removeItem('nora_auth_token');
+                    document.getElementById('view-login').style.display = 'block';
+                    return;
+                }
+                const user = await res.json();
+                document.getElementById('user-name').textContent = user.global_name || user.username;
+                document.getElementById('user-id').textContent = `ID: ${user.id}`;
+                if (user.avatar) {
+                    document.getElementById('user-avatar').src = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.webp`;
+                }
+                document.getElementById('view-verify').style.display = 'block';
+            } catch (e) {
+                localStorage.removeItem('nora_auth_token');
+                document.getElementById('view-login').style.display = 'block';
+            }
+        }
+
+        function startDiscordAuth() {
+            const clientId = window.__NORA_CLIENT_ID__ || '1375943730951098549';
+            const slug = getServerSlug();
+            const ticket = new URLSearchParams(window.location.search).get('ticket');
+            if (ticket) {
+                sessionStorage.setItem('insite_ticket_' + slug, ticket);
+            }
+            const redirectBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000')
+                ? `${window.location.origin}/verify/security/${slug}`
+                : `https://vaztinix.dev/verify/security/${slug}`;
+            const redirectUri = encodeURIComponent(redirectBase);
+            window.location.href = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=identify`;
+        }
+
+        async function executeInsiteVerification() {
+            const btn = document.getElementById('submit-verify-btn');
+            const statusBox = document.getElementById('status-box');
+            const token = localStorage.getItem('nora_auth_token');
+            const slug = getServerSlug();
+            const ticket = new URLSearchParams(window.location.search).get('ticket') || sessionStorage.getItem('insite_ticket_' + slug);
+
+            if (!token) {
+                startDiscordAuth();
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying Security Credentials...';
+            statusBox.style.display = 'none';
+
+            const forensics = collectClientForensics();
+
+            try {
+                const res = await fetch(`${getApiBaseUrl()}/api/verify/insite/submit`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        serverSlug: slug,
+                        ticket,
+                        forensics
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    statusBox.style.display = 'block';
+                    statusBox.style.background = 'rgba(16, 185, 129, 0.15)';
+                    statusBox.style.border = '1px solid rgba(16, 185, 129, 0.35)';
+                    statusBox.style.color = '#34d399';
+                    statusBox.innerHTML = `<i class="fas fa-check-circle" style="font-size: 1.1rem; margin-right: 6px;"></i> ${data.message || 'Verification successful! Your member roles have been granted.'}`;
+                    btn.innerHTML = '<i class="fas fa-check"></i> Verified Successfully';
+                    btn.style.background = 'rgba(16, 185, 129, 0.2)';
+                    btn.style.borderColor = '#10b981';
+                } else {
+                    statusBox.style.display = 'block';
+                    statusBox.style.background = 'rgba(239, 68, 68, 0.15)';
+                    statusBox.style.border = '1px solid rgba(239, 68, 68, 0.35)';
+                    statusBox.style.color = '#f87171';
+                    statusBox.innerHTML = `<i class="fas fa-exclamation-triangle" style="font-size: 1.1rem; margin-right: 6px;"></i> ${data.message || data.error || 'Verification declined.'}`;
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-redo"></i> Retry Verification';
+                }
+            } catch (err) {
+                statusBox.style.display = 'block';
+                statusBox.style.background = 'rgba(239, 68, 68, 0.15)';
+                statusBox.style.border = '1px solid rgba(239, 68, 68, 0.35)';
+                statusBox.style.color = '#f87171';
+                statusBox.innerHTML = `<i class="fas fa-times-circle"></i> Connection error. Please check your network and retry.`;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-redo"></i> Retry Verification';
+            }
+        }
+    </script>
+</body>
+</html>
+
