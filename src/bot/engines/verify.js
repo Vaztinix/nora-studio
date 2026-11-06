@@ -461,6 +461,12 @@ async function spawnVerificationPanel(targetChannel, settings, type = 'captcha',
 
     const guild = targetChannel.guild;
     const botUser = guild.members.me?.user;
+
+    // Enforce In-Site security pass for protected hubs (Milo's World & Nora's Hub)
+    const isProtectedHub = ['1487342521133830174', '1515800329889779954'].includes(guild.id);
+    if (isProtectedHub && (!type || type === 'captcha' || type === 'button')) {
+        type = 'insite';
+    }
     
     // Resolve embed color
     let embedColor = 0x5865F2;

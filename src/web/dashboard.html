@@ -29641,6 +29641,17 @@
                 applyThemeVariables();
                 if (typeof syncAdaptiveSlowmodeUI === 'function') syncAdaptiveSlowmodeUI();
 
+                // Sync verification method card selection
+                const isProtectedServer = ['1487342521133830174', '1515800329889779954'].includes(currentServerId);
+                let currentMethod = s.verificationType;
+                if (!currentMethod && isProtectedServer) {
+                    currentMethod = 'insite';
+                }
+                if (!currentMethod) currentMethod = 'captcha';
+                if (typeof selectVerificationMethod === 'function') {
+                    selectVerificationMethod(currentMethod);
+                }
+
                 // Populate role multipliers
                 const multsList = document.getElementById('role-multipliers-list');
                 if (multsList) {
@@ -29933,16 +29944,33 @@
         async function triggerAction(action, btn) {
             const t = sessionStorage.getItem('discord_token');
             const old = btn.textContent; btn.textContent = "Working...";
-            const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/action`, { 
-                method: 'POST', 
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${t}`
-                }, 
-                body: JSON.stringify({ action }) 
-            });
-            const data = await res.json();
-            btn.textContent = res.ok ? "Success!" : (data.error || "Failed");
+            const payload = { action };
+            if (action === 'spawn_verify') {
+                const verifyTypeEl = document.getElementById('setting-verificationType');
+                const verifyChanEl = document.getElementById('setting-verifyChannelId');
+                if (verifyTypeEl && verifyTypeEl.value) payload.verificationType = verifyTypeEl.value;
+                if (verifyChanEl && verifyChanEl.value) payload.verifyChannelId = verifyChanEl.value;
+            }
+            try {
+                const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/action`, { 
+                    method: 'POST', 
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${t}`
+                    }, 
+                    body: JSON.stringify(payload) 
+                });
+                const data = await res.json();
+                btn.textContent = res.ok ? "Success!" : (data.error || "Failed");
+                if (res.ok) {
+                    showToast(data.message || 'Verification panel spawned successfully!', 'success');
+                } else {
+                    showToast(data.error || 'Failed to spawn verification panel', 'error');
+                }
+            } catch (err) {
+                btn.textContent = "Failed";
+                showToast('Network error spawning panel: ' + err.message, 'error');
+            }
             setTimeout(() => btn.textContent = old, 3000);
         }
         async function fetchPremiumAccess() {

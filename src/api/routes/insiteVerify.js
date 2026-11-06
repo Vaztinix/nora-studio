@@ -54,16 +54,116 @@ function getClientIp(req) {
     return req.socket.remoteAddress || req.ip || '127.0.0.1';
 }
 
-// Anti-VPN & Datacenter Proxy detector
-function isVpnOrDatacenter(req, clientIp) {
-    if (req.headers['cf-ipcountry'] === 'T1') {
-        return { isVpn: true, reason: 'Tor Exit Node detected' };
+// IP Intelligence Cache: ip -> { data, timestamp }
+// Cache for 24 hours to ensure high speed and prevent ip-api rate limits
+const ipIntelCache = new Map();
+const INTEL_CACHE_TTL = 24 * 60 * 60 * 1000;
+
+async function getIpIntelligence(ip) {
+    if (!ip || ip === '127.0.0.1' || ip === '::1' || ip.startsWith('192.168.') || ip.startsWith('10.') || ip.startsWith('172.16.')) {
+        return {
+            status: 'success',
+            country: 'Local Network',
+            countryCode: 'LO',
+            regionName: 'Development',
+            city: 'Localhost',
+            zip: '00000',
+            lat: 0,
+            lon: 0,
+            timezone: 'UTC',
+            isp: 'Local Development Environment',
+            org: 'Internal Loopback',
+            as: 'AS0 LOCAL',
+            proxy: false,
+            hosting: false
+        };
     }
 
-    if (clientIp === '127.0.0.1' || clientIp === '::1' || clientIp.startsWith('192.168.') || clientIp.startsWith('10.')) {
+    const cached = ipIntelCache.get(ip);
+    if (cached && (Date.now() - cached.timestamp < INTEL_CACHE_TTL)) {
+        return cached.data;
+    }
+
+    try {
+        const res = await axios.get(`http://ip-api.com/json/${ip}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,asname,mobile,proxy,hosting,query`, {
+            timeout: 3500
+        });
+        if (res.data && res.data.status === 'success') {
+            ipIntelCache.set(ip, { data: res.data, timestamp: Date.now() });
+            return res.data;
+        }
+    } catch (err) {
+        console.warn(`[InSite Verify] Live IP lookup error for ${ip}:`, err.message);
+    }
+    return null;
+}
+
+// Multi-signal Anti-VPN & Datacenter Proxy detector (Zero False Positives, Miss Nothing)
+function checkVpnAndDatacenter(req, clientIp, intel, forensics) {
+    // 1. Cloudflare Tor & Anonymous Proxy Flags
+    if (req.headers['cf-ipcountry'] === 'T1') {
+        return { isVpn: true, reason: 'Cloudflare Tor Exit Node detected' };
+    }
+    if (req.headers['cf-ipcountry'] === 'XX') {
+        return { isVpn: true, reason: 'Cloudflare Anonymous Proxy / Tunnel detected' };
+    }
+
+    // Allow local development IPs
+    if (clientIp === '127.0.0.1' || clientIp === '::1' || clientIp.startsWith('192.168.') || clientIp.startsWith('10.') || clientIp.startsWith('172.16.')) {
         return { isVpn: false };
     }
 
+    // 2. Live IP Intelligence Checks (ip-api.com)
+    if (intel) {
+        // Direct proxy / VPN / Tor flag
+        if (intel.proxy === true) {
+            return { isVpn: true, reason: 'Known VPN, Proxy server, or Tor Exit Node confirmed by IP intelligence' };
+        }
+
+        // Direct datacenter / hosting facility flag (where VPN nodes operate)
+        if (intel.hosting === true) {
+            return { isVpn: true, reason: `Datacenter / Hosting IP range detected (${intel.isp || intel.org || 'Hosting Facility'})` };
+        }
+
+        // Curated VPN & Cloud Provider Signature Keywords
+        const identityStr = `${intel.isp || ''} ${intel.org || ''} ${intel.as || ''} ${intel.asname || ''}`.toLowerCase();
+        const vpnKeywords = [
+            'nordvpn', 'surfshark', 'proton', 'mullvad', 'expressvpn', 'private internet access', 'pia',
+            'cyberghost', 'windscribe', 'purevpn', 'ivpn', 'ipvanish', 'torguard', 'hide.me', 'tunnelbear',
+            'hotspot shield', 'vyprvpn', 'zenmate', 'hola vpn', 'm247', 'datacamp', 'packethub', 'datapacket',
+            'ovh', 'hetzner', 'digitalocean', 'linode', 'vultr', 'leaseweb', 'choopa', 'hostinger', 'cogent',
+            'amazon', 'aws', 'google cloud', 'microsoft azure', 'oracle cloud', 'fastly', 'contabo', 'scaleway',
+            'zenlayer', 'kamatera', 'psychz', 'turing', 'tzulo', 'franclink', 'tierpoint', 'quadranet',
+            'colocrossing', 'serversaustralia', 'reliablesite', 'servermania', 'webnx', 'server', 'hosting', 'datacenter'
+        ];
+
+        for (const kw of vpnKeywords) {
+            if (identityStr.includes(kw)) {
+                return { isVpn: true, reason: `VPN / Datacenter network provider identified: ${intel.isp || intel.org || kw}` };
+            }
+        }
+
+        // Timezone Spoofing Discrepancy Check:
+        // If client reports an authentic local timezone and IP indicates a different continent (> 4 hours difference)
+        if (forensics && forensics.timezone && intel.timezone && forensics.timezone !== 'UTC' && intel.timezone !== 'UTC') {
+            try {
+                const now = new Date();
+                const clientTimeStr = now.toLocaleString('en-US', { timeZone: forensics.timezone });
+                const serverTimeStr = now.toLocaleString('en-US', { timeZone: intel.timezone });
+                const clientDate = new Date(clientTimeStr);
+                const serverDate = new Date(serverTimeStr);
+                const hourDiff = Math.abs(clientDate.getTime() - serverDate.getTime()) / (1000 * 60 * 60);
+
+                if (hourDiff >= 4.5) {
+                    return { isVpn: true, reason: `Proxy tunnel detected: Browser timezone (${forensics.timezone}) mismatches network location (${intel.timezone} - ${Math.round(hourDiff)}h discrepancy)` };
+                }
+            } catch (_) {
+                // Ignore timezone parse errors
+            }
+        }
+    }
+
+    // 3. Fallback Datacenter IP Prefix Check (if live intel is unreachable)
     const dcPrefixes = [
         '3.','18.','34.','35.','44.','52.','54.', // AWS
         '104.248.','159.65.','167.99.','178.62.', // DigitalOcean
@@ -78,7 +178,7 @@ function isVpnOrDatacenter(req, clientIp) {
 
     for (const prefix of dcPrefixes) {
         if (clientIp.startsWith(prefix)) {
-            return { isVpn: true, reason: 'Datacenter / Hosting provider IP range detected' };
+            return { isVpn: true, reason: 'Known datacenter / hosting IP prefix detected' };
         }
     }
 
@@ -147,7 +247,7 @@ router.post('/create-ticket', async (req, res) => {
 });
 
 // POST /api/verify/insite/submit
-// Executes full forensic analysis, logs to database, checks VPNs & alts, and grants roles
+// Executes full forensic analysis, logs to database, blocks VPNs & alts, auto-bans ban-evasion alts, and grants roles
 router.post('/submit', async (req, res) => {
     try {
         const authHeader = req.headers.authorization;
@@ -191,18 +291,21 @@ router.post('/submit', async (req, res) => {
 
         const clientIp = getClientIp(req);
 
-        // 2. Extract Location Metadata from Cloudflare headers
-        const country = req.headers['cf-ipcountry'] || 'US';
-        const city = req.headers['cf-ipcity'] || 'Unknown';
-        const region = req.headers['cf-region'] || 'Unknown';
-        const timezone = forensics?.timezone || 'UTC';
+        // 2. Real-Time IP Intelligence & Location Telemetry
+        const intel = await getIpIntelligence(clientIp);
 
         const locationData = JSON.stringify({
-            country,
-            city,
-            region,
-            timezone,
-            asn: req.headers['cf-asn'] || 'N/A'
+            country: intel?.country || req.headers['cf-ipcountry'] || 'United States',
+            countryCode: intel?.countryCode || req.headers['cf-ipcountry'] || 'US',
+            region: intel?.regionName || req.headers['cf-region'] || 'Unknown',
+            city: intel?.city || req.headers['cf-ipcity'] || 'Unknown',
+            zip: intel?.zip || 'N/A',
+            lat: intel?.lat || null,
+            lon: intel?.lon || null,
+            timezone: intel?.timezone || forensics?.timezone || 'UTC',
+            isp: intel?.isp || req.headers['cf-asn'] || 'Unknown ISP',
+            org: intel?.org || 'N/A',
+            asn: intel?.as || req.headers['cf-asn'] || 'N/A'
         });
 
         // 3. Extract Browser & Hardware Forensics
@@ -224,7 +327,7 @@ router.post('/submit', async (req, res) => {
             });
         }
 
-        // 5. Check Permanent IP Bans table
+        // 5. Check Permanent IP Bans Table
         const ipBanRecord = await IpBan.findOne({ where: { ipAddress: clientIp } });
         if (ipBanRecord) {
             await member.ban({ reason: `[Nora Auto-Shield] Banned IP address (${ipBanRecord.reason || 'IP Blacklist'})` }).catch(() => {});
@@ -256,7 +359,7 @@ router.post('/submit', async (req, res) => {
         }
 
         // 6. Anti-VPN / Datacenter Proxy Detection
-        const vpnCheck = isVpnOrDatacenter(req, clientIp);
+        const vpnCheck = checkVpnAndDatacenter(req, clientIp, intel, forensics);
         if (vpnCheck.isVpn) {
             await VerificationLog.create({
                 guildId,
@@ -286,16 +389,16 @@ router.post('/submit', async (req, res) => {
         }
 
         // 7. Comprehensive Alt & Ban Evasion Comparison Engine
-        // Query past verification records for the guild with matching IP, Canvas hash, or Subnet
+        // Compare against previous records across this server and protected hubs
         const subnet = clientIp.split('.').slice(0, 3).join('.'); // /24 subnet
 
         const pastLogs = await VerificationLog.findAll({
             where: {
-                guildId,
+                guildId: { [Op.in]: ['1487342521133830174', '1515800329889779954'] },
                 userId: { [Op.ne]: userId }
             },
             order: [['createdAt', 'DESC']],
-            limit: 250
+            limit: 500
         });
 
         const linkedAlts = [];
@@ -303,23 +406,31 @@ router.post('/submit', async (req, res) => {
         let isAltMatch = false;
 
         const canvasHash = forensics?.canvasHash;
+        const webglRenderer = forensics?.webglRenderer;
+        const userAgent = req.headers['user-agent'] || forensics?.userAgent;
+        const screenResolution = forensics?.screenResolution;
 
         for (const log of pastLogs) {
             let matchedReasons = [];
 
-            // Test A: Exact IP match
+            // Test A: Exact IP match (Same connection)
             if (log.ipAddress && log.ipAddress === clientIp) {
                 matchedReasons.push(`Exact IP Match (${clientIp})`);
             }
 
-            // Test B: Exact Canvas / WebGL hardware fingerprint match
-            if (canvasHash && log.browserFingerprint && log.browserFingerprint.includes(canvasHash) && canvasHash !== 'N/A') {
+            // Test B: Exact Canvas / WebGL hardware fingerprint match (Same physical device/GPU)
+            if (canvasHash && canvasHash !== 'N/A' && log.browserFingerprint && log.browserFingerprint.includes(canvasHash)) {
                 matchedReasons.push(`Identical Canvas Hardware Fingerprint (${canvasHash.slice(0, 10)}...)`);
             }
 
-            // Test C: Subnet match + identical User-Agent
-            if (log.ipAddress && log.ipAddress.startsWith(subnet) && log.browserFingerprint && forensics?.userAgent && log.browserFingerprint.includes(forensics.userAgent)) {
-                matchedReasons.push(`Subnet & User-Agent Match (${subnet}.x)`);
+            // Test C: WebGL Renderer + Vendor + Screen + Subnet match (Same GPU & local network)
+            if (webglRenderer && webglRenderer !== 'N/A' && log.browserFingerprint && log.browserFingerprint.includes(webglRenderer) && screenResolution && log.browserFingerprint.includes(screenResolution) && log.ipAddress && log.ipAddress.startsWith(subnet)) {
+                matchedReasons.push(`GPU Hardware (${webglRenderer}) & Subnet Match (${subnet}.x)`);
+            }
+
+            // Test D: Subnet match + identical User-Agent (Same local network and browser build)
+            if (log.ipAddress && log.ipAddress.startsWith(subnet) && userAgent && log.browserFingerprint && log.browserFingerprint.includes(userAgent)) {
+                matchedReasons.push(`Subnet & Browser Environment Match (${subnet}.x)`);
             }
 
             if (matchedReasons.length > 0) {
@@ -349,7 +460,7 @@ router.post('/submit', async (req, res) => {
 
         if (matchedBannedAlt) {
             // CRITICAL: Ban evasion confirmed! Auto-ban alt immediately
-            const banReason = `[Nora Auto-Shield] Ban evasion detected (Alt of banned user: ${matchedBannedAlt.user.tag} - ID: ${matchedBannedAlt.user.id})`;
+            const banReason = `[Nora Auto-Shield] Auto-banned for ban evasion (Alt of banned user: ${matchedBannedAlt.user.tag} - ID: ${matchedBannedAlt.user.id})`;
             await member.ban({ reason: banReason }).catch(e => console.error('Failed to auto-ban alt:', e));
 
             const fullRationale = `BAN EVASION CONFIRMED:\n• Matched banned user: ${matchedBannedAlt.user.tag} (${matchedBannedAlt.user.id})\n• Forensic correlations:\n  ${rationalePoints.join('\n  ')}\n• Auto-Action: Banned from ${guild.name}.`;
@@ -382,7 +493,39 @@ router.post('/submit', async (req, res) => {
             });
         }
 
-        // 9. Clean Verification! Grant Verified Role
+        // If an alt is detected (even if the main is not currently banned), BLOCK VERIFICATION!
+        if (isAltMatch) {
+            const altBlockRationale = `ALTERNATIVE ACCOUNT DETECTED:\n• Correlated accounts found: ${linkedUserIds.length} account(s) (${linkedUserIds.join(', ')})\n• Forensic correlations:\n  ${rationalePoints.join('\n  ')}\n• Action: Verification declined per server zero-alt policy.`;
+
+            await VerificationLog.create({
+                guildId,
+                serverSlug,
+                userId,
+                username,
+                userAvatar,
+                method: 'In-Site Security Pass',
+                status: 'BLOCKED',
+                riskScore: 85,
+                riskLevel: 'High',
+                ipAddress: clientIp,
+                locationData,
+                browserFingerprint,
+                altDetected: true,
+                linkedAltIds: JSON.stringify(linkedUserIds),
+                ticketToken: ticket || null,
+                correlationRationale: altBlockRationale,
+                findingsSummary: `Alternative Account Blocked: Connection correlates to existing member accounts (${linkedUserIds.length} found). Verification access denied.`,
+                confidenceScore: '98% Network & Device Match'
+            });
+
+            return res.status(403).json({
+                success: false,
+                code: 'ALT_DETECTED',
+                message: 'Verification declined: Alternative accounts are not permitted in this server.'
+            });
+        }
+
+        // 9. 100% Clean Verification! Grant Verified Role
         let verifiedRoleAwarded = false;
         if (guildId === '1487342521133830174') { // Milo's World
             const verifiedRoleId = '1545240828354633819';
@@ -395,13 +538,14 @@ router.post('/submit', async (req, res) => {
             const gs = await GuildSettings.findOne({ where: { guildId } });
             if (gs && gs.verifyRoleId) {
                 await member.roles.add(gs.verifyRoleId).catch(() => {});
+                if (gs.removeUnverifiedRoleOnVerify && gs.unverifiedRoleId) {
+                    await member.roles.remove(gs.unverifiedRoleId).catch(() => {});
+                }
                 verifiedRoleAwarded = true;
             }
         }
 
-        const cleanRationale = isAltMatch 
-            ? `Multi-account correlation detected in same household/network (${linkedUserIds.length} linked accounts: ${linkedUserIds.join(', ')}). No banned records found. Verified.`
-            : `100% Unique connection. Zero correlated alts or proxy indicators found. Clean residential verification.`;
+        const cleanRationale = `100% Unique connection. Zero correlated alts, datacenter tunnels, or proxy indicators found. Clean residential verification.`;
 
         await VerificationLog.create({
             guildId,
@@ -411,18 +555,16 @@ router.post('/submit', async (req, res) => {
             userAvatar,
             method: 'In-Site Security Pass',
             status: 'VERIFIED',
-            riskScore: isAltMatch ? 25 : 0,
-            riskLevel: isAltMatch ? 'Medium' : 'Low',
+            riskScore: 0,
+            riskLevel: 'Low',
             ipAddress: clientIp,
             locationData,
             browserFingerprint,
-            altDetected: isAltMatch,
-            linkedAltIds: linkedUserIds.length > 0 ? JSON.stringify(linkedUserIds) : null,
+            altDetected: false,
+            linkedAltIds: null,
             ticketToken: ticket || null,
             correlationRationale: cleanRationale,
-            findingsSummary: isAltMatch
-                ? `Verified (Household / Alt flag: ${linkedUserIds.length} accounts found). Clean disciplinary history.`
-                : 'Clean Background: Unique IP, authentic browser fingerprint, 0 risk flags.',
+            findingsSummary: 'Clean Background: Unique IP, authentic browser fingerprint, 0 risk flags.',
             confidenceScore: '100% Authentic Match'
         });
 

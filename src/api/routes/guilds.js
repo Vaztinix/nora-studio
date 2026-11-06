@@ -1623,19 +1623,35 @@ router.post('/action', async (req, res) => {
             const settings = await settingsCache.get(guildId);
 
             const { parseRoleIds } = require('../../utils/roleUtils');
-            const hasRoles = settings && (parseRoleIds(settings.verifyRoleId).length > 0 || parseRoleIds(settings.robloxVerifyRoleId).length > 0);
+            const isProtectedServer = ['1487342521133830174', '1515800329889779954'].includes(guildId);
+            let hasRoles = settings && (parseRoleIds(settings.verifyRoleId).length > 0 || parseRoleIds(settings.robloxVerifyRoleId).length > 0);
+            if (isProtectedServer) {
+                hasRoles = true;
+            }
             if (!hasRoles) {
                 return res.status(400).json({ error: 'Please configure at least one Verified Role in settings before spawning the panel.' });
             }
 
-            const targetChannelId = settings.verifyChannelId;
+            const targetChannelId = req.body?.verifyChannelId || settings?.verifyChannelId;
             let channel = targetChannelId ? guild.channels.cache.get(targetChannelId) : null;
             if (!channel) {
                 channel = guild.channels.cache.find(c => c.type === 0 && c.permissionsFor(guild.members.me)?.has('SendMessages'));
             }
             if (!channel) return res.status(400).json({ error: 'No suitable text channel found. Set a Verify Channel in settings.' });
 
-            const method = settings.verificationType || 'captcha';
+            const method = req.body?.verificationType || (isProtectedServer ? 'insite' : (settings?.verificationType || 'captcha'));
+
+            if (settings) {
+                settings.verificationType = method;
+                if (targetChannelId) settings.verifyChannelId = targetChannelId;
+                if (isProtectedServer && guildId === '1487342521133830174') {
+                    if (!settings.verifyRoleId) settings.verifyRoleId = '1545240828354633819';
+                    if (!settings.unverifiedRoleId) settings.unverifiedRoleId = '1539017864709669054';
+                }
+                await settings.save().catch(() => null);
+                settingsCache.invalidate(guildId);
+            }
+
             const sent = await verifyEngine.spawnVerificationPanel(channel, settings, method);
 
             const logger = require('../../utils/logger');
