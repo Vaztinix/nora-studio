@@ -8,7 +8,8 @@ const {
     ButtonStyle, 
     ModalBuilder, 
     TextInputBuilder, 
-    TextInputStyle 
+    TextInputStyle,
+    MessageFlags 
 } = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
 const settingsCache = require('../utils/settingsCache');
@@ -572,19 +573,20 @@ module.exports = {
         // Handle In-Site Security Pass Buttons (Milo's World & Nora's Hub)
         if (interaction.isButton() && interaction.customId === 'verify_insite_start') {
             try {
+                // Immediately acknowledge interaction to satisfy Discord's strict 3-second limit & prevent Error 10062
+                await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
                 const guildId = interaction.guildId;
                 if (guildId !== '1487342521133830174' && guildId !== '1515800329889779954') {
-                    return await interaction.reply({
-                        content: '⚠️ In-site verification is exclusively active for Milo\'s World and Nora\'s Hub.',
-                        ephemeral: true
+                    return await interaction.editReply({
+                        content: '⚠️ In-site verification is exclusively active for Milo\'s World and Nora\'s Hub.'
                     });
                 }
 
                 const member = interaction.member || (interaction.guild ? await interaction.guild.members.fetch(interaction.user.id).catch(() => null) : null);
                 if (guildId === '1487342521133830174' && member && member.roles.cache.has('1545240828354633819')) {
-                    return await interaction.reply({
-                        content: '✅ You are already verified in **Milo\'s World** with the Verified role! No further action is required.',
-                        ephemeral: true
+                    return await interaction.editReply({
+                        content: '✅ You are already verified in **Milo\'s World** with the Verified role! No further action is required.'
                     });
                 }
 
@@ -615,27 +617,31 @@ module.exports = {
                 const { buildEmbedV2Container } = require('../utils/embeds');
                 try {
                     const v2Payload = buildEmbedV2Container(ticketEmbed, [row]);
-                    return await interaction.reply({
+                    return await interaction.editReply({
                         ...v2Payload,
-                        ephemeral: true
+                        flags: (v2Payload.flags || 32768) | MessageFlags.Ephemeral
                     });
                 } catch (err) {
-                    return await interaction.reply({
+                    return await interaction.editReply({
                         embeds: [ticketEmbed],
-                        components: [row],
-                        ephemeral: true
+                        components: [row]
                     });
                 }
             } catch (err) {
                 console.error('[Verify InSite Start Error]:', err);
-                if (!interaction.replied && !interaction.deferred) {
-                    return await interaction.reply({ content: '❌ An error occurred while generating your verification pass. Please try again.', ephemeral: true }).catch(() => {});
+                if (interaction.deferred && !interaction.replied) {
+                    return await interaction.editReply({ content: '❌ An error occurred while generating your verification pass. Please try again.' }).catch(() => {});
+                } else if (!interaction.replied && !interaction.deferred) {
+                    return await interaction.reply({ content: '❌ An error occurred while generating your verification pass. Please try again.', flags: MessageFlags.Ephemeral }).catch(() => {});
                 }
             }
         }
 
         if (interaction.isButton() && interaction.customId === 'verify_insite_help') {
             try {
+                // Immediately acknowledge interaction to satisfy Discord's strict 3-second limit & prevent Error 10062
+                await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
                 const { buildEmbedV2Container } = require('../utils/embeds');
                 const helpEmbed = new EmbedBuilder()
                     .setTitle('🛡️ In-Site Security Pass • Verification System')
@@ -652,20 +658,21 @@ module.exports = {
 
                 try {
                     const v2Payload = buildEmbedV2Container(helpEmbed);
-                    return await interaction.reply({
+                    return await interaction.editReply({
                         ...v2Payload,
-                        ephemeral: true
+                        flags: (v2Payload.flags || 32768) | MessageFlags.Ephemeral
                     });
                 } catch (err) {
-                    return await interaction.reply({
-                        embeds: [helpEmbed],
-                        ephemeral: true
+                    return await interaction.editReply({
+                        embeds: [helpEmbed]
                     });
                 }
             } catch (err) {
                 console.error('[Verify InSite Help Error]:', err);
-                if (!interaction.replied && !interaction.deferred) {
-                    return await interaction.reply({ content: '❌ An error occurred displaying help. Please try again.', ephemeral: true }).catch(() => {});
+                if (interaction.deferred && !interaction.replied) {
+                    return await interaction.editReply({ content: '❌ An error occurred displaying help. Please try again.' }).catch(() => {});
+                } else if (!interaction.replied && !interaction.deferred) {
+                    return await interaction.reply({ content: '❌ An error occurred displaying help. Please try again.', flags: MessageFlags.Ephemeral }).catch(() => {});
                 }
             }
         }
