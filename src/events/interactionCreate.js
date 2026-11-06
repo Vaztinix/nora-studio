@@ -1,4 +1,15 @@
-const { Events, ChannelType, PermissionFlagsBits } = require('discord.js');
+const { 
+    Events, 
+    ChannelType, 
+    PermissionFlagsBits, 
+    EmbedBuilder, 
+    ActionRowBuilder, 
+    ButtonBuilder, 
+    ButtonStyle, 
+    ModalBuilder, 
+    TextInputBuilder, 
+    TextInputStyle 
+} = require('discord.js');
 const GuildSettings = require('../database/models/GuildSettings');
 const settingsCache = require('../utils/settingsCache');
 const { handleError } = require('../utils/embeds');
@@ -560,88 +571,102 @@ module.exports = {
 
         // Handle In-Site Security Pass Buttons (Milo's World & Nora's Hub)
         if (interaction.isButton() && interaction.customId === 'verify_insite_start') {
-            const guildId = interaction.guildId;
-            if (guildId !== '1487342521133830174' && guildId !== '1515800329889779954') {
-                return interaction.reply({
-                    content: '⚠️ In-site verification is exclusively active for Milo\'s World and Nora\'s Hub.',
-                    ephemeral: true
-                });
-            }
-
-            const member = interaction.member || (interaction.guild ? await interaction.guild.members.fetch(interaction.user.id).catch(() => null) : null);
-            if (guildId === '1487342521133830174' && member && member.roles.cache.has('1545240828354633819')) {
-                return interaction.reply({
-                    content: '✅ You are already verified in **Milo\'s World** with the Verified role! No further action is required.',
-                    ephemeral: true
-                });
-            }
-
-            const insiteVerify = require('../api/routes/insiteVerify');
-            const ticketId = insiteVerify.createTicket(guildId);
-            const slug = guildId === '1487342521133830174' ? 'milos-world' : 'noras-hub';
-            const portalUrl = `https://vaztinix.dev/verify/security/${slug}?ticket=${ticketId}`;
-
-            const ticketEmbed = new EmbedBuilder()
-                .setTitle('🎫 Your One-Time Security Pass is Ready')
-                .setColor(0x5865F2)
-                .setDescription(
-                    `Welcome, <@${interaction.user.id}>!\n\n` +
-                    `Click the button below to complete your **In-Site Security Pass** for **${interaction.guild?.name || 'this server'}**.\n\n` +
-                    `⏱️ **Session Expiry:** This private pass is valid for <t:${Math.floor(Date.now() / 1000) + 900}:R> (15 minutes).\n` +
-                    `🔒 **Zero-Trust Pass:** This link is uniquely tied to your Discord session. Do not share this URL with anyone.`
-                )
-                .setFooter({ text: 'Nora In-Site Gatekeeper • Anti-Alt & Proxy Shield' });
-
-            const row = new ActionRowBuilder().addComponents(
-                new ButtonBuilder()
-                    .setLabel('Open Verification Portal')
-                    .setStyle(ButtonStyle.Link)
-                    .setURL(portalUrl)
-                    .setEmoji('🛡️')
-            );
-
-            const { buildEmbedV2Container } = require('../utils/embeds');
             try {
-                const v2Payload = buildEmbedV2Container(ticketEmbed, [row]);
-                return await interaction.reply({
-                    ...v2Payload,
-                    ephemeral: true
-                });
+                const guildId = interaction.guildId;
+                if (guildId !== '1487342521133830174' && guildId !== '1515800329889779954') {
+                    return await interaction.reply({
+                        content: '⚠️ In-site verification is exclusively active for Milo\'s World and Nora\'s Hub.',
+                        ephemeral: true
+                    });
+                }
+
+                const member = interaction.member || (interaction.guild ? await interaction.guild.members.fetch(interaction.user.id).catch(() => null) : null);
+                if (guildId === '1487342521133830174' && member && member.roles.cache.has('1545240828354633819')) {
+                    return await interaction.reply({
+                        content: '✅ You are already verified in **Milo\'s World** with the Verified role! No further action is required.',
+                        ephemeral: true
+                    });
+                }
+
+                const insiteVerify = require('../api/routes/insiteVerify');
+                const ticketId = insiteVerify.createTicket(guildId);
+                const slug = guildId === '1487342521133830174' ? 'milos-world' : 'noras-hub';
+                const portalUrl = `https://vaztinix.dev/verify/security/${slug}?ticket=${ticketId}`;
+
+                const ticketEmbed = new EmbedBuilder()
+                    .setTitle('🎫 Your One-Time Security Pass is Ready')
+                    .setColor(0x5865F2)
+                    .setDescription(
+                        `Welcome, <@${interaction.user.id}>!\n\n` +
+                        `Click the button below to complete your **In-Site Security Pass** for **${interaction.guild?.name || 'this server'}**.\n\n` +
+                        `⏱️ **Session Expiry:** This private pass is valid for <t:${Math.floor(Date.now() / 1000) + 900}:R> (15 minutes).\n` +
+                        `🔒 **Zero-Trust Pass:** This link is uniquely tied to your Discord session. Do not share this URL with anyone.`
+                    )
+                    .setFooter({ text: 'Nora In-Site Gatekeeper • Anti-Alt & Proxy Shield' });
+
+                const row = new ActionRowBuilder().addComponents(
+                    new ButtonBuilder()
+                        .setLabel('Open Verification Portal')
+                        .setStyle(ButtonStyle.Link)
+                        .setURL(portalUrl)
+                        .setEmoji('🛡️')
+                );
+
+                const { buildEmbedV2Container } = require('../utils/embeds');
+                try {
+                    const v2Payload = buildEmbedV2Container(ticketEmbed, [row]);
+                    return await interaction.reply({
+                        ...v2Payload,
+                        ephemeral: true
+                    });
+                } catch (err) {
+                    return await interaction.reply({
+                        embeds: [ticketEmbed],
+                        components: [row],
+                        ephemeral: true
+                    });
+                }
             } catch (err) {
-                return await interaction.reply({
-                    embeds: [ticketEmbed],
-                    components: [row],
-                    ephemeral: true
-                });
+                console.error('[Verify InSite Start Error]:', err);
+                if (!interaction.replied && !interaction.deferred) {
+                    return await interaction.reply({ content: '❌ An error occurred while generating your verification pass. Please try again.', ephemeral: true }).catch(() => {});
+                }
             }
         }
 
         if (interaction.isButton() && interaction.customId === 'verify_insite_help') {
-            const { buildEmbedV2Container } = require('../utils/embeds');
-            const helpEmbed = new EmbedBuilder()
-                .setTitle('🛡️ In-Site Security Pass • Verification System')
-                .setColor(0x5865F2)
-                .setDescription(
-                    `To safeguard **${interaction.guild?.name || 'our community'}** against automated raid scripts, spam bots, and malicious network ban-evasion groups (such as UTTP), server access requires completing the **Nora In-Site Security Pass**.\n\n` +
-                    `### 🔒 What Nora Verifies:\n` +
-                    `• **Network Health:** Inspects proxy tunnels, datacenter ranges, and Tor exit nodes.\n` +
-                    `• **Hardware Signature:** Cryptographic canvas & WebGL signatures to prevent coordinated alt evasion.\n\n` +
-                    `✨ **Privacy Guarantee:** Telemetry is processed securely in volatile RAM, stored strictly on our encrypted local host database, and never published or shared.\n\n` +
-                    `Click **Start In-Site Verification** on the panel whenever you're ready!`
-                )
-                .setFooter({ text: 'Nora Enterprise Security • In-Site Gatekeeper' });
-
             try {
-                const v2Payload = buildEmbedV2Container(helpEmbed);
-                return await interaction.reply({
-                    ...v2Payload,
-                    ephemeral: true
-                });
+                const { buildEmbedV2Container } = require('../utils/embeds');
+                const helpEmbed = new EmbedBuilder()
+                    .setTitle('🛡️ In-Site Security Pass • Verification System')
+                    .setColor(0x5865F2)
+                    .setDescription(
+                        `To safeguard **${interaction.guild?.name || 'our community'}** against automated raid scripts, spam bots, and malicious network ban-evasion groups (such as UTTP), server access requires completing the **Nora In-Site Security Pass**.\n\n` +
+                        `### 🔒 What Nora Verifies:\n` +
+                        `• **Network Health:** Inspects proxy tunnels, datacenter ranges, and Tor exit nodes.\n` +
+                        `• **Hardware Signature:** Cryptographic canvas & WebGL signatures to prevent coordinated alt evasion.\n\n` +
+                        `✨ **Privacy Guarantee:** Telemetry is processed securely in volatile RAM, stored strictly on our encrypted local host database, and never published or shared.\n\n` +
+                        `Click **Start In-Site Verification** on the panel whenever you're ready!`
+                    )
+                    .setFooter({ text: 'Nora Enterprise Security • In-Site Gatekeeper' });
+
+                try {
+                    const v2Payload = buildEmbedV2Container(helpEmbed);
+                    return await interaction.reply({
+                        ...v2Payload,
+                        ephemeral: true
+                    });
+                } catch (err) {
+                    return await interaction.reply({
+                        embeds: [helpEmbed],
+                        ephemeral: true
+                    });
+                }
             } catch (err) {
-                return await interaction.reply({
-                    embeds: [helpEmbed],
-                    ephemeral: true
-                });
+                console.error('[Verify InSite Help Error]:', err);
+                if (!interaction.replied && !interaction.deferred) {
+                    return await interaction.reply({ content: '❌ An error occurred displaying help. Please try again.', ephemeral: true }).catch(() => {});
+                }
             }
         }
 
