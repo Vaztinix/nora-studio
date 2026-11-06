@@ -600,22 +600,49 @@ module.exports = {
                     .setEmoji('🛡️')
             );
 
-            return interaction.reply({
-                embeds: [ticketEmbed],
-                components: [row],
-                ephemeral: true
-            });
+            const { buildEmbedV2Container } = require('../utils/embeds');
+            try {
+                const v2Payload = buildEmbedV2Container(ticketEmbed, [row]);
+                return await interaction.reply({
+                    ...v2Payload,
+                    ephemeral: true
+                });
+            } catch (err) {
+                return await interaction.reply({
+                    embeds: [ticketEmbed],
+                    components: [row],
+                    ephemeral: true
+                });
+            }
         }
 
         if (interaction.isButton() && interaction.customId === 'verify_insite_help') {
-            return interaction.reply({
-                content: `🛡️ **Why In-Site Security Verification?**\n\n` +
-                         `To protect **${interaction.guild?.name || 'our community'}** against automated raid scripts, spam bots, and known malicious network ban-evasion groups (such as UTTP), we require a secure browser connection pass.\n\n` +
-                         `• **What we check:** Routine network health (detecting datacenter proxies & Tor tunnels) and hardware uniqueness.\n` +
-                         `• **Privacy Guarantee:** Telemetry is processed securely in volatile RAM, stored strictly in our encrypted local SQLite database on our private machine, and never published or shared.\n\n` +
-                         `Click **Start In-Site Verification** on the panel whenever you're ready!`,
-                ephemeral: true
-            });
+            const { buildEmbedV2Container } = require('../utils/embeds');
+            const helpEmbed = new EmbedBuilder()
+                .setTitle('🛡️ In-Site Security Pass • Verification System')
+                .setColor(0x5865F2)
+                .setDescription(
+                    `To safeguard **${interaction.guild?.name || 'our community'}** against automated raid scripts, spam bots, and malicious network ban-evasion groups (such as UTTP), server access requires completing the **Nora In-Site Security Pass**.\n\n` +
+                    `### 🔒 What Nora Verifies:\n` +
+                    `• **Network Health:** Inspects proxy tunnels, datacenter ranges, and Tor exit nodes.\n` +
+                    `• **Hardware Signature:** Cryptographic canvas & WebGL signatures to prevent coordinated alt evasion.\n\n` +
+                    `✨ **Privacy Guarantee:** Telemetry is processed securely in volatile RAM, stored strictly on our encrypted local host database, and never published or shared.\n\n` +
+                    `Click **Start In-Site Verification** on the panel whenever you're ready!`
+                )
+                .setFooter({ text: 'Nora Enterprise Security • In-Site Gatekeeper' });
+
+            try {
+                const v2Payload = buildEmbedV2Container(helpEmbed);
+                return await interaction.reply({
+                    ...v2Payload,
+                    ephemeral: true
+                });
+            } catch (err) {
+                return await interaction.reply({
+                    embeds: [helpEmbed],
+                    ephemeral: true
+                });
+            }
         }
 
         // Handle Security Alert Quick-Actions (Staff Buttons on Flagged Incident Embeds)

@@ -6977,7 +6977,7 @@
                                 <button type="button" class="btn-outline" style="width: auto; padding: 9px 15px; font-size: 0.82rem; border-radius: 10px; background: rgba(255,255,255,0.05); color: #fff; font-weight: 600; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; display: inline-flex; align-items: center; gap: 6px;" onclick="enableMaxSecurityPreset()">
                                     <i class="fas fa-shield-alt" style="color: var(--primary);"></i> Recommended Presets
                                 </button>
-                                <button type="button" class="save-btn" style="width: auto; padding: 9px 18px; font-size: 0.82rem; border-radius: 10px;" onclick="saveConfig()">
+                                <button type="button" class="save-btn" style="width: auto; padding: 9px 18px; font-size: 0.82rem; border-radius: 10px;" onclick="saveSettings()">
                                     <i class="fas fa-save" style="margin-right: 6px;"></i> Save Changes
                                 </button>
                             </div>
@@ -8015,7 +8015,7 @@
                                 <button type="button" class="btn-outline" style="width: auto; padding: 9px 15px; font-size: 0.82rem; border-radius: 10px; background: rgba(255,255,255,0.05); color: #fff; font-weight: 600; border: 1px solid rgba(255,255,255,0.1);" onclick="toggleAllLogging(false)">
                                     <i class="fas fa-times" style="margin-right: 6px; color: #ef4444;"></i> Disable All
                                 </button>
-                                <button type="button" class="save-btn" style="width: auto; padding: 9px 18px; font-size: 0.82rem; border-radius: 10px;" onclick="saveConfig()">
+                                <button type="button" class="save-btn" style="width: auto; padding: 9px 18px; font-size: 0.82rem; border-radius: 10px;" onclick="saveSettings()">
                                     <i class="fas fa-save" style="margin-right: 6px;"></i> Save Changes
                                 </button>
                             </div>
@@ -10026,7 +10026,7 @@
                                 <button type="button" class="config-btn primary" onclick="triggerAction('spawn_verify', this)" style="width: auto; padding: 9px 16px; font-size: 0.82rem; font-weight: 700; border-radius: 10px; background: #10b981; color: #000; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);">
                                     <i class="fas fa-paper-plane"></i> Spawn / Refresh Panel
                                 </button>
-                                <button type="button" class="save-btn" style="width: auto; padding: 9px 18px; font-size: 0.82rem; border-radius: 10px;" onclick="saveConfig()">
+                                <button type="button" class="save-btn" style="width: auto; padding: 9px 18px; font-size: 0.82rem; border-radius: 10px;" onclick="saveSettings()">
                                     <i class="fas fa-save" style="margin-right: 6px;"></i> Save Changes
                                 </button>
                             </div>
@@ -10124,6 +10124,17 @@
                                         <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">Roblox Link</div>
                                     </div>
                                     <p style="font-size: 0.76rem; color: var(--muted); margin: 0; line-height: 1.4;">Require linking a verified Roblox account and sync custom group rank roles.</p>
+                                </div>
+
+                                <div id="verify-method-insite-card" class="verify-method-card" data-method="insite" onclick="selectVerificationMethod('insite')" style="cursor: pointer; padding: 16px; border-radius: 12px; border: 1px solid rgba(88, 101, 242, 0.35); background: rgba(88, 101, 242, 0.05); transition: all 0.2s;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(88, 101, 242, 0.25); display: flex; align-items: center; justify-content: center; color: #818cf8; font-size: 1rem;"><i class="fas fa-user-shield"></i></div>
+                                            <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">In-Site Security Pass</div>
+                                        </div>
+                                        <span style="font-size: 0.65rem; background: rgba(88, 101, 242, 0.2); color: #818cf8; border: 1px solid rgba(88, 101, 242, 0.4); padding: 2px 7px; border-radius: 4px; font-weight: 700;">MILO & NORA EXCLUSIVE</span>
+                                    </div>
+                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 0; line-height: 1.4;">Redirects members to the encrypted portal on vaztinix.dev to log IPs, detect VPNs/Tor, and auto-ban evasion alts.</p>
                                 </div>
                             </div>
                         </div>
@@ -10523,7 +10534,7 @@
                                 <button type="button" class="btn-outline" onclick="publishReactionRolesPanel()" style="width: auto; padding: 9px 16px; font-size: 0.82rem; border-radius: 10px; background: rgba(124, 58, 237, 0.12); color: #c084fc; font-weight: 700; border: 1px solid rgba(124, 58, 237, 0.3); display: flex; align-items: center; gap: 8px; cursor: pointer;">
                                     <i class="fas fa-paper-plane"></i> Publish Panel
                                 </button>
-                                <button type="button" class="save-btn" onclick="saveConfig()" style="width: auto; padding: 9px 18px; font-size: 0.82rem; border-radius: 10px;">
+                                <button type="button" class="save-btn" onclick="saveSettings()" style="width: auto; padding: 9px 18px; font-size: 0.82rem; border-radius: 10px;">
                                     <i class="fas fa-save" style="margin-right: 6px;"></i> Save Changes
                                 </button>
                             </div>
@@ -18154,6 +18165,8 @@
             // Direct save: No annoying popup modal
             executeSaveSettings(payload);
         }
+        window.saveSettings = saveSettings;
+        window.saveConfig = saveSettings;
 
         
         window.lastSavedBackup = null;
@@ -28403,6 +28416,11 @@
                 if (titleEl && !titleEl.value) titleEl.value = 'Reaction Verification';
             } else if (method === 'roblox') {
                 if (titleEl && !titleEl.value) titleEl.value = 'Roblox Account Verification';
+            } else if (method === 'insite' || method === 'security') {
+                if (titleEl && (!titleEl.value || titleEl.value.includes('Verification'))) titleEl.value = '🛡️ Community Gatekeeper • In-Site Security Pass';
+                if (descEl && (!descEl.value || descEl.value.includes('verify'))) descEl.value = 'Welcome to the server!\n\nTo safeguard our community against automated raid attacks, malicious accounts, and ban evasion networks, server access requires completing the Nora In-Site Security Pass.\n\nClick the button below to generate your private session pass.';
+                if (btnLabelEl && !btnLabelEl.value) btnLabelEl.value = 'Start In-Site Verification';
+                if (btnEmojiEl && !btnEmojiEl.value) btnEmojiEl.value = '🛡️';
             }
 
             updateVerifyLivePreview();
@@ -28410,11 +28428,11 @@
 
         function updateVerifyLivePreview() {
             const method = (document.getElementById('setting-verificationType') || {}).value || 'captcha';
-            const title = (document.getElementById('setting-verifyEmbedTitle') || {}).value || (method === 'button' ? 'Server Access Verification' : (method === 'reaction' ? 'Reaction Verification' : 'Server Verification Required'));
-            const desc = (document.getElementById('setting-verifyEmbedDesc') || {}).value || (method === 'button' ? 'Welcome to the server! Click the button below to immediately unlock access.' : (method === 'reaction' ? 'React with ✅ below to verify yourself and gain full access to the server!' : 'To gain full access to the server, please verify that you are human.\n\nClick the **Verify** button below and complete the CAPTCHA.'));
+            const title = (document.getElementById('setting-verifyEmbedTitle') || {}).value || (method === 'button' ? 'Server Access Verification' : (method === 'reaction' ? 'Reaction Verification' : (method === 'insite' ? '🛡️ Community Gatekeeper • In-Site Security Pass' : 'Server Verification Required')));
+            const desc = (document.getElementById('setting-verifyEmbedDesc') || {}).value || (method === 'button' ? 'Welcome to the server! Click the button below to immediately unlock access.' : (method === 'reaction' ? 'React with ✅ below to verify yourself and gain full access to the server!' : (method === 'insite' ? 'Welcome to the server!\n\nTo safeguard our community against automated raid attacks, malicious accounts, and ban evasion networks, server access requires completing the Nora In-Site Security Pass.\n\nClick the button below to generate your private session pass.' : 'To gain full access to the server, please verify that you are human.\n\nClick the **Verify** button below and complete the CAPTCHA.')));
             const color = (document.getElementById('setting-verifyEmbedColor') || {}).value || '#5865F2';
-            const btnLabel = (document.getElementById('setting-verifyBtnLabel') || {}).value || (method === 'button' ? 'Click to Verify' : 'Verify Account');
-            const btnEmoji = (document.getElementById('setting-verifyBtnEmoji') || {}).value || (method === 'button' ? '✅' : '🔒');
+            const btnLabel = (document.getElementById('setting-verifyBtnLabel') || {}).value || (method === 'button' ? 'Click to Verify' : (method === 'insite' ? 'Start In-Site Verification' : 'Verify Account'));
+            const btnEmoji = (document.getElementById('setting-verifyBtnEmoji') || {}).value || (method === 'button' ? '✅' : (method === 'insite' ? '🛡️' : '🔒'));
 
             const previewEmbed = document.getElementById('verify-preview-embed');
             if (previewEmbed) previewEmbed.style.borderLeftColor = color;

@@ -538,6 +538,64 @@ async function spawnVerificationPanel(targetChannel, settings, type = 'captcha',
         return sent;
     }
 
+    if (type === 'insite' || type === 'security') {
+        const isMilo = guild.id === '1487342521133830174';
+        const serverSlug = isMilo ? 'milos-world' : 'noras-hub';
+        const title = settings?.verifyEmbedTitle || `🛡️ ${guild.name} • In-Site Security Pass`;
+        const description = settings?.verifyEmbedDesc || (
+            `Welcome to **${guild.name}**!\n\n` +
+            `To safeguard our community against automated raid attacks, malicious bot accounts, and ban evasion networks, server access requires completing the **Nora In-Site Security Pass**.\n\n` +
+            `### 🔒 How to Verify:\n` +
+            `1. Click the **🛡️ Start In-Site Verification** button below.\n` +
+            `2. Nora will generate your **private, secure one-time session pass**.\n` +
+            `3. Authorize via Discord on our official portal (\`https://vaztinix.dev\`) to confirm your membership.\n` +
+            `4. Your **${isMilo ? 'Verified Member' : 'Verified'}** role will be automatically granted!\n\n` +
+            `🔒 *Connection integrity is analyzed in volatile memory to detect proxy tunnels and prevent ban evasion. Stored strictly on Nora's secure local host database.*`
+        );
+        const btnLabel = settings?.verifyBtnLabel || 'Start In-Site Verification';
+        const btnEmoji = settings?.verifyBtnEmoji || '🛡️';
+
+        const embed = new EmbedBuilder()
+            .setTitle(title)
+            .setDescription(description)
+            .setColor(embedColor)
+            .setFooter({ text: 'Nora Enterprise Security • In-Site Gatekeeper', iconURL: botAvatar })
+            .setTimestamp();
+
+        if (guild.icon) {
+            embed.setThumbnail(guild.iconURL({ dynamic: true, size: 256 }));
+        } else if (botAvatar) {
+            embed.setThumbnail(botAvatar);
+        }
+
+        const row = new ActionRowBuilder().addComponents(
+            new ButtonBuilder()
+                .setCustomId('verify_insite_start')
+                .setLabel(btnLabel)
+                .setEmoji(btnEmoji)
+                .setStyle(ButtonStyle.Success),
+            new ButtonBuilder()
+                .setCustomId('verify_insite_help')
+                .setLabel('Why In-Site?')
+                .setStyle(ButtonStyle.Secondary)
+                .setEmoji('❓')
+        );
+
+        const { buildEmbedV2Container } = require('../../utils/embeds');
+        let sent;
+        try {
+            const v2Payload = buildEmbedV2Container(embed, [row]);
+            sent = await targetChannel.send({ ...v2Payload });
+        } catch (v2Err) {
+            sent = await targetChannel.send({ embeds: [embed], components: [row] });
+        }
+        settings.verifyMessageId = sent.id;
+        settings.verificationType = 'insite';
+        await settings.save();
+        settingsCache.invalidate(guild.id);
+        return sent;
+    }
+
     if (type === 'reaction') {
         const triggerEmoji = settings?.verifyEmoji || '✅';
         const title = settings?.verifyEmbedTitle || 'Reaction Verification';

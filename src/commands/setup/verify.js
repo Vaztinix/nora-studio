@@ -254,18 +254,28 @@ module.exports = {
                         .setEmoji('❓')
                 );
 
-                const sent = await targetChannel.send({ embeds: [embed], components: [row] });
+                const { buildEmbedV2Container } = require('../../utils/embeds');
+                let sent;
+                try {
+                    const v2Payload = buildEmbedV2Container(embed, [row]);
+                    sent = await targetChannel.send({ ...v2Payload });
+                } catch (v2Err) {
+                    sent = await targetChannel.send({ embeds: [embed], components: [row] });
+                }
 
-                return await interaction.editReply({
-                    embeds: [
-                        new EmbedBuilder()
-                            .setTitle('✅ Security Panel Deployed')
-                            .setColor(0x2ea043)
-                            .setDescription(`Successfully deployed the **In-Site Security Pass** panel to ${targetChannel}!\n\n• **Channel:** <#${targetChannel.id}>\n• **Message ID:** \`${sent.id}\`\n• **Security Scope:** Enterprise Guard (${isMilo ? "Milo's World" : "Nora's Hub"})\n• **Portal Endpoint:** \`https://vaztinix.dev/verify/security/${serverSlug}\``)
-                            .setFooter({ text: 'Nora Security Operations' })
-                            .setTimestamp()
-                    ]
-                });
+                const deployedEmbed = new EmbedBuilder()
+                    .setTitle('✅ Security Panel Deployed')
+                    .setColor(0x2ea043)
+                    .setDescription(`Successfully deployed the **In-Site Security Pass** panel to ${targetChannel}!\n\n• **Channel:** <#${targetChannel.id}>\n• **Message ID:** \`${sent.id}\`\n• **Security Scope:** Enterprise Guard (${isMilo ? "Milo's World" : "Nora's Hub"})\n• **Portal Endpoint:** \`https://vaztinix.dev/verify/security/${serverSlug}\``)
+                    .setFooter({ text: 'Nora Security Operations' })
+                    .setTimestamp();
+
+                try {
+                    const v2Reply = buildEmbedV2Container(deployedEmbed);
+                    return await interaction.editReply({ ...v2Reply });
+                } catch (rErr) {
+                    return await interaction.editReply({ embeds: [deployedEmbed] });
+                }
             } catch (err) {
                 console.error('[InSite Panel Deploy Error]:', err);
                 return await handleError(interaction, 'Deployment Error', `Failed to deploy in-site security panel: ${err.message}`);

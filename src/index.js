@@ -1259,7 +1259,7 @@ function serveSecurityVerify(req, res) {
     }
 }
 
-app.get(['/verify/security', '/verify/security/:serverSlug', '/verify/security/:serverSlug/*'], ipRateLimiter, serveSecurityVerify);
+app.get(['/verify/security', '/verify/security/:serverSlug', '/security-verify', '/security-verify.html'], ipRateLimiter, serveSecurityVerify);
 
 function serveOwner(req, res) {
     res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');

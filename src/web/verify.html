@@ -899,33 +899,7 @@
 
                     <!-- Connect / Link Account Action -->
                     
-                    <!-- In-Site Anti-Alt Verification Action (Milo's World & Nora's Hub) -->
-                    <div id="insite-action-container" style="display: none; text-align: center; margin-bottom: 24px; padding: 20px; background: rgba(88, 101, 242, 0.08); border: 1px solid rgba(88, 101, 242, 0.28); border-radius: var(--radius-md);">
-                        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 8px;">
-                            <span class="badge" style="background: rgba(88, 101, 242, 0.2); color: #818cf8; border: 1px solid rgba(88, 101, 242, 0.4); padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 700;">
-                                <i class="fas fa-shield-halved"></i> SECURE SERVER PASS
-                            </span>
-                        </div>
-                        <h3 style="font-size: 1.15rem; font-weight: 800; color: #fff; margin-bottom: 6px;">
-                            In-Site Server Verification
-                        </h3>
-                        <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 16px;">
-                            Authenticate your Discord profile with Nora to instantly unlock verified member roles and security credentials in <strong id="insite-guild-name" style="color: #fff;">Milo's World</strong>.
-                        </p>
-
-                        
-
-                        <button id="insite-verify-btn" onclick="submitInsiteVerification()" class="btn btn-discord" style="font-size: 0.92rem; padding: 12px 20px;">
-                            <i class="fas fa-user-check"></i> Complete In-Site Verification
-                        </button>
-                        <div style="font-size: 0.74rem; color: var(--text-dim); margin-top: 12px;">
-                            By verifying, you agree to Nora Studio's <a href="/legal" target="_blank" style="color: var(--text-muted); text-decoration: underline;">Terms &amp; Privacy Policy</a>.
-                        </div>
-
-                        <div id="insite-status-message" style="display: none; margin-top: 14px; padding: 12px 16px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; text-align: left; line-height: 1.45;"></div>
-                    </div>
-
-                    <div id="connect-action-container" style="text-align: center; margin-bottom: 16px;">
+                                        <div id="connect-action-container" style="text-align: center; margin-bottom: 16px;">
                         <button onclick="startOAuthVerification()" class="btn btn-roblox">
                             <svg viewBox="0 0 24 24">
                                 <path
@@ -1205,17 +1179,6 @@
             const isVerifiedReturn = urlParams.get('verified') === 'true' || urlParams.get('status') === 'success';
 
             
-            if (guildParam === '1487342521133830174' || guildParam === '1515800329889779954' || urlParams.get('mode') === 'insite') {
-                const insiteContainer = document.getElementById('insite-action-container');
-                if (insiteContainer) {
-                    insiteContainer.style.display = 'block';
-                    if (guildParam === '1515800329889779954') {
-                        const guildNameEl = document.getElementById('insite-guild-name');
-                        if (guildNameEl) guildNameEl.textContent = "Nora's Hub";
-                    }
-                }
-            }
-
             if (guildParam) {
                 sessionStorage.setItem('verify_guild_id', guildParam);
                 loadGuildBanner(guildParam);
@@ -1381,78 +1344,6 @@
             }
         }
 
-        async function submitInsiteVerification() {
-            const btn = document.getElementById('insite-verify-btn');
-            const statusMsg = document.getElementById('insite-status-message');
-            const token = localStorage.getItem('nora_auth_token');
-            const urlParams = new URLSearchParams(window.location.search);
-            const guildId = urlParams.get('guild') || '1487342521133830174';
-
-            if (!token) {
-                showToast('Please login with Discord first.', true);
-                return;
-            }
-
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying Security Credentials...';
-            }
-            if (statusMsg) statusMsg.style.display = 'none';
-
-            try {
-                const res = await fetch(getApiBaseUrl() + '/api/verify/insite/submit', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        guildId,
-                        browserFingerprint: navigator.userAgent
-                    })
-                });
-
-                const data = await res.json();
-                if (res.ok && data.success) {
-                    if (statusMsg) {
-                        statusMsg.style.display = 'block';
-                        statusMsg.style.background = 'rgba(16, 185, 129, 0.15)';
-                        statusMsg.style.border = '1px solid rgba(16, 185, 129, 0.35)';
-                        statusMsg.style.color = '#34d399';
-                        statusMsg.innerHTML = '<i class="fas fa-check-circle"></i> ' + (data.message || 'Verification successful! Your roles have been updated.');
-                    }
-                    if (btn) {
-                        btn.innerHTML = '<i class="fas fa-check"></i> Verified Successfully';
-                        btn.style.background = 'rgba(16, 185, 129, 0.2)';
-                        btn.style.borderColor = '#10b981';
-                    }
-                } else {
-                    if (statusMsg) {
-                        statusMsg.style.display = 'block';
-                        statusMsg.style.background = 'rgba(239, 68, 68, 0.15)';
-                        statusMsg.style.border = '1px solid rgba(239, 68, 68, 0.35)';
-                        statusMsg.style.color = '#f87171';
-                        statusMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + (data.message || data.error || 'Verification declined.');
-                    }
-                    if (btn) {
-                        btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-redo"></i> Retry Verification';
-                    }
-                }
-            } catch (err) {
-                if (statusMsg) {
-                    statusMsg.style.display = 'block';
-                    statusMsg.style.background = 'rgba(239, 68, 68, 0.15)';
-                    statusMsg.style.border = '1px solid rgba(239, 68, 68, 0.35)';
-                    statusMsg.style.color = '#f87171';
-                    statusMsg.innerHTML = '<i class="fas fa-times-circle"></i> Network connection error. Please try again.';
-                }
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-redo"></i> Retry Verification';
-                }
-            }
-        }
 
         async function unlinkAccount(robloxId) {
             if (!confirm('Are you sure you want to unlink this Roblox account? Verified roles may be removed.')) return;
