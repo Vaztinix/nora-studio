@@ -43,7 +43,7 @@ setInterval(() => {
 function getClientIp(req) {
     const cfIp = req.headers['cf-connecting-ip'];
     if (cfIp) return cfIp.trim();
-    
+
     const xff = req.headers['x-forwarded-for'];
     if (xff) {
         const parts = xff.split(',');
@@ -165,15 +165,15 @@ function checkVpnAndDatacenter(req, clientIp, intel, forensics) {
 
     // 3. Fallback Datacenter IP Prefix Check (if live intel is unreachable)
     const dcPrefixes = [
-        '3.','18.','34.','35.','44.','52.','54.', // AWS
-        '104.248.','159.65.','167.99.','178.62.', // DigitalOcean
-        '138.68.','142.93.','157.245.','165.22.',  // DigitalOcean
-        '45.33.','45.56.','45.79.','50.116.',     // Linode
-        '172.104.','172.105.','192.155.','198.58.', // Linode
-        '88.99.','144.76.','148.251.','176.9.',   // Hetzner
-        '5.9.','78.46.','78.47.','159.69.','168.119.', // Hetzner
-        '51.254.','51.255.','147.135.','198.245.', // OVH
-        '140.238.','150.136.','152.67.','158.101.' // Oracle Cloud
+        '3.', '18.', '34.', '35.', '44.', '52.', '54.', // AWS
+        '104.248.', '159.65.', '167.99.', '178.62.', // DigitalOcean
+        '138.68.', '142.93.', '157.245.', '165.22.',  // DigitalOcean
+        '45.33.', '45.56.', '45.79.', '50.116.',     // Linode
+        '172.104.', '172.105.', '192.155.', '198.58.', // Linode
+        '88.99.', '144.76.', '148.251.', '176.9.',   // Hetzner
+        '5.9.', '78.46.', '78.47.', '159.69.', '168.119.', // Hetzner
+        '51.254.', '51.255.', '147.135.', '198.245.', // OVH
+        '140.238.', '150.136.', '152.67.', '158.101.' // Oracle Cloud
     ];
 
     for (const prefix of dcPrefixes) {
@@ -285,8 +285,8 @@ router.post('/submit', async (req, res) => {
 
         const userId = discordUser.id;
         const username = discordUser.username;
-        const userAvatar = discordUser.avatar 
-            ? `https://cdn.discordapp.com/avatars/${userId}/${discordUser.avatar}.webp` 
+        const userAvatar = discordUser.avatar
+            ? `https://cdn.discordapp.com/avatars/${userId}/${discordUser.avatar}.webp`
             : `https://cdn.discordapp.com/embed/avatars/${parseInt(userId.slice(-1)) % 5}.png`;
 
         const clientIp = getClientIp(req);
@@ -330,7 +330,7 @@ router.post('/submit', async (req, res) => {
         // 5. Check Permanent IP Bans Table
         const ipBanRecord = await IpBan.findOne({ where: { ipAddress: clientIp } });
         if (ipBanRecord) {
-            await member.ban({ reason: `[Nora Auto-Shield] Banned IP address (${ipBanRecord.reason || 'IP Blacklist'})` }).catch(() => {});
+            await member.ban({ reason: `[Nora Auto-Shield] Banned IP address (${ipBanRecord.reason || 'IP Blacklist'})` }).catch(() => { });
             await VerificationLog.create({
                 guildId,
                 serverSlug,
@@ -530,16 +530,16 @@ router.post('/submit', async (req, res) => {
         if (guildId === '1487342521133830174') { // Milo's World
             const verifiedRoleId = '1545240828354633819';
             const unverifiedRoleId = '1539017864709669054';
-            await member.roles.add(verifiedRoleId).catch(() => {});
-            await member.roles.remove(unverifiedRoleId).catch(() => {});
+            await member.roles.add(verifiedRoleId).catch(() => { });
+            await member.roles.remove(unverifiedRoleId).catch(() => { });
             verifiedRoleAwarded = true;
         } else {
             // Nora's Hub
             const gs = await GuildSettings.findOne({ where: { guildId } });
             if (gs && gs.verifyRoleId) {
-                await member.roles.add(gs.verifyRoleId).catch(() => {});
+                await member.roles.add(gs.verifyRoleId).catch(() => { });
                 if (gs.removeUnverifiedRoleOnVerify && gs.unverifiedRoleId) {
-                    await member.roles.remove(gs.unverifiedRoleId).catch(() => {});
+                    await member.roles.remove(gs.unverifiedRoleId).catch(() => { });
                 }
                 verifiedRoleAwarded = true;
             }
