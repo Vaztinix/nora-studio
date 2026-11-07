@@ -348,16 +348,33 @@
             return 'https://api.vaztinix.dev';
         }
 
-        // Extract server slug from URL path: /verify/security/:serverSlug
+        // Extract server slug from URL path: /verify/security/:serverSlug or query params
         function getServerSlug() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const querySlug = urlParams.get('server');
+            if (querySlug) return querySlug.toLowerCase();
+
+            const queryGuild = urlParams.get('guildId') || urlParams.get('guild');
+            if (queryGuild === '1515800329889779954') return 'noras-hub';
+            if (queryGuild === '1487342521133830174') return 'milos-world';
+
             const parts = window.location.pathname.split('/').filter(Boolean);
             const secIdx = parts.indexOf('security');
             if (secIdx !== -1 && parts[secIdx + 1]) {
                 return parts[secIdx + 1].toLowerCase();
             }
-            const querySlug = new URLSearchParams(window.location.search).get('server');
-            if (querySlug) return querySlug.toLowerCase();
-            return 'milos-world';
+
+            const sessionSlug = sessionStorage.getItem('nora_insite_slug');
+            if (sessionSlug) return sessionSlug.toLowerCase();
+
+            return 'noras-hub';
+        }
+
+        function getStoredDiscordToken() {
+            return localStorage.getItem('nora_auth_token') ||
+                   sessionStorage.getItem('discord_token') ||
+                   localStorage.getItem('discord_token_val') ||
+                   localStorage.getItem('discord_access_token');
         }
 
                 // ── BEHAVIORAL & BIOMETRIC TELEMETRY ENGINE ────────────────────────────
@@ -678,13 +695,11 @@
 
         // Initialize OAuth & Session verification
         document.addEventListener('DOMContentLoaded', async () => {
-            const slug = getServerSlug();
             const urlParams = new URLSearchParams(window.location.search);
-            let ticket = urlParams.get('ticket');
-            if (ticket) {
-                sessionStorage.setItem('insite_ticket_' + slug, ticket);
-            } else {
-                ticket = sessionStorage.getItem('insite_ticket_' + slug);
+            let ticket = urlParams.get('ticket') || sessionStorage.getItem('nora_insite_ticket') || localStorage.getItem('nora_insite_ticket');
+            if (urlParams.get('ticket')) {
+                sessionStorage.setItem('nora_insite_ticket', urlParams.get('ticket'));
+                localStorage.setItem('nora_insite_ticket', urlParams.get('ticket'));
             }
 
             // Check implicit token from hash
@@ -692,26 +707,39 @@
             const accessToken = hashParams.get('access_token');
             if (accessToken) {
                 localStorage.setItem('nora_auth_token', accessToken);
+                sessionStorage.setItem('discord_token', accessToken);
                 window.history.replaceState(null, null, window.location.pathname + (ticket ? `?ticket=${encodeURIComponent(ticket)}` : ''));
             }
+
+            const token = getStoredDiscordToken();
+            if (token && !localStorage.getItem('nora_auth_token')) {
+                localStorage.setItem('nora_auth_token', token);
+            }
+
+            const slug = getServerSlug();
 
             // 1. Session & Server Check
             try {
                 const res = await fetch(`${getApiBaseUrl()}/api/verify/insite/session-check?serverSlug=${slug}&ticket=${ticket || ''}`, {
-                    headers: localStorage.getItem('nora_auth_token') ? { 'Authorization': `Bearer ${localStorage.getItem('nora_auth_token')}` } : {}
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
                 const data = await res.json();
 
                 if (!res.ok || !data.valid) {
                     document.getElementById('gate-screen').style.display = 'block';
-                    document.getElementById('portal-server-name').textContent = slug === 'noras-hub' ? "Nora's Hub" : "Milo's World";
+                    document.getElementById('portal-server-name').textContent = slug === 'milos-world' ? "Milo's World" : "Nora's Hub";
                     return;
                 }
 
-                document.getElementById('portal-server-name').textContent = data.serverName;
-                document.getElementById('portal-desc').textContent = `Link and authenticate your Discord profile with Nora to instantly claim your member roles in ${data.serverName}.`;
+                document.getElementById('gate-screen').style.display = 'none';
+                const serverName = data.serverName || (data.serverSlug === 'milos-world' ? "Milo's World" : "Nora's Hub");
+                document.getElementById('portal-server-name').textContent = serverName;
+                document.getElementById('portal-desc').textContent = `Link and authenticate your Discord profile with Nora to instantly claim your member roles in ${serverName}.`;
 
-                const token = localStorage.getItem('nora_auth_token');
+                if (data.serverSlug) {
+                    sessionStorage.setItem('nora_insite_slug', data.serverSlug);
+                }
+
                 if (!token) {
                     document.getElementById('view-login').style.display = 'block';
                 } else {
@@ -731,6 +759,8 @@
                 });
                 if (!res.ok) {
                     localStorage.removeItem('nora_auth_token');
+                    sessionStorage.removeItem('discord_token');
+                    localStorage.removeItem('discord_token_val');
                     document.getElementById('view-login').style.display = 'block';
                     return;
                 }
@@ -743,6 +773,8 @@
                 document.getElementById('view-verify').style.display = 'block';
             } catch (e) {
                 localStorage.removeItem('nora_auth_token');
+                sessionStorage.removeItem('discord_token');
+                localStorage.removeItem('discord_token_val');
                 document.getElementById('view-login').style.display = 'block';
             }
         }
@@ -750,10 +782,14 @@
         function startDiscordAuth() {
             const clientId = window.__NORA_CLIENT_ID__ || '1375943730951098549';
             const slug = getServerSlug();
-            const ticket = new URLSearchParams(window.location.search).get('ticket');
+            const urlParams = new URLSearchParams(window.location.search);
+            const ticket = urlParams.get('ticket') || sessionStorage.getItem('nora_insite_ticket') || localStorage.getItem('nora_insite_ticket');
             if (ticket) {
-                sessionStorage.setItem('insite_ticket_' + slug, ticket);
+                sessionStorage.setItem('nora_insite_ticket', ticket);
+                localStorage.setItem('nora_insite_ticket', ticket);
             }
+            sessionStorage.setItem('nora_insite_slug', slug);
+
             const redirectBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000')
                 ? `${window.location.origin}/verify/security/${slug}`
                 : `https://vaztinix.dev/verify/security/${slug}`;
@@ -764,9 +800,10 @@
         async function executeInsiteVerification() {
             const btn = document.getElementById('submit-verify-btn');
             const statusBox = document.getElementById('status-box');
-            const token = localStorage.getItem('nora_auth_token');
+            const token = getStoredDiscordToken();
             const slug = getServerSlug();
-            const ticket = new URLSearchParams(window.location.search).get('ticket') || sessionStorage.getItem('insite_ticket_' + slug);
+            const urlParams = new URLSearchParams(window.location.search);
+            const ticket = urlParams.get('ticket') || sessionStorage.getItem('nora_insite_ticket') || localStorage.getItem('nora_insite_ticket');
 
             if (!token) {
                 startDiscordAuth();

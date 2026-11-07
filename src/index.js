@@ -363,6 +363,7 @@ require('./database/models/Notification');
 require('./database/models/IpBan');
 require('./database/models/AfkUser');
 require('./database/models/InternalVerificationUser');
+require('./database/models/InsiteTicket');
 
 const client = new Client({
     rest: {

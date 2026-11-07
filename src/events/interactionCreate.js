@@ -591,9 +591,9 @@ module.exports = {
                 }
 
                 const insiteVerify = require('../api/routes/insiteVerify');
-                const ticketId = insiteVerify.createTicket(guildId);
+                const ticketId = insiteVerify.createTicket(guildId, interaction.user.id);
                 const slug = guildId === '1487342521133830174' ? 'milos-world' : 'noras-hub';
-                const portalUrl = `https://vaztinix.dev/verify/security/${slug}?ticket=${ticketId}`;
+                const portalUrl = `https://vaztinix.dev/verify/security/${slug}?ticket=${ticketId}&server=${slug}&guildId=${guildId}`;
 
                 const ticketEmbed = new EmbedBuilder()
                     .setTitle('🎫 Your One-Time Security Pass is Ready')

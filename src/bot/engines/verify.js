@@ -558,8 +558,8 @@ async function spawnVerificationPanel(targetChannel, settings, type = 'captcha',
             `4. Your **${isMilo ? 'Verified Member' : 'Verified'}** role will be automatically granted!\n\n` +
             `🔒 *Connection integrity is analyzed in volatile memory to detect proxy tunnels and prevent ban evasion. Stored strictly on Nora's secure local host database.*`
         );
-        const btnLabel = settings?.verifyBtnLabel || 'Start In-Site Verification';
-        const btnEmoji = settings?.verifyBtnEmoji || '🛡️';
+        const btnLabel = (settings?.verifyBtnLabel && settings.verifyBtnLabel !== 'Verify Account') ? settings.verifyBtnLabel : 'Start In-Site Verification';
+        const btnEmoji = (settings?.verifyBtnEmoji && settings.verifyBtnEmoji !== '🔒') ? settings.verifyBtnEmoji : '🛡️';
 
         const embed = new EmbedBuilder()
             .setTitle(title)

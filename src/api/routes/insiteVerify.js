@@ -6,6 +6,7 @@ const { Op } = require('sequelize');
 const VerificationLog = require('../../database/models/VerificationLog');
 const IpBan = require('../../database/models/IpBan');
 const GuildSettings = require('../../database/models/GuildSettings');
+const InsiteTicket = require('../../database/models/InsiteTicket');
 
 const GUILD_MAP = {
     'milos-world': '1487342521133830174',
@@ -17,26 +18,44 @@ const REVERSE_GUILD_MAP = {
     '1515800329889779954': 'noras-hub'
 };
 
-// In-memory ticket cache: ticketId -> { guildId, createdAt, expiresAt }
+// In-memory ticket cache: ticketId -> { guildId, userId, createdAt, expiresAt }
 // Valid for 15 minutes to guarantee the link comes from a real Discord interaction
 const activeTickets = new Map();
 
-function createTicket(guildId) {
+function createTicket(guildId, userId = null) {
     const ticketId = crypto.randomBytes(24).toString('hex');
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
     activeTickets.set(ticketId, {
         guildId,
+        userId: userId || null,
         createdAt: Date.now(),
-        expiresAt: Date.now() + 15 * 60 * 1000
+        expiresAt: expiresAt.getTime()
+    });
+    // Persist to database so tickets survive bot restarts
+    InsiteTicket.create({
+        ticketId,
+        guildId,
+        userId: userId || null,
+        expiresAt
+    }).catch(err => {
+        console.error('[InsiteTicket Save Error]:', err.message);
     });
     return ticketId;
 }
 
-// Clean up expired tickets every 5 minutes
-setInterval(() => {
+// Clean up expired tickets every 5 minutes from memory and database
+setInterval(async () => {
     const now = Date.now();
     for (const [tid, t] of activeTickets.entries()) {
         if (t.expiresAt < now) activeTickets.delete(tid);
     }
+    try {
+        await InsiteTicket.destroy({
+            where: {
+                expiresAt: { [Op.lt]: new Date(now) }
+            }
+        });
+    } catch (_) {}
 }, 5 * 60 * 1000);
 
 // Helper to extract client IP reliably behind Cloudflare / reverse proxies
@@ -189,21 +208,35 @@ function checkVpnAndDatacenter(req, clientIp, intel, forensics) {
 // Validates that the user arrived via a valid server redirect ticket
 router.get('/session-check', async (req, res) => {
     try {
-        const { serverSlug, ticket } = req.query;
-        const guildId = GUILD_MAP[serverSlug];
-        if (!guildId) {
-            return res.status(404).json({
-                valid: false,
-                error: 'Invalid server portal. In-site verification is exclusively active for Milo\'s World and Nora\'s Hub.'
-            });
-        }
-
-        // Validate ticket: must have an active ticket OR signed auth session
+        let { serverSlug, ticket } = req.query;
+        let targetGuildId = GUILD_MAP[serverSlug];
         let hasValidTicket = false;
-        if (ticket && activeTickets.has(ticket)) {
-            const t = activeTickets.get(ticket);
-            if (t.guildId === guildId && t.expiresAt > Date.now()) {
+        let ticketRecord = null;
+
+        if (ticket) {
+            if (activeTickets.has(ticket)) {
+                ticketRecord = activeTickets.get(ticket);
+            } else {
+                try {
+                    const dbTicket = await InsiteTicket.findOne({ where: { ticketId: ticket } });
+                    if (dbTicket) {
+                        ticketRecord = {
+                            guildId: dbTicket.guildId,
+                            userId: dbTicket.userId,
+                            expiresAt: new Date(dbTicket.expiresAt).getTime()
+                        };
+                        activeTickets.set(ticket, ticketRecord);
+                    }
+                } catch (e) {
+                    console.error('[InsiteTicket Lookup Error]:', e.message);
+                }
+            }
+
+            if (ticketRecord && ticketRecord.expiresAt > Date.now()) {
                 hasValidTicket = true;
+                // Accurately resolve true guildId and slug from the verified ticket itself
+                targetGuildId = ticketRecord.guildId;
+                serverSlug = REVERSE_GUILD_MAP[targetGuildId] || 'noras-hub';
             }
         }
 
@@ -212,14 +245,20 @@ router.get('/session-check', async (req, res) => {
             hasValidTicket = true;
         }
 
+        if (!targetGuildId) {
+            targetGuildId = '1515800329889779954';
+            serverSlug = 'noras-hub';
+        }
+
         const client = req.client;
-        const guild = client ? client.guilds.cache.get(guildId) : null;
+        const guild = client ? client.guilds.cache.get(targetGuildId) : null;
+        const serverName = guild ? guild.name : (serverSlug === 'milos-world' ? "Milo's World" : "Nora's Hub");
 
         res.json({
             valid: hasValidTicket,
-            guildId,
+            guildId: targetGuildId,
             serverSlug,
-            serverName: guild ? guild.name : (serverSlug === 'milos-world' ? "Milo's World" : "Nora's Hub"),
+            serverName,
             serverIcon: guild && guild.icon ? guild.iconURL({ size: 128 }) : null,
             memberCount: guild ? guild.memberCount : 7646,
             requiresServerRedirect: !hasValidTicket
@@ -233,13 +272,13 @@ router.get('/session-check', async (req, res) => {
 // POST /api/verify/insite/create-ticket (Internal Discord Bot interaction helper)
 router.post('/create-ticket', async (req, res) => {
     try {
-        const { guildId } = req.body;
+        const { guildId, userId } = req.body;
         if (!guildId || !REVERSE_GUILD_MAP[guildId]) {
             return res.status(403).json({ error: 'Server not authorized for in-site security pass.' });
         }
-        const ticketId = createTicket(guildId);
+        const ticketId = createTicket(guildId, userId);
         const slug = REVERSE_GUILD_MAP[guildId];
-        const verifyUrl = `https://vaztinix.dev/verify/security/${slug}?ticket=${ticketId}`;
+        const verifyUrl = `https://vaztinix.dev/verify/security/${slug}?ticket=${ticketId}&server=${slug}&guildId=${guildId}`;
         res.json({ success: true, ticketId, verifyUrl });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -256,9 +295,24 @@ router.post('/submit', async (req, res) => {
         }
 
         const { serverSlug, ticket, forensics } = req.body;
-        const guildId = GUILD_MAP[serverSlug];
+        let guildId = GUILD_MAP[serverSlug];
+
+        // Resolve guildId from ticket if available
+        if (ticket) {
+            let t = activeTickets.get(ticket);
+            if (!t) {
+                try {
+                    const dbT = await InsiteTicket.findOne({ where: { ticketId: ticket } });
+                    if (dbT) t = dbT;
+                } catch (_) {}
+            }
+            if (t && t.guildId) {
+                guildId = t.guildId;
+            }
+        }
+
         if (!guildId) {
-            return res.status(403).json({ error: 'Forbidden: In-site verification is restricted to official authorized servers.' });
+            guildId = '1515800329889779954';
         }
 
         const client = req.client;

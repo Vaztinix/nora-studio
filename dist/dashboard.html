@@ -12906,6 +12906,14 @@
 
 
     <script>
+        // Global safe fallback definitions for saveConfig & saveSettings
+        function saveConfig(...args) {
+            if (typeof window.saveSettings === 'function' && window.saveSettings !== saveConfig) {
+                return window.saveSettings(...args);
+            }
+        }
+        window.saveConfig = saveConfig;
+
         function sanitizeUrl(url) {
             if (!url || typeof url !== 'string') return '';
             const u = url.trim();
