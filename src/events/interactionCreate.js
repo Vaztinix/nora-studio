@@ -643,15 +643,20 @@ module.exports = {
                 await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
                 const settings = await settingsCache.get(interaction.guildId).catch(() => null);
-                const customHelpDesc = settings?.verifyInsiteHelpDesc;
-                const helpDescription = customHelpDesc || (
-                    `To safeguard **${interaction.guild?.name || 'our community'}** with an advanced way to secure servers across all communities, server access requires completing the **Nora In-Site Security Pass**.\n\n` +
-                    `### 🔒 What Nora Verifies:\n` +
-                    `• **Network Health:** Inspects proxy tunnels, datacenter ranges, and Tor exit nodes.\n` +
-                    `• **Hardware Signature:** Cryptographic canvas & WebGL signatures to prevent coordinated alt evasion.\n\n` +
-                    `✨ **Privacy Guarantee:** Telemetry is processed securely in volatile RAM, stored strictly on our encrypted local host database, and never published or shared.\n\n` +
-                    `Click **Start In-Site Verification** on the panel whenever you're ready!`
-                );
+                let helpDescription = settings?.verifyInsiteHelpDesc;
+                if (helpDescription) {
+                    helpDescription = helpDescription.replace(/\s*\(such as UTTP\)/gi, '').replace(/UTTP/gi, 'malicious raid networks');
+                }
+                if (!helpDescription) {
+                    helpDescription = (
+                        `To safeguard **${interaction.guild?.name || 'our community'}** with an advanced way to secure servers across all communities, server access requires completing the **Nora In-Site Security Pass**.\n\n` +
+                        `### 🔒 What Nora Verifies:\n` +
+                        `• **Network Health:** Inspects proxy tunnels, datacenter ranges, and Tor exit nodes.\n` +
+                        `• **Hardware Signature:** Cryptographic canvas & WebGL signatures to prevent coordinated alt evasion.\n\n` +
+                        `✨ **Privacy Guarantee:** Telemetry is processed securely in volatile RAM, stored strictly on our encrypted local host database, and never published or shared.\n\n` +
+                        `Click **${settings?.verifyBtnLabel || 'Start In-Site Verification'}** on the panel whenever you're ready!`
+                    );
+                }
 
                 const { buildEmbedV2Container } = require('../utils/embeds');
                 const helpEmbed = new EmbedBuilder()

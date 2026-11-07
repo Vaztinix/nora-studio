@@ -1537,6 +1537,55 @@
 
                     <h3 style="color: #fff; margin: 24px 0 10px;">Configuration</h3>
                     <p>Control the Gatekeeper directly in Discord via <code>/setup security</code> or via the Web Dashboard at <a href="/dashboard" style="color: var(--blurple); font-weight: 700;">vaztinix.dev/dashboard</a> under <strong>Verification &rarr; Security & Threat Gatekeeper</strong>.</p>
+
+                    <h3 style="color: #fff; margin: 34px 0 14px; font-size: 1.25rem; font-weight: 800; display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-fingerprint" style="color: #10B981;"></i> 8b. In-Site Security Pass &amp; Zero-Trust Verification
+                    </h3>
+                    <p>For high-security communities, Nora provides an <strong>In-Site Security Pass</strong> operating under an advanced zero-trust gatekeeper model to definitively stop automated raid scripts, ban evasion syndicates, and malicious proxy networks across all communities:</p>
+
+                    <div class="table-responsive">
+                        <table class="docs-table">
+                            <thead>
+                                <tr>
+                                    <th>Security Layer</th>
+                                    <th>Screening Mechanism</th>
+                                    <th>Operational Enforcement</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Zero-VPN &amp; Proxy Shield</strong></td>
+                                    <td>Deep inspection of Cloudflare connecting flags, Tor exit nodes, and datacenter ASN ranges via live IP intelligence</td>
+                                    <td>Commercial VPNs, Tor nodes, and proxy tunnels are rejected with zero false positives.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Composite Device Telemetry</strong></td>
+                                    <td>Multi-dimensional client signature: HTML5 canvas, WebGL hardware vendor/caps, AudioContext waveform hashes, CPU/RAM tiers, display metrics, system fonts, and regional keyboard maps</td>
+                                    <td>Mathematical fingerprinting without inspecting private user files or raw browsing history.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Automatic Alt Correlation &amp; Immediate Ban</strong></td>
+                                    <td>Cross-guild database comparison correlating device and network signatures against existing server ban registries</td>
+                                    <td>If an alt's signature matches an existing banned account in the guild, the alt is <strong>automatically and immediately banned</strong>. Alts are strictly prohibited from receiving verified status.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Ephemeral Session Tickets</strong></td>
+                                    <td>Cryptographically random one-time session tickets valid for exactly 15 minutes generated directly from Discord interaction buttons</td>
+                                    <td>External direct URLs and unauthorized crawler visits are blocked at the gate.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="callout callout-info" style="margin-top: 20px;">
+                        <i class="fas fa-sliders-h"></i>
+                        <div>
+                            <strong>Staff Customization &amp; Panel Studio:</strong> Server administrators have granular control over the verification panel directly inside the Web Dashboard:
+                            <br>&bull; <strong>Custom Embed Text:</strong> Fully editable panel title, welcome description, and embed color.
+                            <br>&bull; <strong>Button Styling:</strong> Custom button label (e.g. <code>Verify</code>, <code>Start In-Site Verification</code>) and custom emoji (e.g. <code>🔒</code>, <code>🛡️</code>).
+                            <br>&bull; <strong>Secondary Help Toggle:</strong> Enable or disable the secondary <em>"Why In-Site?"</em> button with 1 click.
+                        </div>
+                    </div>
                 </div>
             </section>
 

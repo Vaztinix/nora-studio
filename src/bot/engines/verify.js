@@ -548,20 +548,27 @@ async function spawnVerificationPanel(targetChannel, settings, type = 'captcha',
         const isMilo = guild.id === '1487342521133830174';
         const serverSlug = isMilo ? 'milos-world' : 'noras-hub';
         const title = settings?.verifyEmbedTitle || `🛡️ ${guild.name} • In-Site Security Pass`;
-        const description = settings?.verifyEmbedDesc || (
-            `Welcome to **${guild.name}**!\n\n` +
-            `To safeguard our community with an advanced way to secure servers across all communities, server access requires completing the **Nora In-Site Security Pass**.\n\n` +
-            `### 🔒 How to Verify:\n` +
-            `1. Click the **🛡️ Start In-Site Verification** button below.\n` +
-            `2. Nora will generate your **private, secure one-time session pass**.\n` +
-            `3. Authorize via Discord on our official portal (\`https://vaztinix.dev\`) to confirm your membership.\n` +
-            `4. Your **${isMilo ? 'Verified Member' : 'Verified'}** role will be automatically granted!\n\n` +
-            `🔒 *Connection integrity is analyzed in volatile memory to detect proxy tunnels and prevent ban evasion. Stored strictly on Nora's secure local host database.*`
-        );
-        const btnLabel = (settings?.verifyBtnLabel && settings.verifyBtnLabel !== 'Verify Account') ? settings.verifyBtnLabel : 'Start In-Site Verification';
-        const btnEmoji = (settings?.verifyBtnEmoji && settings.verifyBtnEmoji !== '🔒') ? settings.verifyBtnEmoji : '🛡️';
+        const btnLabel = settings?.verifyBtnLabel || 'Start In-Site Verification';
+        const btnEmoji = settings?.verifyBtnEmoji || '🛡️';
 
-        const showHelpBtn = settings?.verifyInsiteShowHelpBtn !== false;
+        let description = settings?.verifyEmbedDesc;
+        if (description) {
+            description = description.replace(/\s*\(such as UTTP\)/gi, '').replace(/UTTP/gi, 'malicious raid networks');
+        }
+        if (!description) {
+            description = (
+                `Welcome to **${guild.name}**!\n\n` +
+                `To safeguard our community with an advanced way to secure servers across all communities, server access requires completing the **Nora In-Site Security Pass**.\n\n` +
+                `### 🔒 How to Verify:\n` +
+                `1. Click the **${btnEmoji} ${btnLabel}** button below.\n` +
+                `2. Nora will generate your **private, secure one-time session pass**.\n` +
+                `3. Authorize via Discord on our official portal (\`https://vaztinix.dev\`) to confirm your membership.\n` +
+                `4. Your **${isMilo ? 'Verified Member' : 'Verified'}** role will be automatically granted!\n\n` +
+                `🔒 *Connection integrity is analyzed in volatile memory to detect proxy tunnels and prevent ban evasion. Stored strictly on Nora's secure local host database.*`
+        );
+        }
+
+        const showHelpBtn = settings?.verifyInsiteShowHelpBtn !== false && settings?.verifyInsiteShowHelpBtn !== 0 && settings?.verifyInsiteShowHelpBtn !== '0' && settings?.verifyInsiteShowHelpBtn !== 'false';
         const helpBtnLabel = settings?.verifyInsiteHelpLabel || 'Why In-Site?';
         const helpBtnEmoji = settings?.verifyInsiteHelpEmoji || '❓';
 

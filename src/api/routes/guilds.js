@@ -1644,6 +1644,18 @@ router.post('/action', async (req, res) => {
             if (settings) {
                 settings.verificationType = method;
                 if (targetChannelId) settings.verifyChannelId = targetChannelId;
+                if (req.body.verifyEmbedTitle !== undefined) settings.verifyEmbedTitle = req.body.verifyEmbedTitle;
+                if (req.body.verifyEmbedDesc !== undefined) settings.verifyEmbedDesc = req.body.verifyEmbedDesc;
+                if (req.body.verifyEmbedColor !== undefined) settings.verifyEmbedColor = req.body.verifyEmbedColor;
+                if (req.body.verifyBtnLabel !== undefined) settings.verifyBtnLabel = req.body.verifyBtnLabel;
+                if (req.body.verifyBtnEmoji !== undefined) settings.verifyBtnEmoji = req.body.verifyBtnEmoji;
+                if (req.body.verifyInsiteShowHelpBtn !== undefined) {
+                    settings.verifyInsiteShowHelpBtn = (req.body.verifyInsiteShowHelpBtn === true || req.body.verifyInsiteShowHelpBtn === 1 || req.body.verifyInsiteShowHelpBtn === '1' || req.body.verifyInsiteShowHelpBtn === 'true');
+                }
+                if (req.body.verifyInsiteHelpLabel !== undefined) settings.verifyInsiteHelpLabel = req.body.verifyInsiteHelpLabel;
+                if (req.body.verifyInsiteHelpEmoji !== undefined) settings.verifyInsiteHelpEmoji = req.body.verifyInsiteHelpEmoji;
+                if (req.body.verifyInsiteHelpDesc !== undefined) settings.verifyInsiteHelpDesc = req.body.verifyInsiteHelpDesc;
+
                 if (isProtectedServer && guildId === '1487342521133830174') {
                     if (!settings.verifyRoleId) settings.verifyRoleId = '1545240828354633819';
                     if (!settings.unverifiedRoleId) settings.unverifiedRoleId = '1539017864709669054';

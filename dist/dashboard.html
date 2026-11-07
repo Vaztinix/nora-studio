@@ -29998,8 +29998,27 @@
             if (action === 'spawn_verify') {
                 const verifyTypeEl = document.getElementById('setting-verificationType');
                 const verifyChanEl = document.getElementById('setting-verifyChannelId');
+                const verifyTitleEl = document.getElementById('setting-verifyEmbedTitle');
+                const verifyDescEl = document.getElementById('setting-verifyEmbedDesc');
+                const verifyColorEl = document.getElementById('setting-verifyEmbedColor');
+                const verifyBtnLabelEl = document.getElementById('setting-verifyBtnLabel');
+                const verifyBtnEmojiEl = document.getElementById('setting-verifyBtnEmoji');
+                const verifyHelpToggleEl = document.getElementById('setting-verifyInsiteShowHelpBtn');
+                const verifyHelpLabelEl = document.getElementById('setting-verifyInsiteHelpLabel');
+                const verifyHelpEmojiEl = document.getElementById('setting-verifyInsiteHelpEmoji');
+                const verifyHelpDescEl = document.getElementById('setting-verifyInsiteHelpDesc');
+
                 if (verifyTypeEl && verifyTypeEl.value) payload.verificationType = verifyTypeEl.value;
                 if (verifyChanEl && verifyChanEl.value) payload.verifyChannelId = verifyChanEl.value;
+                if (verifyTitleEl) payload.verifyEmbedTitle = verifyTitleEl.value;
+                if (verifyDescEl) payload.verifyEmbedDesc = verifyDescEl.value;
+                if (verifyColorEl) payload.verifyEmbedColor = verifyColorEl.value;
+                if (verifyBtnLabelEl) payload.verifyBtnLabel = verifyBtnLabelEl.value;
+                if (verifyBtnEmojiEl) payload.verifyBtnEmoji = verifyBtnEmojiEl.value;
+                if (verifyHelpToggleEl) payload.verifyInsiteShowHelpBtn = verifyHelpToggleEl.checked;
+                if (verifyHelpLabelEl) payload.verifyInsiteHelpLabel = verifyHelpLabelEl.value;
+                if (verifyHelpEmojiEl) payload.verifyInsiteHelpEmoji = verifyHelpEmojiEl.value;
+                if (verifyHelpDescEl) payload.verifyInsiteHelpDesc = verifyHelpDescEl.value;
             }
             try {
                 const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/action`, { 

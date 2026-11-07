@@ -31,6 +31,19 @@ n!help        /verify        n!rank        /setup        n!afk        /starboard
 
 ---
 
+## 🔒 In-Site Security Pass & Advanced Zero-Trust Verification
+
+For servers requiring maximum community protection (such as Milo's World and Nora's Hub), Nora includes the **In-Site Security Pass**—an enterprise-grade, zero-trust gatekeeper engineered to completely eradicate automated raid attacks, spam bots, and malicious ban evasion networks across all communities:
+
+- 🛡️ **Zero-VPN & Proxy Shield**: Automatically inspects connecting network headers, Tor exit nodes, and datacenter ASN classifications. VPNs and proxy tunnels are strictly barred from receiving verification.
+- 🧬 **28-Signal Composite Device Telemetry**: Mathematical anti-aliasing variations, WebGL caps, AudioContext waveform hashes, CPU/RAM hardware tiers, display geometry, system font variations, and regional keyboard maps.
+- ⚡ **Automated Alt Correlation & Immediate Ban**: When an account attempts verification, its composite device signature is automatically cross-referenced against server ban records. If an alt belongs to a user banned in the guild, **the alt is automatically and immediately banned**.
+- 🔒 **Zero-Trust Ephemeral Tickets**: Verification passes are valid for exactly 15 minutes, uniquely tied to the originating Discord session to prevent link sharing.
+- 🎨 **Full Dashboard Customization**: Customize embed titles, welcome descriptions, primary button labels, button emojis, and toggle the secondary "Why In-Site?" help button with 1 click.
+- 👤 **Human Non-Inspection Architecture**: Developers and staff possess zero tools to view private personal files or raw biometrics. All attributes are processed purely as mathematical cryptographic checksums in volatile RAM.
+
+---
+
 ## 🛡️ The #1 Top Privacy Bot Choice for Discord
 
 Most Discord bots aggressively hoard server logs, scrape private messages for analytics, or sell server statistics to third-party brokers. **Nora was engineered from day one to reject this paradigm.** 
@@ -68,6 +81,7 @@ Behind Nora is **Nora Studio**, a passionate collective of developers, community
 
 | Module | Version | Highlights & Capabilities |
 | :--- | :---: | :--- |
+| **In-Site Security Pass & Zero-Trust Verification** | `v4.1` | Advanced high-security gatekeeper evaluating 28 composite hardware, software & network signals. Automatically rejects VPNs/proxies, correlates alts against server ban registries to automatically ban evaders, and provides fully customizable Embeds V2 panels. |
 | **Crystal Liquid Glass Design System** | `v4.0` | Ultra-modern frosted glass aesthetic with specular rim reflections, dynamic ambient aurora refractions, and fluid micro-animations across the Dashboard, Nora Sentinel, Roblox Verification, and Profile. |
 | **Server Icon Ambient Palette Extraction** | `v4.0` | Dynamically samples each server icon's dominant color palette via an offscreen HTML canvas, casting authentic 3-color ambient glow halos behind server cards without arbitrary color hashing. |
 | **Automatic Background Readability Engine** | `v4.0` | Real-time luminance and contrast sampling calculating optimal background opacity (25%–35%) and blur (10px–16px) with instant slider retention and local cache persistence. |
