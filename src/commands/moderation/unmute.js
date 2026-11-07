@@ -46,7 +46,16 @@ module.exports = {
                 reason,
                 status: 'resolved'
             });
-            await handleSuccess(interaction, 'User Unmuted', `**${target.tag}**'s timeout has been removed.\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);
+            let responseText = `${target.username} (<@${target.id}>) has been unmuted from ${interaction.guild.name}`;
+            if (reason && reason !== 'No reason provided') {
+                responseText += ` for: ${reason}`;
+            }
+
+            if (interaction.deferred || interaction.replied) {
+                await interaction.editReply({ content: responseText, embeds: [] });
+            } else {
+                await interaction.reply({ content: responseText });
+            }
         } catch (error) {
             console.error(error);
             await handleError(interaction, 'Execution Error', 'An unexpected error occurred while trying to unmute the user.');

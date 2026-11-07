@@ -51,7 +51,16 @@ module.exports = {
                 reason,
                 status: 'active'
             });
-            await handleSuccess(interaction, 'User Kicked', `**${target.tag}** has been kicked successfully.\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);
+            let responseText = `${target.username} (<@${target.id}>) has been kicked from ${interaction.guild.name}`;
+            if (reason && reason !== 'No reason provided') {
+                responseText += ` for: ${reason}`;
+            }
+
+            if (interaction.deferred || interaction.replied) {
+                await interaction.editReply({ content: responseText, embeds: [] });
+            } else {
+                await interaction.reply({ content: responseText });
+            }
         } catch (error) {
             console.error(error);
             await handleError(interaction, 'Execution Error', 'An unexpected error occurred while trying to kick the user.');

@@ -17,17 +17,21 @@ const COMMAND_ALIASES = {
     'level': 'rank',
     'card': 'mycard',
     'profile': 'mycard',
-    'info': 'botinfo',
-    'bot': 'botinfo',
+    'info': 'info',
+    'bot': 'info',
     'botinfo': 'info',
     'av': 'avatar',
     'pfp': 'avatar',
     'w': 'warn',
     'k': 'kick',
     'b': 'ban',
-    't': 'timeout',
-    'mute': 'timeout',
-    'unmute': 'untimeout',
+    't': 'mute',
+    'to': 'mute',
+    'timeout': 'mute',
+    'mute': 'mute',
+    'unmute': 'unmute',
+    'untimeout': 'unmute',
+    'un-timeout': 'unmute',
     'clear': 'purge',
     'clean': 'purge',
     'inv': 'invites',
@@ -100,6 +104,29 @@ async function resolveRole(guild, input) {
 /**
  * Splits command arguments respecting quotes
  */
+
+const LONG_TEXT_OPTION_NAMES = new Set([
+    'reason', 'message', 'text', 'content', 'description', 
+    'title', 'status', 'query', 'prompt', 'question', 'story', 'input', 'note'
+]);
+
+function parseDurationToMinutes(str) {
+    if (!str) return null;
+    if (typeof str === 'number') return isNaN(str) ? null : str;
+    const match = String(str).trim().match(/^(\d+)\s*([smhdw]?)$/i);
+    if (!match) return null;
+    const val = parseInt(match[1], 10);
+    const unit = (match[2] || 'm').toLowerCase();
+    switch (unit) {
+        case 's': return Math.max(1, Math.round(val / 60));
+        case 'm': return val;
+        case 'h': return val * 60;
+        case 'd': return val * 1440;
+        case 'w': return val * 10080;
+        default: return val;
+    }
+}
+
 function splitArgs(str) {
     const regex = /[^\s"']+|"([^"]*)"|'([^']*)'/g;
     const args = [];
@@ -635,12 +662,13 @@ async function handlePrefixCommand(message, client) {
         return true;
     }
 
+    let argIdx = 0;
     for (let i = 0; i < optionDefs.length; i++) {
         const def = optionDefs[i];
         const defName = def.name.toLowerCase();
         const isLastOption = (i === optionDefs.length - 1);
 
-        if (i >= args.length) {
+        if (argIdx >= args.length) {
             // Argument was not supplied
             if (def.required) {
                 // Special exemption: commands where target user defaults to the author
@@ -653,63 +681,130 @@ async function handlePrefixCommand(message, client) {
             continue;
         }
 
-        const rawArg = args[i];
+        const rawArg = args[argIdx];
 
-        if (def.type === 3) { // String
-            if (isLastOption) {
-                parsedOptions[defName] = args.slice(i).join(' ');
+        if (def.type === 4 || def.type === 10) { // Integer or Number
+            let num;
+            if (defName.includes('duration') || defName.includes('time')) {
+                const parsedDur = parseDurationToMinutes(rawArg);
+                num = parsedDur !== null ? parsedDur : parseInt(rawArg, 10);
+            } else {
+                num = def.type === 4 ? parseInt(rawArg, 10) : parseFloat(rawArg);
+            }
+
+            if (isNaN(num)) {
+                // If it's a duration option and the user omitted it (e.g. n!mute @user reason),
+                // check if subsequent options include a string reason, and default duration to 10 min
+                const remainingDefs = optionDefs.slice(i + 1);
+                if ((defName.includes('duration') || defName.includes('time')) && remainingDefs.some(d => d.type === 3)) {
+                    parsedOptions[defName] = 10;
+                    // Do not increment argIdx, so rawArg is passed to the reason!
+                    continue;
+                }
+                if (def.required) {
+                    const errEmbed = new EmbedBuilder()
+                        .setTitle('⚠️ Invalid Number')
+                        .setDescription(`Expected a number for \`<${def.name}>\`, but received \`${rawArg}\`.`)
+                        .setColor(0xFEE75C);
+                    await message.reply({ embeds: [errEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
+                    return true;
+                }
+            }
+            parsedOptions[defName] = isNaN(num) ? null : num;
+            argIdx++;
+        } else if (def.type === 3) { // String
+            const remainingDefs = optionDefs.slice(i + 1);
+            const hasSubsequentRequired = remainingDefs.some(d => d.required);
+            const isLongText = LONG_TEXT_OPTION_NAMES.has(defName);
+
+            // Join remaining tokens if it's the last option OR if it's a designated long-text field (like reason) with no subsequent required options
+            if (isLastOption || (isLongText && !hasSubsequentRequired)) {
+                let remainingTokens = args.slice(argIdx);
+
+                if (remainingDefs.length > 0 && remainingTokens.length > 1) {
+                    for (let r = remainingDefs.length - 1; r >= 0; r--) {
+                        const nextDef = remainingDefs[r];
+                        const nextDefName = nextDef.name.toLowerCase();
+                        if (remainingTokens.length <= 1) break;
+
+                        const lastToken = remainingTokens[remainingTokens.length - 1].toLowerCase();
+
+                        if (nextDef.choices && Array.isArray(nextDef.choices) && nextDef.choices.length > 0) {
+                            const matchedChoice = nextDef.choices.find(c =>
+                                String(c.value).toLowerCase() === lastToken ||
+                                String(c.name).toLowerCase() === lastToken
+                            );
+                            if (matchedChoice) {
+                                parsedOptions[nextDefName] = matchedChoice.value;
+                                remainingTokens.pop();
+                                continue;
+                            }
+                        }
+
+                        if ((nextDef.type === 4 || nextDef.type === 10) && /^-?\d+$/.test(lastToken)) {
+                            parsedOptions[nextDefName] = parseInt(lastToken, 10);
+                            remainingTokens.pop();
+                            continue;
+                        }
+                    }
+                }
+
+                parsedOptions[defName] = remainingTokens.join(' ');
+                argIdx = args.length;
+                break;
             } else {
                 parsedOptions[defName] = rawArg;
+                argIdx++;
             }
         } else if (def.type === 6) { // User
             const user = await resolveUser(message.guild, rawArg);
             if (!user && def.required) {
                 const errEmbed = new EmbedBuilder()
                     .setTitle('⚠️ User Not Found')
-                    .setDescription(`Could not find a member matching \`${rawArg}\`.\n\nPlease provide a valid **@mention**, **Username**, or **18-digit Discord User ID**.`)
+                    .setDescription(`Could not find a member matching \`${rawArg}\`.
+
+Please provide a valid **@mention**, **Username**, or **18-digit Discord User ID**.`)
                     .setColor(0xFEE75C);
                 await message.reply({ embeds: [errEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
                 return true;
             }
             parsedOptions[defName] = user || message.author;
+            argIdx++;
         } else if (def.type === 7) { // Channel
             const channel = await resolveChannel(message.guild, rawArg);
             if (!channel && def.required) {
                 const errEmbed = new EmbedBuilder()
                     .setTitle('⚠️ Channel Not Found')
-                    .setDescription(`Could not find a channel matching \`${rawArg}\`.\n\nPlease provide a valid **#channel** mention, channel name, or **Channel ID**.`)
+                    .setDescription(`Could not find a channel matching \`${rawArg}\`.
+
+Please provide a valid **#channel** mention, channel name, or **Channel ID**.`)
                     .setColor(0xFEE75C);
                 await message.reply({ embeds: [errEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
                 return true;
             }
             parsedOptions[defName] = channel || message.channel;
+            argIdx++;
         } else if (def.type === 8) { // Role
             const role = await resolveRole(message.guild, rawArg);
             if (!role && def.required) {
                 const errEmbed = new EmbedBuilder()
                     .setTitle('⚠️ Role Not Found')
-                    .setDescription(`Could not find a role matching \`${rawArg}\`.\n\nPlease provide a valid **@role** mention, role name, or **Role ID**.`)
+                    .setDescription(`Could not find a role matching \`${rawArg}\`.
+
+Please provide a valid **@role** mention, role name, or **Role ID**.`)
                     .setColor(0xFEE75C);
                 await message.reply({ embeds: [errEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
                 return true;
             }
             parsedOptions[defName] = role;
-        } else if (def.type === 4 || def.type === 10) { // Integer or Number
-            const num = def.type === 4 ? parseInt(rawArg) : parseFloat(rawArg);
-            if (isNaN(num) && def.required) {
-                const errEmbed = new EmbedBuilder()
-                    .setTitle('⚠️ Invalid Number')
-                    .setDescription(`Expected a number for \`<${def.name}>\`, but received \`${rawArg}\`.`)
-                    .setColor(0xFEE75C);
-                await message.reply({ embeds: [errEmbed], allowedMentions: { repliedUser: false } }).catch(() => {});
-                return true;
-            }
-            parsedOptions[defName] = isNaN(num) ? null : num;
+            argIdx++;
         } else if (def.type === 5) { // Boolean
             const s = String(rawArg).toLowerCase();
             parsedOptions[defName] = ['true', 'yes', '1', 'on', 'enable'].includes(s);
+            argIdx++;
         } else {
             parsedOptions[defName] = rawArg;
+            argIdx++;
         }
     }
 

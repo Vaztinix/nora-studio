@@ -183,25 +183,19 @@ module.exports = {
             }
         }
 
-        const embed = new EmbedBuilder()
-            .setTitle('⚠️ Warning Issued')
-            .setColor(SEVERITY_COLORS[severity] || 0xFFAA00)
-            .addFields(
-                { name: 'User', value: `${user.tag} (\`${user.id}\`)`, inline: true },
-                { name: 'Moderator', value: `<@${interaction.user.id}>`, inline: true },
-                { name: 'Severity', value: SEVERITY_BADGES[severity], inline: true },
-                { name: 'Reason', value: reason, inline: false },
-                { name: 'Warning ID', value: `\`#${warning.id}\``, inline: true },
-                { name: 'Case ID', value: `\`#${caseRecord.id}\``, inline: true },
-                { name: 'Active Warnings', value: `**${warningCount}**`, inline: true }
-            )
-            .setTimestamp();
-
+        let responseText = `${user.username} (<@${user.id}>) has been warned from ${interaction.guild.name}`;
+        if (reason && reason !== 'No reason provided') {
+            responseText += ` for: ${reason}`;
+        }
         if (thresholdActionTaken) {
-            embed.setDescription(thresholdActionTaken.trim());
+            responseText += `\n${thresholdActionTaken.trim()}`;
         }
 
-        await interaction.reply({ embeds: [embed] });
+        if (interaction.deferred || interaction.replied) {
+            await interaction.editReply({ content: responseText, embeds: [] });
+        } else {
+            await interaction.reply({ content: responseText });
+        }
 
         // DM the user
         try {

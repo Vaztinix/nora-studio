@@ -126,7 +126,16 @@ module.exports = {
                 }
             }
 
-            await handleSuccess(interaction, 'User Muted', `**${target.tag}** has been timed out for **${durationDisplay}**.\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);
+            let responseText = `${target.username} (<@${target.id}>) has been muted from ${interaction.guild.name} for ${durationDisplay}`;
+            if (reason && reason !== 'No reason provided') {
+                responseText += ` for: ${reason}`;
+            }
+
+            if (interaction.deferred || interaction.replied) {
+                await interaction.editReply({ content: responseText, embeds: [] });
+            } else {
+                await interaction.reply({ content: responseText });
+            }
         } catch (error) {
             console.error('[Mute Command Error]:', error);
             await handleError(interaction, 'Execution Error', 'An unexpected error occurred while trying to mute the user. Check my permissions or hierarchy.');

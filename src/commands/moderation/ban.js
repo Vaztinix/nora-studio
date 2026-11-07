@@ -124,7 +124,16 @@ module.exports = {
                 }
             }
 
-            await handleSuccess(interaction, 'User Banned', `**${target.tag}** has been banned from the server.\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);
+            let responseText = `${target.username} (<@${target.id}>) has been banned from ${interaction.guild.name}`;
+            if (reason && reason !== 'No reason provided') {
+                responseText += ` for: ${reason}`;
+            }
+
+            if (interaction.deferred || interaction.replied) {
+                await interaction.editReply({ content: responseText, embeds: [] });
+            } else {
+                await interaction.reply({ content: responseText });
+            }
         } catch (error) {
             console.error('[Ban Command Error]:', error);
             await handleError(interaction, 'Execution Error', 'An unexpected error occurred while trying to ban the user. Please check permissions and try again.');

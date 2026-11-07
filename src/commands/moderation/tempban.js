@@ -79,7 +79,16 @@ module.exports = {
                 duration: durationMs
             });
 
-            await handleSuccess(interaction, 'User Temporarily Banned', `**${target.tag}** has been banned successfully.\n**Duration:** ${durationStr}\n**Reason:** ${reason}\n**Case:** #${caseRecord.id}`);
+            let responseText = `${target.username} (<@${target.id}>) has been temporarily banned from ${interaction.guild.name} for ${durationStr}`;
+            if (reason && reason !== 'No reason provided') {
+                responseText += ` for: ${reason}`;
+            }
+
+            if (interaction.deferred || interaction.replied) {
+                await interaction.editReply({ content: responseText, embeds: [] });
+            } else {
+                await interaction.reply({ content: responseText });
+            }
         } catch (error) {
             console.error(error);
             await handleError(interaction, 'Execution Error', 'An unexpected error occurred while trying to temporarily ban the user.');
