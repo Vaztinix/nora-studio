@@ -661,6 +661,26 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.STRING,
         defaultValue: '🔒'
     },
+    verifyInsiteShowHelpBtn: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    verifyInsiteHelpLabel: {
+        type: DataTypes.STRING,
+        defaultValue: 'Why In-Site?'
+    },
+    verifyInsiteHelpEmoji: {
+        type: DataTypes.STRING,
+        defaultValue: '❓'
+    },
+    verifyInsiteHelpDesc: {
+        type: DataTypes.TEXT,
+        allowNull: true
+    },
+    insiteVerificationEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
     verificationLogChannelId: {
         type: DataTypes.STRING,
         allowNull: true

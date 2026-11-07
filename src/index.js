@@ -445,6 +445,11 @@ async function runPreSyncMigrations() {
     try { await sequelize.query("ALTER TABLE `UserPrefs` ADD COLUMN `freeTrialExpiresAt` DATETIME NULL;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `Notifications` ADD COLUMN `isTrial` TINYINT(1) DEFAULT 0;"); } catch (e) { }
     try { await sequelize.query("ALTER TABLE `Notifications` ADD COLUMN `cannotDismiss` TINYINT(1) DEFAULT 0;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyInsiteShowHelpBtn` TINYINT(1) DEFAULT 1;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyInsiteHelpLabel` VARCHAR(255) DEFAULT 'Why In-Site?';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyInsiteHelpEmoji` VARCHAR(255) DEFAULT '❓';"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `verifyInsiteHelpDesc` TEXT NULL;"); } catch (e) { }
+    try { await sequelize.query("ALTER TABLE `GuildSettings` ADD COLUMN `insiteVerificationEnabled` TINYINT(1) DEFAULT 0;"); } catch (e) { }
 }
 
 runPreSyncMigrations().then(() => {

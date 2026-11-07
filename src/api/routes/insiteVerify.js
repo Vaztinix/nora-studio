@@ -18,6 +18,47 @@ const REVERSE_GUILD_MAP = {
     '1515800329889779954': 'noras-hub'
 };
 
+// Check if a guild is authorized for In-Site Verification
+function isGuildEligibleForInsite(guildId, settings = null) {
+    // Whitelisted for Milo's World & Nora's Hub; built to support more communities dynamically
+    const AUTHORIZED_HUBS = ['1487342521133830174', '1515800329889779954'];
+    if (AUTHORIZED_HUBS.includes(guildId)) return true;
+    if (settings && (settings.insiteVerificationEnabled || settings.verificationType === 'insite')) {
+        return true;
+    }
+    return false;
+}
+
+// Resolve any incoming server slug, vanity slug, or guild ID
+async function resolveGuildId(serverSlugOrGuildId) {
+    if (!serverSlugOrGuildId) return null;
+    const key = String(serverSlugOrGuildId).toLowerCase().trim();
+    if (GUILD_MAP[key]) return GUILD_MAP[key];
+    if (/^\d{17,20}$/.test(key)) return key;
+
+    try {
+        const settings = await GuildSettings.findOne({
+            where: {
+                [Op.or]: [
+                    { guildId: key },
+                    { vanityCode: key }
+                ]
+            }
+        });
+        if (settings) return settings.guildId;
+    } catch (_) {}
+    return null;
+}
+
+function resolveServerSlug(guildId, guildName = '') {
+    if (REVERSE_GUILD_MAP[guildId]) return REVERSE_GUILD_MAP[guildId];
+    if (guildName) {
+        const slug = guildName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        if (slug) return slug;
+    }
+    return guildId;
+}
+
 // In-memory ticket cache: ticketId -> { guildId, userId, createdAt, expiresAt }
 // Valid for 15 minutes to guarantee the link comes from a real Discord interaction
 const activeTickets = new Map();
@@ -209,7 +250,7 @@ function checkVpnAndDatacenter(req, clientIp, intel, forensics) {
 router.get('/session-check', async (req, res) => {
     try {
         let { serverSlug, ticket } = req.query;
-        let targetGuildId = GUILD_MAP[serverSlug];
+        let targetGuildId = await resolveGuildId(serverSlug);
         let hasValidTicket = false;
         let ticketRecord = null;
 
@@ -236,7 +277,7 @@ router.get('/session-check', async (req, res) => {
                 hasValidTicket = true;
                 // Accurately resolve true guildId and slug from the verified ticket itself
                 targetGuildId = ticketRecord.guildId;
-                serverSlug = REVERSE_GUILD_MAP[targetGuildId] || 'noras-hub';
+                serverSlug = resolveServerSlug(targetGuildId);
             }
         }
 
@@ -252,12 +293,23 @@ router.get('/session-check', async (req, res) => {
 
         const client = req.client;
         const guild = client ? client.guilds.cache.get(targetGuildId) : null;
-        const serverName = guild ? guild.name : (serverSlug === 'milos-world' ? "Milo's World" : "Nora's Hub");
+        const settings = await GuildSettings.findOne({ where: { guildId: targetGuildId } }).catch(() => null);
+
+        // Security check: Only allow eligible guilds (Milo's World & Nora's Hub for now, dynamic for future public rollout)
+        if (!isGuildEligibleForInsite(targetGuildId, settings)) {
+            return res.status(403).json({
+                valid: false,
+                error: 'In-site verification is exclusively active for authorized communities.'
+            });
+        }
+
+        const defaultName = (serverSlug === 'milos-world' ? "Milo's World" : (serverSlug === 'noras-hub' ? "Nora's Hub" : (guild?.name || 'Authorized Community')));
+        const serverName = guild ? guild.name : defaultName;
 
         res.json({
             valid: hasValidTicket,
             guildId: targetGuildId,
-            serverSlug,
+            serverSlug: resolveServerSlug(targetGuildId, serverName),
             serverName,
             serverIcon: guild && guild.icon ? guild.iconURL({ size: 128 }) : null,
             memberCount: guild ? guild.memberCount : 7646,
@@ -273,12 +325,13 @@ router.get('/session-check', async (req, res) => {
 router.post('/create-ticket', async (req, res) => {
     try {
         const { guildId, userId } = req.body;
-        if (!guildId || !REVERSE_GUILD_MAP[guildId]) {
+        const settings = await GuildSettings.findOne({ where: { guildId } }).catch(() => null);
+        if (!guildId || !isGuildEligibleForInsite(guildId, settings)) {
             return res.status(403).json({ error: 'Server not authorized for in-site security pass.' });
         }
         const ticketId = createTicket(guildId, userId);
-        const slug = REVERSE_GUILD_MAP[guildId];
-        const verifyUrl = `https://vaztinix.dev/verify/security/${slug}?ticket=${ticketId}&server=${slug}&guildId=${guildId}`;
+        const slug = resolveServerSlug(guildId);
+        const verifyUrl = `https://vaztinix.dev/verify/security?ticket=${ticketId}&server=${slug}&guildId=${guildId}`;
         res.json({ success: true, ticketId, verifyUrl });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -295,7 +348,7 @@ router.post('/submit', async (req, res) => {
         }
 
         const { serverSlug, ticket, forensics } = req.body;
-        let guildId = GUILD_MAP[serverSlug];
+        let guildId = await resolveGuildId(serverSlug);
 
         // Resolve guildId from ticket if available
         if (ticket) {
@@ -313,6 +366,11 @@ router.post('/submit', async (req, res) => {
 
         if (!guildId) {
             guildId = '1515800329889779954';
+        }
+
+        const settings = await GuildSettings.findOne({ where: { guildId } }).catch(() => null);
+        if (!isGuildEligibleForInsite(guildId, settings)) {
+            return res.status(403).json({ error: 'Forbidden: In-site verification is restricted to official authorized servers.' });
         }
 
         const client = req.client;
@@ -664,10 +722,14 @@ router.post('/submit', async (req, res) => {
             await member.roles.remove(unverifiedRoleId).catch(() => { });
             verifiedRoleAwarded = true;
         } else {
-            // Nora's Hub
+            // Nora's Hub & All Future Authorized Communities
             const gs = await GuildSettings.findOne({ where: { guildId } });
             if (gs && gs.verifyRoleId) {
-                await member.roles.add(gs.verifyRoleId).catch(() => { });
+                const { parseRoleIds } = require('../../utils/roleUtils');
+                const roleIds = parseRoleIds(gs.verifyRoleId);
+                for (const rid of roleIds) {
+                    await member.roles.add(rid).catch(() => {});
+                }
                 if (gs.removeUnverifiedRoleOnVerify && gs.unverifiedRoleId) {
                     await member.roles.remove(gs.unverifiedRoleId).catch(() => { });
                 }
@@ -698,8 +760,11 @@ router.post('/submit', async (req, res) => {
             confidenceScore: '100% Authentic Match'
         });
 
-        // Invalidate the ticket so it cannot be reused
-        if (ticket) activeTickets.delete(ticket);
+        // Invalidate the ticket in memory & database so it cannot be reused
+        if (ticket) {
+            activeTickets.delete(ticket);
+            InsiteTicket.destroy({ where: { ticketId: ticket } }).catch(() => {});
+        }
 
         res.json({
             success: true,

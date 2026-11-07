@@ -229,7 +229,7 @@ module.exports = {
                     .setColor(0x5865F2)
                     .setDescription(
                         `Welcome to **${interaction.guild.name}**!\n\n` +
-                        `To safeguard our community against automated raid attacks, malicious bot accounts, and ban evasion networks, server access requires completing the **Nora In-Site Security Pass**.\n\n` +
+                        `To safeguard our community with an advanced way to secure servers across all communities, server access requires completing the **Nora In-Site Security Pass**.\n\n` +
                         `### 🔒 How to Verify:\n` +
                         `1. Click the **🛡️ Start In-Site Verification** button below.\n` +
                         `2. Nora will generate your **private, secure one-time session pass**.\n` +
@@ -238,7 +238,7 @@ module.exports = {
                         `🔒 *Connection integrity is analyzed in volatile memory to detect proxy tunnels and prevent ban evasion. Stored strictly on Nora's secure local host database.*`
                     )
                     .setThumbnail(interaction.guild.iconURL({ dynamic: true, size: 256 }) || null)
-                    .setFooter({ text: 'Nora Enterprise Security • In-Site Gatekeeper', iconURL: interaction.client.user.displayAvatarURL() })
+                    .setFooter({ text: 'Nora Enterprise Security • Advanced Security', iconURL: interaction.client.user.displayAvatarURL() })
                     .setTimestamp();
 
                 const row = new ActionRowBuilder().addComponents(

@@ -550,7 +550,7 @@ async function spawnVerificationPanel(targetChannel, settings, type = 'captcha',
         const title = settings?.verifyEmbedTitle || `🛡️ ${guild.name} • In-Site Security Pass`;
         const description = settings?.verifyEmbedDesc || (
             `Welcome to **${guild.name}**!\n\n` +
-            `To safeguard our community against automated raid attacks, malicious bot accounts, and ban evasion networks, server access requires completing the **Nora In-Site Security Pass**.\n\n` +
+            `To safeguard our community with an advanced way to secure servers across all communities, server access requires completing the **Nora In-Site Security Pass**.\n\n` +
             `### 🔒 How to Verify:\n` +
             `1. Click the **🛡️ Start In-Site Verification** button below.\n` +
             `2. Nora will generate your **private, secure one-time session pass**.\n` +
@@ -561,11 +561,15 @@ async function spawnVerificationPanel(targetChannel, settings, type = 'captcha',
         const btnLabel = (settings?.verifyBtnLabel && settings.verifyBtnLabel !== 'Verify Account') ? settings.verifyBtnLabel : 'Start In-Site Verification';
         const btnEmoji = (settings?.verifyBtnEmoji && settings.verifyBtnEmoji !== '🔒') ? settings.verifyBtnEmoji : '🛡️';
 
+        const showHelpBtn = settings?.verifyInsiteShowHelpBtn !== false;
+        const helpBtnLabel = settings?.verifyInsiteHelpLabel || 'Why In-Site?';
+        const helpBtnEmoji = settings?.verifyInsiteHelpEmoji || '❓';
+
         const embed = new EmbedBuilder()
             .setTitle(title)
             .setDescription(description)
             .setColor(embedColor)
-            .setFooter({ text: 'Nora Enterprise Security • In-Site Gatekeeper', iconURL: botAvatar })
+            .setFooter({ text: 'Nora Enterprise Security • Advanced Security', iconURL: botAvatar })
             .setTimestamp();
 
         if (guild.icon) {
@@ -579,13 +583,18 @@ async function spawnVerificationPanel(targetChannel, settings, type = 'captcha',
                 .setCustomId('verify_insite_start')
                 .setLabel(btnLabel)
                 .setEmoji(btnEmoji)
-                .setStyle(ButtonStyle.Success),
-            new ButtonBuilder()
-                .setCustomId('verify_insite_help')
-                .setLabel('Why In-Site?')
-                .setStyle(ButtonStyle.Secondary)
-                .setEmoji('❓')
+                .setStyle(ButtonStyle.Success)
         );
+
+        if (showHelpBtn) {
+            row.addComponents(
+                new ButtonBuilder()
+                    .setCustomId('verify_insite_help')
+                    .setLabel(helpBtnLabel)
+                    .setEmoji(helpBtnEmoji)
+                    .setStyle(ButtonStyle.Secondary)
+            );
+        }
 
         const { buildEmbedV2Container } = require('../../utils/embeds');
         let sent;

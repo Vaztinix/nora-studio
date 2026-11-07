@@ -601,10 +601,10 @@ module.exports = {
                     .setDescription(
                         `Welcome, <@${interaction.user.id}>!\n\n` +
                         `Click the button below to complete your **In-Site Security Pass** for **${interaction.guild?.name || 'this server'}**.\n\n` +
-                        `⏱️ **Session Expiry:** This private pass is valid for <t:${Math.floor(Date.now() / 1000) + 900}:R> (15 minutes).\n` +
+                        `⏱️ **Session Expiry:** This private pass is valid for 15 minutes (expires <t:${Math.floor(Date.now() / 1000) + 900}:t>).\n` +
                         `🔒 **Zero-Trust Pass:** This link is uniquely tied to your Discord session. Do not share this URL with anyone.`
                     )
-                    .setFooter({ text: 'Nora In-Site Gatekeeper • Anti-Alt & Proxy Shield' });
+                    .setFooter({ text: 'Nora In-Site Gatekeeper • Advanced Security' });
 
                 const row = new ActionRowBuilder().addComponents(
                     new ButtonBuilder()
@@ -642,19 +642,23 @@ module.exports = {
                 // Immediately acknowledge interaction to satisfy Discord's strict 3-second limit & prevent Error 10062
                 await interaction.deferReply({ flags: MessageFlags.Ephemeral });
 
+                const settings = await settingsCache.get(interaction.guildId).catch(() => null);
+                const customHelpDesc = settings?.verifyInsiteHelpDesc;
+                const helpDescription = customHelpDesc || (
+                    `To safeguard **${interaction.guild?.name || 'our community'}** with an advanced way to secure servers across all communities, server access requires completing the **Nora In-Site Security Pass**.\n\n` +
+                    `### 🔒 What Nora Verifies:\n` +
+                    `• **Network Health:** Inspects proxy tunnels, datacenter ranges, and Tor exit nodes.\n` +
+                    `• **Hardware Signature:** Cryptographic canvas & WebGL signatures to prevent coordinated alt evasion.\n\n` +
+                    `✨ **Privacy Guarantee:** Telemetry is processed securely in volatile RAM, stored strictly on our encrypted local host database, and never published or shared.\n\n` +
+                    `Click **Start In-Site Verification** on the panel whenever you're ready!`
+                );
+
                 const { buildEmbedV2Container } = require('../utils/embeds');
                 const helpEmbed = new EmbedBuilder()
                     .setTitle('🛡️ In-Site Security Pass • Verification System')
                     .setColor(0x5865F2)
-                    .setDescription(
-                        `To safeguard **${interaction.guild?.name || 'our community'}** against automated raid scripts, spam bots, and malicious network ban-evasion groups (such as UTTP), server access requires completing the **Nora In-Site Security Pass**.\n\n` +
-                        `### 🔒 What Nora Verifies:\n` +
-                        `• **Network Health:** Inspects proxy tunnels, datacenter ranges, and Tor exit nodes.\n` +
-                        `• **Hardware Signature:** Cryptographic canvas & WebGL signatures to prevent coordinated alt evasion.\n\n` +
-                        `✨ **Privacy Guarantee:** Telemetry is processed securely in volatile RAM, stored strictly on our encrypted local host database, and never published or shared.\n\n` +
-                        `Click **Start In-Site Verification** on the panel whenever you're ready!`
-                    )
-                    .setFooter({ text: 'Nora Enterprise Security • In-Site Gatekeeper' });
+                    .setDescription(helpDescription)
+                    .setFooter({ text: 'Nora Enterprise Security • Advanced Security' });
 
                 try {
                     const v2Payload = buildEmbedV2Container(helpEmbed);

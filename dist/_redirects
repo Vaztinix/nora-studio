@@ -1,3 +1,4 @@
+/verify/security /security-verify.html 200
 /verify/security/* /security-verify.html 200
 /api/* https://api.vaztinix.dev/api/:splat 200
 /kite/showcase /kite/showcase.html 200

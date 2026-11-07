@@ -27,3 +27,4 @@ const InsiteTicket = sequelize.define('InsiteTicket', {
 });
 
 module.exports = InsiteTicket;
+

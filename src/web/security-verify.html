@@ -702,8 +702,21 @@
                 localStorage.setItem('nora_insite_ticket', urlParams.get('ticket'));
             }
 
-            // Check implicit token from hash
+            // Check implicit token and state from hash / query
             const hashParams = new URLSearchParams(window.location.hash.slice(1));
+            const rawState = hashParams.get('state') || urlParams.get('state');
+            if (rawState) {
+                try {
+                    const parsedState = JSON.parse(decodeURIComponent(rawState));
+                    if (parsedState.slug) sessionStorage.setItem('nora_insite_slug', parsedState.slug);
+                    if (parsedState.ticket) {
+                        sessionStorage.setItem('nora_insite_ticket', parsedState.ticket);
+                        localStorage.setItem('nora_insite_ticket', parsedState.ticket);
+                        ticket = parsedState.ticket;
+                    }
+                } catch (_) {}
+            }
+
             const accessToken = hashParams.get('access_token');
             if (accessToken) {
                 localStorage.setItem('nora_auth_token', accessToken);
@@ -783,18 +796,20 @@
             const clientId = window.__NORA_CLIENT_ID__ || '1375943730951098549';
             const slug = getServerSlug();
             const urlParams = new URLSearchParams(window.location.search);
-            const ticket = urlParams.get('ticket') || sessionStorage.getItem('nora_insite_ticket') || localStorage.getItem('nora_insite_ticket');
+            const ticket = urlParams.get('ticket') || sessionStorage.getItem('nora_insite_ticket') || localStorage.getItem('nora_insite_ticket') || '';
             if (ticket) {
                 sessionStorage.setItem('nora_insite_ticket', ticket);
                 localStorage.setItem('nora_insite_ticket', ticket);
             }
             sessionStorage.setItem('nora_insite_slug', slug);
 
+            // Universal single redirect URI for all communities
             const redirectBase = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000')
-                ? `${window.location.origin}/verify/security/${slug}`
-                : `https://vaztinix.dev/verify/security/${slug}`;
+                ? `${window.location.origin}/verify/security`
+                : `https://vaztinix.dev/verify/security`;
             const redirectUri = encodeURIComponent(redirectBase);
-            window.location.href = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=identify`;
+            const statePayload = encodeURIComponent(JSON.stringify({ slug, ticket }));
+            window.location.href = `https://discord.com/oauth2/authorize?client_id=${clientId}&response_type=token&redirect_uri=${redirectUri}&scope=identify&state=${statePayload}`;
         }
 
         async function executeInsiteVerification() {
