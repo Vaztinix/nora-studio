@@ -360,54 +360,318 @@
             return 'milos-world';
         }
 
-        // Compute Hardware & Browser Forensics
-        function collectClientForensics() {
+                // ── BEHAVIORAL & BIOMETRIC TELEMETRY ENGINE ────────────────────────────
+        const behavioralState = {
+            dwellTimes: [],
+            flightTimes: [],
+            lastDown: 0,
+            lastUp: 0,
+            velocities: [],
+            accelerations: [],
+            lastX: 0,
+            lastY: 0,
+            lastTime: 0,
+            lastVelocity: 0,
+            microTremors: 0
+        };
+
+        window.addEventListener('keydown', (e) => {
+            const now = performance.now();
+            behavioralState.lastDown = now;
+            if (behavioralState.lastUp > 0) {
+                const flight = now - behavioralState.lastUp;
+                if (flight > 10 && flight < 2500) behavioralState.flightTimes.push(flight);
+            }
+        }, { passive: true });
+
+        window.addEventListener('keyup', (e) => {
+            const now = performance.now();
+            behavioralState.lastUp = now;
+            if (behavioralState.lastDown > 0) {
+                const dwell = now - behavioralState.lastDown;
+                if (dwell > 10 && dwell < 2500) behavioralState.dwellTimes.push(dwell);
+            }
+        }, { passive: true });
+
+        window.addEventListener('mousemove', (e) => {
+            const now = performance.now();
+            if (behavioralState.lastTime > 0) {
+                const dt = now - behavioralState.lastTime;
+                if (dt > 8 && dt < 400) {
+                    const dx = e.clientX - behavioralState.lastX;
+                    const dy = e.clientY - behavioralState.lastY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const vel = dist / dt;
+                    const acc = Math.abs(vel - behavioralState.lastVelocity) / dt;
+                    if (dist > 0 && dist <= 2.2) behavioralState.microTremors++;
+                    behavioralState.velocities.push(vel);
+                    behavioralState.accelerations.push(acc);
+                    behavioralState.lastVelocity = vel;
+                }
+            }
+            behavioralState.lastX = e.clientX;
+            behavioralState.lastY = e.clientY;
+            behavioralState.lastTime = now;
+        }, { passive: true });
+
+        // ── COMPREHENSIVE 31-POINT FORENSIC TELEMETRY COLLECTOR ─────────────────
+        async function collectClientForensics() {
             const forensics = {
-                userAgent: navigator.userAgent,
-                platform: navigator.platform || 'Unknown',
-                screenResolution: `${window.screen.width}x${window.screen.height}@${window.devicePixelRatio || 1}`,
-                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
-                languages: navigator.languages || [navigator.language],
+                // 1. Hardware & Driver Level
                 canvasHash: 'N/A',
                 webglVendor: 'N/A',
-                webglRenderer: 'N/A'
+                webglRenderer: 'N/A',
+                webglParameters: null,
+                audioHash: 'N/A',
+                cpuCores: navigator.hardwareConcurrency || 'N/A',
+                deviceMemory: navigator.deviceMemory ? navigator.deviceMemory + ' GB' : 'N/A',
+                maxTouchPoints: navigator.maxTouchPoints || 0,
+                gamepads: [],
+                floatPrecision: 'N/A',
+
+                // 2. Software & Environment
+                systemFonts: [],
+                screenResolution: `${window.screen.width}x${window.screen.height}`,
+                availableWorkspace: `${window.screen.availWidth}x${window.screen.availHeight}`,
+                devicePixelRatio: window.devicePixelRatio || 1,
+                timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
+                languages: navigator.languages ? Array.from(navigator.languages) : [navigator.language || 'en-US'],
+                clientHints: null,
+                mediaCodecs: null,
+                extensionsFootprint: [],
+                doNotTrack: navigator.doNotTrack || window.doNotTrack || 'unspecified',
+                colorDepth: window.screen.colorDepth || window.screen.pixelDepth || 24,
+                keyboardLayout: null,
+                userAgent: navigator.userAgent,
+                platform: navigator.platform || 'Unknown',
+
+                // 3. Network & Protocol Probed
+                localIpLeak: 'none',
+
+                // 4. Biometric & Behavioral
+                keystrokeDwellMs: null,
+                keystrokeFlightMs: null,
+                meanPointerVelocity: null,
+                meanPointerAcceleration: null,
+                pointerTremorScore: behavioralState.microTremors
             };
 
-            // Canvas Hardware Fingerprint Hash
+            // Calculate behavioral aggregates
+            if (behavioralState.dwellTimes.length > 0) {
+                const sum = behavioralState.dwellTimes.reduce((a, b) => a + b, 0);
+                forensics.keystrokeDwellMs = Math.round(sum / behavioralState.dwellTimes.length);
+            }
+            if (behavioralState.flightTimes.length > 0) {
+                const sum = behavioralState.flightTimes.reduce((a, b) => a + b, 0);
+                forensics.keystrokeFlightMs = Math.round(sum / behavioralState.flightTimes.length);
+            }
+            if (behavioralState.velocities.length > 0) {
+                const sum = behavioralState.velocities.reduce((a, b) => a + b, 0);
+                forensics.meanPointerVelocity = parseFloat((sum / behavioralState.velocities.length).toFixed(3));
+            }
+            if (behavioralState.accelerations.length > 0) {
+                const sum = behavioralState.accelerations.reduce((a, b) => a + b, 0);
+                forensics.meanPointerAcceleration = parseFloat((sum / behavioralState.accelerations.length).toFixed(4));
+            }
+
+            // A. HTML5 Canvas Render Hash (Pixel layout & anti-aliasing)
             try {
                 const canvas = document.getElementById('forensic-canvas');
-                const ctx = canvas.getContext('2d');
-                ctx.textBaseline = 'top';
-                ctx.font = "14px 'Arial'";
-                ctx.textBaseline = 'alphabetic';
-                ctx.fillStyle = '#f60';
-                ctx.fillRect(125, 1, 62, 20);
-                ctx.fillStyle = '#069';
-                ctx.fillText('Nora-Shield v2.5 \ud83d\udee1\ufe0f', 2, 15);
-                ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
-                ctx.fillText('Nora-Shield v2.5 \ud83d\udee1\ufe0f', 4, 17);
-                const dataUrl = canvas.toDataURL();
-                
-                // Simple fast hash of dataUrl string
-                let hash = 0;
-                for (let i = 0; i < dataUrl.length; i++) {
-                    hash = ((hash << 5) - hash) + dataUrl.charCodeAt(i);
-                    hash |= 0;
+                if (canvas) {
+                    const ctx = canvas.getContext('2d');
+                    ctx.textBaseline = 'top';
+                    ctx.font = "14px 'Arial'";
+                    ctx.textBaseline = 'alphabetic';
+                    ctx.fillStyle = '#f60';
+                    ctx.fillRect(125, 1, 62, 20);
+                    ctx.fillStyle = '#069';
+                    ctx.fillText('Nora-Shield v2.5 \ud83d\udee1\ufe0f', 2, 15);
+                    ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+                    ctx.fillText('Nora-Shield v2.5 \ud83d\udee1\ufe0f', 4, 17);
+                    const dataUrl = canvas.toDataURL();
+                    let hash = 0;
+                    for (let i = 0; i < dataUrl.length; i++) {
+                        hash = ((hash << 5) - hash) + dataUrl.charCodeAt(i);
+                        hash |= 0;
+                    }
+                    forensics.canvasHash = 'cv_' + Math.abs(hash).toString(16);
                 }
-                forensics.canvasHash = 'cv_' + Math.abs(hash).toString(16);
-            } catch (e) {}
+            } catch (_) {}
 
-            // WebGL Hardware Fingerprint
+            // B. WebGL Vendor, Renderer & Parameter Matrix
             try {
-                const gl = document.createElement('canvas').getContext('webgl');
+                const gl = document.createElement('canvas').getContext('webgl') || document.createElement('canvas').getContext('experimental-webgl');
                 if (gl) {
                     const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
                     if (debugInfo) {
-                        forensics.webglVendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL);
-                        forensics.webglRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+                        forensics.webglVendor = gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) || 'N/A';
+                        forensics.webglRenderer = gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) || 'N/A';
+                    }
+                    const exts = gl.getSupportedExtensions() || [];
+                    forensics.webglParameters = {
+                        maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE),
+                        maxRenderBufferSize: gl.getParameter(gl.MAX_RENDERBUFFER_SIZE),
+                        maxVertexAttribs: gl.getParameter(gl.MAX_VERTEX_ATTRIBS),
+                        maxVaryingVectors: gl.getParameter(gl.MAX_VARYING_VECTORS),
+                        maxFragmentUniformVectors: gl.getParameter(gl.MAX_FRAGMENT_UNIFORM_VECTORS),
+                        extensionsCount: exts.length,
+                        shadingLanguage: gl.getParameter(gl.SHADING_LANGUAGE_VERSION)
+                    };
+                }
+            } catch (_) {}
+
+            // C. AudioContext Waveform Micro-Compression
+            try {
+                const AudioCtx = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+                if (AudioCtx) {
+                    const actx = new AudioCtx(1, 44100, 44100);
+                    const osc = actx.createOscillator();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(10000, actx.currentTime);
+                    const comp = actx.createDynamicsCompressor();
+                    comp.threshold.setValueAtTime(-50, actx.currentTime);
+                    comp.knee.setValueAtTime(40, actx.currentTime);
+                    comp.ratio.setValueAtTime(12, actx.currentTime);
+                    comp.reduction.setValueAtTime(-20, actx.currentTime);
+                    comp.attack.setValueAtTime(0, actx.currentTime);
+                    comp.release.setValueAtTime(0.25, actx.currentTime);
+                    osc.connect(comp);
+                    comp.connect(actx.destination);
+                    osc.start(0);
+                    const buf = await actx.startRendering();
+                    const audioData = buf.getChannelData(0);
+                    let sum = 0;
+                    for (let i = 4500; i < 5000; i++) sum += Math.abs(audioData[i]);
+                    forensics.audioHash = 'au_' + sum.toString(36).replace('.', '').slice(0, 10);
+                }
+            } catch (_) {}
+
+            // D. Floating-Point Precision
+            try {
+                let fSum = 0;
+                for (let i = 1; i <= 25; i++) {
+                    fSum += Math.sin(i * Math.PI) * Math.cos(i * Math.E);
+                }
+                forensics.floatPrecision = fSum.toString();
+            } catch (_) {}
+
+            // E. System Font List Probe
+            try {
+                const baseFonts = ['monospace', 'sans-serif', 'serif'];
+                const testSpan = document.createElement('span');
+                testSpan.style.fontSize = '72px';
+                testSpan.innerHTML = 'mmmmmmmmmmlli';
+                testSpan.style.position = 'absolute';
+                testSpan.style.left = '-9999px';
+                document.body.appendChild(testSpan);
+
+                const baseWidths = {};
+                for (const b of baseFonts) {
+                    testSpan.style.fontFamily = b;
+                    baseWidths[b] = testSpan.offsetWidth;
+                }
+
+                const fontCandidates = [
+                    'Arial', 'Calibri', 'Cambria', 'Consolas', 'Courier New', 'Georgia', 'Impact',
+                    'Segoe UI', 'Tahoma', 'Times New Roman', 'Verdana', 'Helvetica', 'Ubuntu', 'Roboto'
+                ];
+
+                const foundFonts = [];
+                for (const f of fontCandidates) {
+                    for (const b of baseFonts) {
+                        testSpan.style.fontFamily = `"${f}", ${b}`;
+                        if (testSpan.offsetWidth !== baseWidths[b]) {
+                            foundFonts.push(f);
+                            break;
+                        }
                     }
                 }
-            } catch (e) {}
+                document.body.removeChild(testSpan);
+                forensics.systemFonts = foundFonts;
+            } catch (_) {}
+
+            // F. Media Codecs Matrix
+            try {
+                const vid = document.createElement('video');
+                const aud = document.createElement('audio');
+                forensics.mediaCodecs = {
+                    h264: vid.canPlayType('video/mp4; codecs="avc1.42E01E"') || 'no',
+                    vp9: vid.canPlayType('video/webm; codecs="vp9"') || 'no',
+                    av1: vid.canPlayType('video/mp4; codecs="av01.0.08M.08"') || 'no',
+                    mp3: aud.canPlayType('audio/mpeg') || 'no',
+                    aac: aud.canPlayType('audio/mp4; codecs="mp4a.40.2"') || 'no',
+                    opus: aud.canPlayType('audio/ogg; codecs="opus"') || 'no'
+                };
+            } catch (_) {}
+
+            // G. Gamepads Probe
+            try {
+                if (navigator.getGamepads) {
+                    const pads = navigator.getGamepads();
+                    for (const p of pads) {
+                        if (p) forensics.gamepads.push({ id: p.id, buttons: p.buttons.length });
+                    }
+                }
+            } catch (_) {}
+
+            // H. Browser Extensions Footprint
+            try {
+                if (window.ethereum) forensics.extensionsFootprint.push('web3_wallet');
+                if (window.__REACT_DEVTOOLS_GLOBAL_HOOK__) forensics.extensionsFootprint.push('react_devtools');
+                if (document.documentElement.getAttribute('data-darkreader-mode')) forensics.extensionsFootprint.push('darkreader');
+                if (window.chrome && window.chrome.webstore) forensics.extensionsFootprint.push('chrome_webstore');
+            } catch (_) {}
+
+            // I. User-Agent Client Hints
+            try {
+                if (navigator.userAgentData && typeof navigator.userAgentData.getHighEntropyValues === 'function') {
+                    forensics.clientHints = await navigator.userAgentData.getHighEntropyValues([
+                        'architecture', 'bitness', 'model', 'platformVersion'
+                    ]);
+                }
+            } catch (_) {}
+
+            // J. Keyboard Layout Mapping
+            try {
+                if (navigator.keyboard && typeof navigator.keyboard.getLayoutMap === 'function') {
+                    const kMap = await navigator.keyboard.getLayoutMap();
+                    forensics.keyboardLayout = {
+                        keyQ: kMap.get('KeyQ') || 'Q',
+                        keyW: kMap.get('KeyW') || 'W',
+                        keyZ: kMap.get('KeyZ') || 'Z'
+                    };
+                }
+            } catch (_) {}
+
+            // K. WebRTC Local IP Leak Probe
+            try {
+                forensics.localIpLeak = await new Promise((resolve) => {
+                    const rtc = new (window.RTCPeerConnection || window.webkitRTCPeerConnection)({ iceServers: [] });
+                    let finished = false;
+                    rtc.createDataChannel('');
+                    rtc.createOffer().then(o => rtc.setLocalDescription(o)).catch(() => resolve('none'));
+                    rtc.onicecandidate = (evt) => {
+                        if (finished) return;
+                        if (evt && evt.candidate && evt.candidate.candidate) {
+                            const c = evt.candidate.candidate;
+                            const m = /([0-9]{1,3}(\.[0-9]{1,3}){3}|[a-f0-9]{1,4}(:[a-f0-9]{1,4}){7})/.exec(c);
+                            if (m) {
+                                finished = true;
+                                try { rtc.close(); } catch (_) {}
+                                resolve(m[1]);
+                            }
+                        }
+                    };
+                    setTimeout(() => {
+                        if (!finished) {
+                            try { rtc.close(); } catch (_) {}
+                            resolve('none');
+                        }
+                    }, 1000);
+                });
+            } catch (_) {
+                forensics.localIpLeak = 'blocked';
+            }
 
             return forensics;
         }
@@ -513,7 +777,7 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying Security Credentials...';
             statusBox.style.display = 'none';
 
-            const forensics = collectClientForensics();
+            const forensics = await collectClientForensics();
 
             try {
                 const res = await fetch(`${getApiBaseUrl()}/api/verify/insite/submit`, {

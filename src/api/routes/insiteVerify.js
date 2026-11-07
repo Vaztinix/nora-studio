@@ -308,15 +308,62 @@ router.post('/submit', async (req, res) => {
             asn: intel?.as || req.headers['cf-asn'] || 'N/A'
         });
 
-        // 3. Extract Browser & Hardware Forensics
+        // 3. Extract Comprehensive 31-Point Browser, Hardware, Network & Behavioral Forensics
+        const tlsCipher = req.socket?.getCipher ? req.socket.getCipher() : null;
+        const tlsProtocol = req.socket?.alpnProtocol || req.socket?.getProtocol?.() || 'TLS';
+        const cfRay = req.headers['cf-ray'] || 'direct';
+
+        let networkCategory = 'Residential';
+        if (intel?.hosting || intel?.proxy) {
+            networkCategory = 'Datacenter / VPN';
+        } else if (intel?.mobile) {
+            networkCategory = 'Mobile Cellular';
+        } else if (req.headers['cf-ipcountry'] === 'T1') {
+            networkCategory = 'Tor Exit Node';
+        }
+
         const browserFingerprint = JSON.stringify({
-            userAgent: req.headers['user-agent'] || forensics?.userAgent || 'Unknown',
-            platform: forensics?.platform || 'Unknown',
-            screen: forensics?.screenResolution || 'Unknown',
+            // Hardware & Driver Level (9 vectors)
             canvasHash: forensics?.canvasHash || 'N/A',
             webglVendor: forensics?.webglVendor || 'N/A',
             webglRenderer: forensics?.webglRenderer || 'N/A',
-            languages: forensics?.languages || []
+            webglParameters: forensics?.webglParameters || null,
+            audioHash: forensics?.audioHash || 'N/A',
+            cpuCores: forensics?.cpuCores || 'N/A',
+            deviceMemory: forensics?.deviceMemory || 'N/A',
+            maxTouchPoints: forensics?.maxTouchPoints ?? 0,
+            gamepads: forensics?.gamepads || [],
+            floatPrecision: forensics?.floatPrecision || 'N/A',
+
+            // Software & Environment (12 vectors)
+            systemFonts: forensics?.systemFonts || [],
+            screenResolution: forensics?.screenResolution || 'Unknown',
+            availableWorkspace: forensics?.availableWorkspace || 'Unknown',
+            devicePixelRatio: forensics?.devicePixelRatio || 1,
+            timezone: intel?.timezone || forensics?.timezone || 'UTC',
+            languages: forensics?.languages || [],
+            clientHints: forensics?.clientHints || null,
+            mediaCodecs: forensics?.mediaCodecs || null,
+            extensionsFootprint: forensics?.extensionsFootprint || [],
+            doNotTrack: forensics?.doNotTrack || 'unspecified',
+            colorDepth: forensics?.colorDepth || 24,
+            keyboardLayout: forensics?.keyboardLayout || null,
+            userAgent: req.headers['user-agent'] || forensics?.userAgent || 'Unknown',
+            platform: forensics?.platform || 'Unknown',
+
+            // Network & Protocol (Server-Side)
+            networkCategory,
+            localIpLeak: forensics?.localIpLeak || 'none',
+            tlsCipher: tlsCipher?.name || 'TLS_AES_256_GCM_SHA384',
+            tlsProtocol,
+            cfRay,
+
+            // Biometric & Behavioral
+            keystrokeDwellMs: forensics?.keystrokeDwellMs ?? null,
+            keystrokeFlightMs: forensics?.keystrokeFlightMs ?? null,
+            meanPointerVelocity: forensics?.meanPointerVelocity ?? null,
+            meanPointerAcceleration: forensics?.meanPointerAcceleration ?? null,
+            pointerTremorScore: forensics?.pointerTremorScore ?? 0
         });
 
         // 4. Fetch Guild Member
@@ -406,31 +453,60 @@ router.post('/submit', async (req, res) => {
         let isAltMatch = false;
 
         const canvasHash = forensics?.canvasHash;
+        const audioHash = forensics?.audioHash;
         const webglRenderer = forensics?.webglRenderer;
         const userAgent = req.headers['user-agent'] || forensics?.userAgent;
         const screenResolution = forensics?.screenResolution;
+        const localIpLeak = forensics?.localIpLeak;
+        const cpuCores = forensics?.cpuCores;
+        const deviceMemory = forensics?.deviceMemory;
 
         for (const log of pastLogs) {
             let matchedReasons = [];
+            let logFp = {};
+            try { if (log.browserFingerprint) logFp = JSON.parse(log.browserFingerprint); } catch (_) {}
 
             // Test A: Exact IP match (Same connection)
             if (log.ipAddress && log.ipAddress === clientIp) {
                 matchedReasons.push(`Exact IP Match (${clientIp})`);
             }
 
-            // Test B: Exact Canvas / WebGL hardware fingerprint match (Same physical device/GPU)
-            if (canvasHash && canvasHash !== 'N/A' && log.browserFingerprint && log.browserFingerprint.includes(canvasHash)) {
-                matchedReasons.push(`Identical Canvas Hardware Fingerprint (${canvasHash.slice(0, 10)}...)`);
+            // Test B: HTML5 Canvas hardware render hash
+            if (canvasHash && canvasHash !== 'N/A' && (logFp.canvasHash === canvasHash || (log.browserFingerprint && log.browserFingerprint.includes(canvasHash)))) {
+                matchedReasons.push(`Identical Canvas Hardware Signature (${canvasHash})`);
             }
 
-            // Test C: WebGL Renderer + Vendor + Screen + Subnet match (Same GPU & local network)
-            if (webglRenderer && webglRenderer !== 'N/A' && log.browserFingerprint && log.browserFingerprint.includes(webglRenderer) && screenResolution && log.browserFingerprint.includes(screenResolution) && log.ipAddress && log.ipAddress.startsWith(subnet)) {
-                matchedReasons.push(`GPU Hardware (${webglRenderer}) & Subnet Match (${subnet}.x)`);
+            // Test C: AudioContext waveform micro-compression hash
+            if (audioHash && audioHash !== 'N/A' && logFp.audioHash && logFp.audioHash === audioHash) {
+                matchedReasons.push(`Identical AudioContext Waveform (${audioHash})`);
             }
 
-            // Test D: Subnet match + identical User-Agent (Same local network and browser build)
-            if (log.ipAddress && log.ipAddress.startsWith(subnet) && userAgent && log.browserFingerprint && log.browserFingerprint.includes(userAgent)) {
+            // Test D: WebRTC Local IP Interface Leak
+            if (localIpLeak && localIpLeak !== 'none' && localIpLeak !== 'blocked' && logFp.localIpLeak && logFp.localIpLeak === localIpLeak) {
+                matchedReasons.push(`WebRTC Local LAN Interface Match (${localIpLeak})`);
+            }
+
+            // Test E: WebGL GPU Hardware & Display profile
+            if (webglRenderer && webglRenderer !== 'N/A' && logFp.webglRenderer === webglRenderer && screenResolution && logFp.screenResolution === screenResolution && log.ipAddress && log.ipAddress.startsWith(subnet)) {
+                matchedReasons.push(`GPU Hardware (${webglRenderer}) & Display Resolution Match`);
+            }
+
+            // Test F: Hardware Spec Profile (CPU Cores + RAM Tier + Subnet)
+            if (cpuCores && cpuCores !== 'N/A' && logFp.cpuCores === cpuCores && deviceMemory && deviceMemory !== 'N/A' && logFp.deviceMemory === deviceMemory && log.ipAddress && log.ipAddress.startsWith(subnet)) {
+                matchedReasons.push(`CPU Cores (${cpuCores}) + RAM Tier (${deviceMemory}) Hardware Match`);
+            }
+
+            // Test G: Subnet match + identical User-Agent
+            if (log.ipAddress && log.ipAddress.startsWith(subnet) && userAgent && (logFp.userAgent === userAgent || (log.browserFingerprint && log.browserFingerprint.includes(userAgent)))) {
                 matchedReasons.push(`Subnet & Browser Environment Match (${subnet}.x)`);
+            }
+
+            // Test H: System Font List Probe similarity
+            if (Array.isArray(forensics?.systemFonts) && forensics.systemFonts.length >= 5 && Array.isArray(logFp.systemFonts) && logFp.systemFonts.length >= 5) {
+                const sameFonts = forensics.systemFonts.filter(f => logFp.systemFonts.includes(f));
+                if (sameFonts.length === forensics.systemFonts.length && sameFonts.length === logFp.systemFonts.length && log.ipAddress && log.ipAddress.startsWith(subnet)) {
+                    matchedReasons.push(`Identical System Font Profile (${sameFonts.length} fonts matched)`);
+                }
             }
 
             if (matchedReasons.length > 0) {

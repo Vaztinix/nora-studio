@@ -1593,25 +1593,55 @@
                             </div>
                         </div>
 
-                        <!-- 2-Column Forensic Metadata Grid -->
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 12px; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);">
-                            <!-- Column 1: Network & Geolocation -->
-                            <div style="background: rgba(0,0,0,0.22); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); font-size: 0.79rem; display: flex; flex-direction: column; gap: 4px;">
-                                <div style="font-weight: 700; color: #38bdf8; margin-bottom: 2px;"><i class="fas fa-globe-americas"></i> Network & Geolocation</div>
-                                <div><strong style="color: #94a3b8;">IP Address:</strong> <span style="font-family: monospace; color: #38bdf8; font-weight: 700;">${v.ipAddress || 'Protected'}</span> <button onclick="navigator.clipboard.writeText('${v.ipAddress}'); alert('Copied IP Address');" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0 4px;"><i class="far fa-copy"></i></button></div>
+                        <!-- 4-Box Comprehensive 31-Point Forensic Matrix -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.06);">
+                            
+                            <!-- Box 1: Network & Protocol (Server-Side) -->
+                            <div style="background: rgba(0,0,0,0.26); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.15); font-size: 0.78rem; display: flex; flex-direction: column; gap: 3px;">
+                                <div style="font-weight: 700; color: #38bdf8; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                                    <span><i class="fas fa-network-wired"></i> Network & Protocol</span>
+                                    <span style="font-size: 0.68rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 1px 6px; border-radius: 4px;">${fp.networkCategory || 'Residential'}</span>
+                                </div>
+                                <div><strong style="color: #94a3b8;">Public IP:</strong> <span style="font-family: monospace; color: #38bdf8; font-weight: 700;">${v.ipAddress || 'Protected'}</span> <button onclick="navigator.clipboard.writeText('${v.ipAddress}'); alert('Copied IP');" style="background: transparent; border: none; color: #94a3b8; cursor: pointer; padding: 0 3px;"><i class="far fa-copy"></i></button></div>
+                                <div><strong style="color: #94a3b8;">WebRTC Local LAN:</strong> <span style="font-family: monospace; color: ${fp.localIpLeak && fp.localIpLeak !== 'none' && fp.localIpLeak !== 'blocked' ? '#f59e0b' : '#cbd5e1'};">${fp.localIpLeak || 'none'}</span></div>
                                 <div><strong style="color: #94a3b8;">Location:</strong> <span style="color: #cbd5e1;">${loc.city || 'Unknown'}, ${loc.region || 'Unknown'}, ${loc.country || 'Unknown'}</span></div>
-                                <div><strong style="color: #94a3b8;">ASN / Network:</strong> <span style="color: #cbd5e1; font-family: monospace;">${loc.asn || 'N/A'}</span></div>
-                                <div><strong style="color: #94a3b8;">Tunnel/Tor:</strong> <span style="color: ${v.vpnDetected ? '#f87171; font-weight: 700;' : '#34d399;'}">${v.vpnDetected ? 'Detected (Tor/Hosting Proxy)' : 'Clean Residential Connection'}</span></div>
+                                <div><strong style="color: #94a3b8;">ASN / ISP:</strong> <span style="color: #cbd5e1; font-family: monospace; font-size: 0.72rem;">${loc.asn || loc.isp || 'N/A'}</span></div>
+                                <div><strong style="color: #94a3b8;">TLS & Cipher:</strong> <span style="color: #94a3b8; font-size: 0.71rem; font-family: monospace;">${fp.tlsCipher || 'TLS 1.3'} (${fp.tlsProtocol || 'HTTP/2'})</span></div>
                             </div>
 
-                            <!-- Column 2: Device & Browser Fingerprint -->
-                            <div style="background: rgba(0,0,0,0.22); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.04); font-size: 0.79rem; display: flex; flex-direction: column; gap: 4px;">
-                                <div style="font-weight: 700; color: #c084fc; margin-bottom: 2px;"><i class="fas fa-laptop-code"></i> Device & Hardware Signature</div>
-                                <div><strong style="color: #94a3b8;">Platform & OS:</strong> <span style="color: #cbd5e1;">${fp.platform || 'Unknown'}</span> • <span style="color: #94a3b8;">Screen:</span> <span style="color: #cbd5e1;">${fp.screen || 'N/A'}</span></div>
-                                <div><strong style="color: #94a3b8;">Canvas Hash:</strong> <span style="font-family: monospace; color: #f472b6;">${fp.canvasHash !== 'N/A' ? fp.canvasHash.slice(0, 18) + '...' : 'N/A'}</span></div>
-                                <div><strong style="color: #94a3b8;">GPU Renderer:</strong> <span style="color: #cbd5e1; font-size: 0.74rem;">${fp.webglRenderer !== 'N/A' ? fp.webglRenderer : 'Standard Display'}</span></div>
-                                <div><strong style="color: #94a3b8;">Method:</strong> <span style="color: #e2e8f0;">${v.method} (Ticket: <code style="font-family: monospace; font-size: 0.72rem;">${v.ticketToken ? v.ticketToken.slice(0, 8) + '...' : 'Direct Session'}</code>)</span></div>
+                            <!-- Box 2: Hardware & Driver Level -->
+                            <div style="background: rgba(0,0,0,0.26); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(192, 132, 252, 0.15); font-size: 0.78rem; display: flex; flex-direction: column; gap: 3px;">
+                                <div style="font-weight: 700; color: #c084fc; margin-bottom: 2px;"><i class="fas fa-microchip"></i> Hardware & Driver Profile</div>
+                                <div><strong style="color: #94a3b8;">Canvas Hash:</strong> <span style="font-family: monospace; color: #f472b6;">${fp.canvasHash !== 'N/A' ? fp.canvasHash : 'N/A'}</span></div>
+                                <div><strong style="color: #94a3b8;">GPU Renderer:</strong> <span style="color: #cbd5e1; font-size: 0.72rem;">${fp.webglRenderer !== 'N/A' ? fp.webglRenderer : 'Standard GPU'}</span></div>
+                                <div><strong style="color: #94a3b8;">AudioContext:</strong> <span style="font-family: monospace; color: #a78bfa;">${fp.audioHash || 'N/A'}</span></div>
+                                <div><strong style="color: #94a3b8;">CPU & RAM:</strong> <span style="color: #cbd5e1;">${fp.cpuCores} Cores • ${fp.deviceMemory || 'N/A RAM'}</span></div>
+                                <div><strong style="color: #94a3b8;">Touch / Gamepad:</strong> <span style="color: #cbd5e1;">${fp.maxTouchPoints || 0} pts • ${fp.gamepads && fp.gamepads.length ? fp.gamepads.length + ' Gamepads' : '0 Gamepads'}</span></div>
+                                <div><strong style="color: #94a3b8;">Float Math:</strong> <span style="color: #94a3b8; font-family: monospace; font-size: 0.71rem;">${fp.floatPrecision ? fp.floatPrecision.slice(0, 16) + '...' : 'N/A'}</span></div>
                             </div>
+
+                            <!-- Box 3: Software & Environment Profile -->
+                            <div style="background: rgba(0,0,0,0.26); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(52, 211, 153, 0.15); font-size: 0.78rem; display: flex; flex-direction: column; gap: 3px;">
+                                <div style="font-weight: 700; color: #34d399; margin-bottom: 2px;"><i class="fas fa-desktop"></i> Software & Environment</div>
+                                <div><strong style="color: #94a3b8;">Resolution:</strong> <span style="color: #cbd5e1;">${fp.screenResolution || fp.screen || 'N/A'} (${fp.devicePixelRatio || 1}x DPI)</span></div>
+                                <div><strong style="color: #94a3b8;">Workspace:</strong> <span style="color: #cbd5e1;">${fp.availableWorkspace || 'N/A'} • ${fp.colorDepth || 24}-bit</span></div>
+                                <div><strong style="color: #94a3b8;">Timezone:</strong> <span style="color: #cbd5e1;">${fp.timezone || 'UTC'}</span></div>
+                                <div><strong style="color: #94a3b8;">System Fonts:</strong> <span style="color: #cbd5e1; font-size: 0.72rem;">${Array.isArray(fp.systemFonts) && fp.systemFonts.length ? fp.systemFonts.slice(0, 4).join(', ') + (fp.systemFonts.length > 4 ? ' +' + (fp.systemFonts.length - 4) : '') : 'Standard'}</span></div>
+                                <div><strong style="color: #94a3b8;">Extensions:</strong> <span style="color: #cbd5e1;">${Array.isArray(fp.extensionsFootprint) && fp.extensionsFootprint.length ? fp.extensionsFootprint.join(', ') : 'None'} • DNT: ${fp.doNotTrack || 'off'}</span></div>
+                                <div><strong style="color: #94a3b8;">Codecs & Arch:</strong> <span style="color: #94a3b8; font-size: 0.71rem;">${fp.clientHints?.architecture || fp.platform || 'x86_64'}</span></div>
+                            </div>
+
+                            <!-- Box 4: Biometric & Behavioral Dynamics -->
+                            <div style="background: rgba(0,0,0,0.26); padding: 10px 12px; border-radius: 8px; border: 1px solid rgba(251, 191, 36, 0.15); font-size: 0.78rem; display: flex; flex-direction: column; gap: 3px;">
+                                <div style="font-weight: 700; color: #fbbf24; margin-bottom: 2px;"><i class="fas fa-fingerprint"></i> Biometric & Behavioral</div>
+                                <div><strong style="color: #94a3b8;">Key Dwell:</strong> <span style="color: #cbd5e1; font-family: monospace;">${fp.keystrokeDwellMs !== null && fp.keystrokeDwellMs !== undefined ? fp.keystrokeDwellMs + ' ms' : 'N/A'}</span></div>
+                                <div><strong style="color: #94a3b8;">Key Flight:</strong> <span style="color: #cbd5e1; font-family: monospace;">${fp.keystrokeFlightMs !== null && fp.keystrokeFlightMs !== undefined ? fp.keystrokeFlightMs + ' ms' : 'N/A'}</span></div>
+                                <div><strong style="color: #94a3b8;">Pointer Velocity:</strong> <span style="color: #cbd5e1;">${fp.meanPointerVelocity !== null && fp.meanPointerVelocity !== undefined ? fp.meanPointerVelocity + ' px/ms' : 'N/A'}</span></div>
+                                <div><strong style="color: #94a3b8;">Pointer Accel:</strong> <span style="color: #cbd5e1;">${fp.meanPointerAcceleration !== null && fp.meanPointerAcceleration !== undefined ? fp.meanPointerAcceleration : 'N/A'}</span></div>
+                                <div><strong style="color: #94a3b8;">Micro-Tremor:</strong> <span style="color: ${fp.pointerTremorScore > 5 ? '#34d399' : '#94a3b8'};">${fp.pointerTremorScore || 0} pixel-jitters</span></div>
+                                <div><strong style="color: #94a3b8;">Key Layout:</strong> <span style="color: #94a3b8; font-size: 0.71rem;">${fp.keyboardLayout ? 'Mapped (QWERTY)' : 'Default Layout'}</span></div>
+                            </div>
+
                         </div>
 
                         ${rationaleBlock}
