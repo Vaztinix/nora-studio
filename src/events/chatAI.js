@@ -635,8 +635,9 @@ async function processMessageInternal(message, client) {
 
         const deviceSpecsContext = getSanitizedSpecsSummary();
 
-        // Default to high-throughput, quota-efficient production flash
-        const selectedModel = (settings?.aiModel && settings.aiModel !== 'gemini-flash-latest' && settings.aiModel !== 'gemini-1.5-flash' && settings.aiModel !== 'gemini-1.5-pro') ? settings.aiModel : 'gemini-2.0-flash';
+        // Default to ultra-fast, high-throughput production flash
+        const isLegacyModel = (m) => !m || m.includes('2.0') || m.includes('1.5') || m.includes('2.5');
+        const selectedModel = (settings?.aiModel && !isLegacyModel(settings.aiModel)) ? settings.aiModel : 'gemini-3.5-flash-lite';
         let customPrompt = settings?.aiSystemPrompt || '';
         if (!customPrompt.trim() && settings?.aiPromptTemplate && AI_PERSONA_TEMPLATES[settings.aiPromptTemplate]) {
             customPrompt = AI_PERSONA_TEMPLATES[settings.aiPromptTemplate];

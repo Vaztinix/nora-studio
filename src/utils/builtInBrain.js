@@ -8,10 +8,11 @@ const { ensureCleanSentenceEnding } = require('./sentenceSanitizer');
  * Starts with high-throughput, low-latency models and gracefully cascades down.
  */
 const TIERED_MODELS = [
-    'gemini-2.0-flash',
-    'gemini-2.0-flash-lite',
-    'gemini-1.5-flash',
-    'gemini-1.5-flash-8b'
+    'gemini-3.5-flash-lite',
+    'gemini-3.5-flash',
+    'gemini-flash-lite-latest',
+    'gemini-3.6-flash',
+    'gemini-3.1-flash-lite'
 ];
 
 /**
@@ -413,7 +414,8 @@ ${optionsOrContext.mentionedRoles ? `- Mentioned Members Roles:\n${optionsOrCont
     let modelsToTry = [...TIERED_MODELS];
     if (typeof optionsOrContext === 'object' && optionsOrContext?.selectedModel) {
         const customModel = optionsOrContext.selectedModel.trim();
-        if (customModel) {
+        // Skip discontinued legacy models
+        if (customModel && !customModel.includes('2.0') && !customModel.includes('1.5') && !customModel.includes('2.5')) {
             modelsToTry = [customModel, ...TIERED_MODELS.filter(m => m !== customModel)];
         }
     }
@@ -452,7 +454,11 @@ ${optionsOrContext.mentionedRoles ? `- Mentioned Members Roles:\n${optionsOrCont
 
                 let result;
                 try {
-                    result = await model.generateContent(parts);
+                    const timeoutMs = 7000;
+                    const timeoutPromise = new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error(`Timeout after ${timeoutMs}ms on model ${modelName}`)), timeoutMs)
+                    );
+                    result = await Promise.race([model.generateContent(parts), timeoutPromise]);
                 } catch (genErr) {
                     // If model rejects thinkingConfig with INVALID_ARGUMENT (e.g. non-thinking models), retry cleanly
                     if (generationConfig.thinkingConfig && genErr?.message?.includes('INVALID_ARGUMENT')) {
@@ -462,13 +468,21 @@ ${optionsOrContext.mentionedRoles ? `- Mentioned Members Roles:\n${optionsOrCont
                             systemInstruction: effectiveSystemInstruction,
                             generationConfig
                         });
-                        result = await retryModel.generateContent(parts);
+                        const timeoutMs = 6000;
+                        const timeoutPromise = new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error(`Timeout after ${timeoutMs}ms on retry model ${modelName}`)), timeoutMs)
+                        );
+                        result = await Promise.race([retryModel.generateContent(parts), timeoutPromise]);
                     } else {
                         throw genErr;
                     }
                 }
 
                 const text = result?.response?.text();
+                // Check if Google returned a deprecation or shutdown notice rather than actual response
+                if (text && (text.includes('is no longer available') || text.includes('not found for API version'))) {
+                    throw new Error(`Model ${modelName} returned discontinuation notice: ${text}`);
+                }
                 if (text && text.trim().length > 0) {
                     geminiKeyManager.reportSuccess(apiKey, text);
                     const normalized = text.replace(/\\n/g, '\n').replace(/\\\\n/g, '\n');

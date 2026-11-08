@@ -999,7 +999,8 @@ module.exports = {
                 const isAiEnabled = settings.noraAiEnabled !== false;
                 const autoChannelText = settings.aiAutoRespondChannelId ? `<#${settings.aiAutoRespondChannelId}>` : '*None (Mentions/Replies Only)*';
                 const autoRespondActive = settings.aiAutoRespondEnabled !== false && settings.aiAutoRespondChannelId;
-                const currentModel = (settings.aiModel && settings.aiModel !== 'gemini-2.5-flash' && settings.aiModel !== 'gemini-2.0-flash' && settings.aiModel !== 'gemini-1.5-flash' && settings.aiModel !== 'gemini-1.5-pro') ? settings.aiModel : 'gemini-3.8-flash';
+                const isLegacy = (m) => !m || m.includes('2.0') || m.includes('1.5') || m.includes('2.5');
+                const currentModel = (settings.aiModel && !isLegacy(settings.aiModel)) ? settings.aiModel : 'gemini-3.5-flash-lite';
                 const currentTemplate = settings.aiPromptTemplate || 'classic';
 
                 let excludedList = '*None*';
@@ -1067,10 +1068,10 @@ module.exports = {
 
                 const row2 = new ActionRowBuilder().addComponents(
                     new StringSelectMenuBuilder().setCustomId('action_ai_model').setPlaceholder('Select Google Gemini Model (Google ONLY)...').addOptions([
-                        { label: 'Gemini 3.8 Flash (Default & Ultra-Fast)', value: 'gemini-3.8-flash', description: 'Recommended: lowest latency, next-gen reasoning', default: currentModel === 'gemini-3.8-flash' },
-                        { label: 'Gemini 3.5 Flash (Balanced Multimodal)', value: 'gemini-3.5-flash', description: 'High-speed reasoning and vision', default: currentModel === 'gemini-3.5-flash' },
-                        { label: 'Gemini Flash Latest (Continuously Updated)', value: 'gemini-flash-latest', description: 'Always points to latest production flash model', default: currentModel === 'gemini-flash-latest' },
-                        { label: 'Gemini Flash Lite (Ultra-Low Latency)', value: 'gemini-flash-lite-latest', description: 'Minimal quota consumption', default: currentModel === 'gemini-flash-lite-latest' }
+                        { label: 'Gemini 3.5 Flash Lite (Ultra-Fast 600ms)', value: 'gemini-3.5-flash-lite', description: 'Lowest latency, high quota efficiency', default: currentModel === 'gemini-3.5-flash-lite' },
+                        { label: 'Gemini 3.5 Flash (Balanced Reasoning)', value: 'gemini-3.5-flash', description: 'High-speed reasoning and vision', default: currentModel === 'gemini-3.5-flash' },
+                        { label: 'Gemini Flash Lite Latest (Continuously Updated)', value: 'gemini-flash-lite-latest', description: 'Always points to latest production flash model', default: currentModel === 'gemini-flash-lite-latest' },
+                        { label: 'Gemini 3.6 Flash (High Throughput)', value: 'gemini-3.6-flash', description: 'Powerful multi-turn cluster processing', default: currentModel === 'gemini-3.6-flash' }
                     ])
                 );
 

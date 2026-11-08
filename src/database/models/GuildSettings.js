@@ -581,7 +581,7 @@ const GuildSettings = sequelize.define('GuildSettings', {
     },
     aiModel: {
         type: DataTypes.STRING,
-        defaultValue: 'gemini-3.8-flash'
+        defaultValue: 'gemini-3.5-flash-lite'
     },
     aiCreditsRemaining: {
         type: DataTypes.INTEGER,
