@@ -398,10 +398,16 @@ module.exports = {
 
                     if (responder.isEmbed) {
                         const { EmbedBuilder } = require('discord.js');
+                        const { buildEmbedV2Container } = require('../utils/embeds');
                         const embed = new EmbedBuilder()
                             .setDescription(formattedResponse)
                             .setColor(message.guild.members.me?.roles.highest.color || 0x4F46E5);
-                        await message.reply({ embeds: [embed] }).catch(() => {});
+                        try {
+                            const v2 = buildEmbedV2Container(embed);
+                            await message.reply({ ...v2 });
+                        } catch (_) {
+                            await message.reply({ embeds: [embed] }).catch(() => {});
+                        }
                     } else {
                         await message.reply(formattedResponse).catch(() => {});
                     }

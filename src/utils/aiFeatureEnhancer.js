@@ -85,15 +85,9 @@ class AIFeatureEnhancer {
     static async getCountingRoast(authorName, input, expected, streak) {
         const prompt = `You are Nora, a witty Discord AI. A user named "${authorName}" just broke a server counting streak of ${streak}. They typed "${input}" when the next number was ${expected}. Write a short, funny, playful 1-sentence roast teasing them about their math skills. Do NOT use profanity or slurs. Max 20 words.`;
         const aiResponse = await this.generateGeminiSnippet(prompt, 45);
-        if (aiResponse) return aiResponse;
-
-        const fallbacks = [
-            `I knew math was tough, but counting by 1s shouldn't be the final boss!`,
-            `The number was right there, yet you chose chaos.`,
-            `Did your keyboard autocorrect a number into sheer tragedy?`,
-            `Rest in peace to that streak. We were so close to greatness!`
-        ];
-        return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+        if (aiResponse && aiResponse.trim().length > 0) return aiResponse.trim();
+        // If AI does not generate or is unavailable, do not use presets
+        return null;
     }
 
     /**
@@ -102,14 +96,9 @@ class AIFeatureEnhancer {
     static async getCountingCheer(authorName, milestone) {
         const prompt = `You are Nora, a cheerful Discord AI. A user named "${authorName}" just hit a massive server counting milestone of ${milestone}! Write an exciting, hype 1-sentence cheer congratulating them and the server. Max 20 words.`;
         const aiResponse = await this.generateGeminiSnippet(prompt, 45);
-        if (aiResponse) return aiResponse;
-
-        const fallbacks = [
-            `Incredible focus! Teamwork makes the dream work — onward to the next record!`,
-            `History in the making! Keep this energy going!`,
-            `Flawless rhythm from the crew! You love to see it!`
-        ];
-        return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+        if (aiResponse && aiResponse.trim().length > 0) return aiResponse.trim();
+        // If AI does not generate or is unavailable, do not use presets
+        return null;
     }
 
     /**
@@ -123,16 +112,11 @@ class AIFeatureEnhancer {
 Message: "${cleanSnippet}"
 Write a witty, clever 1-sentence commentary or compliment explaining why this message is iconic. Keep it entertaining and concise. Maximum 25 words.`;
         const aiResponse = await this.generateGeminiSnippet(prompt, 50);
-        if (aiResponse) return aiResponse;
+        if (aiResponse && aiResponse.trim().length > 0) return aiResponse.trim();
 
-        const fallbacks = [
-            `Framed in the server hall of fame where it rightfully belongs.`,
-            `Pure comedy gold — the council has voted and approved!`,
-            `Instant classic. Truly a certified community moment.`,
-            `The stars have aligned, and the server has officially spoken.`,
-            `Immortalized in the archives of server greatness.`
-        ];
-        return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+        // User directive: "if the AI does not work don't use it. These are just presets."
+        // NEVER return static or comedy presets if AI fails or is offline
+        return null;
     }
 
     /**
@@ -141,14 +125,8 @@ Write a witty, clever 1-sentence commentary or compliment explaining why this me
     static async getLevelUpAccolade(username, level) {
         const prompt = `You are Nora, an enthusiastic Discord AI companion. A member named "${username}" just leveled up to Level ${level}! Write a cool, inspiring 1-sentence title or cheer celebrating their dedication. Max 20 words.`;
         const aiResponse = await this.generateGeminiSnippet(prompt, 45);
-        if (aiResponse) return aiResponse;
-
-        const fallbacks = [
-            `Ascending through the ranks like a true server legend!`,
-            `Unstoppable momentum! The chatter crown is yours.`,
-            `Dedication paying off in real-time. Keep shining!`
-        ];
-        return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+        if (aiResponse && aiResponse.trim().length > 0) return aiResponse.trim();
+        return null;
     }
 
     /**
@@ -157,15 +135,8 @@ Write a witty, clever 1-sentence commentary or compliment explaining why this me
     static async getGameBanter(gameName, outcome, username) {
         const prompt = `You are Nora, a playful Discord AI bot. You just played ${gameName} against "${username}". The outcome was: Nora ${outcome}. Write a short, funny, 1-sentence reaction to the result. Max 20 words.`;
         const aiResponse = await this.generateGeminiSnippet(prompt, 45);
-        if (aiResponse) return aiResponse;
-
-        if (outcome === 'won') {
-            return `Calculated victory! Better luck next round!`;
-        } else if (outcome === 'lost') {
-            return `You got me this time! Rematch soon?`;
-        } else {
-            return `Great minds think alike — perfect deadlock!`;
-        }
+        if (aiResponse && aiResponse.trim().length > 0) return aiResponse.trim();
+        return null;
     }
 }
 

@@ -122,13 +122,13 @@ async function buildStarboardPayload(message, count, settings, triggerEmoji, exi
                 );
                 const aiTake = await Promise.race([
                     aiPromise,
-                    new Promise(resolve => setTimeout(() => resolve(null), 10000))
+                    new Promise(resolve => setTimeout(() => resolve(null), 8000))
                 ]);
-                if (aiTake) {
-                    aiSpotlightText = aiTake;
+                if (aiTake && aiTake.trim().length > 0) {
+                    aiSpotlightText = aiTake.trim();
                     embed.addFields({
                         name: '✨ Nora AI Spotlight',
-                        value: `*"${aiTake}"*`,
+                        value: `*"${aiSpotlightText}"*`,
                         inline: false
                     });
                 }
@@ -160,6 +160,8 @@ async function buildStarboardPayload(message, count, settings, triggerEmoji, exi
  * Safely dispatches or edits a message in the Starboard channel.
  */
 async function sendOrEditStarboardMessage(starboardChannel, existingMessageId, payload, settings) {
+    const useV2 = settings?.embedsVersion !== 'v1';
+
     let webhook = null;
     if (settings?.starboardWebhookEnabled) {
         try {
@@ -175,25 +177,53 @@ async function sendOrEditStarboardMessage(starboardChannel, existingMessageId, p
         } catch (e) {}
     }
 
+    const buildDispatchPayload = (asV2) => {
+        if (asV2) {
+            try {
+                const v2 = buildEmbedV2Container(payload.embed, payload.components);
+                return {
+                    content: payload.starText,
+                    components: v2.components,
+                    flags: v2.flags || 32768
+                };
+            } catch (err) {}
+        }
+        return {
+            content: payload.starText,
+            embeds: [payload.embed],
+            components: payload.components
+        };
+    };
+
     if (existingMessageId) {
         const existingMsg = await starboardChannel.messages.fetch(existingMessageId).catch(() => null);
         if (existingMsg) {
             try {
                 if (existingMsg.webhookId && webhook) {
+                    if (useV2) {
+                        try {
+                            await webhook.editMessage(existingMsg.id, {
+                                ...buildDispatchPayload(true),
+                                username: settings.starboardWebhookName || 'Nora Starboard',
+                                avatarURL: settings.starboardWebhookAvatar || null
+                            });
+                            return existingMsg.id;
+                        } catch (_) {}
+                    }
                     await webhook.editMessage(existingMsg.id, {
-                        content: payload.starText,
-                        embeds: [payload.embed],
-                        components: payload.components,
+                        ...buildDispatchPayload(false),
                         username: settings.starboardWebhookName || 'Nora Starboard',
                         avatarURL: settings.starboardWebhookAvatar || null
                     });
                     return existingMsg.id;
                 } else {
-                    await existingMsg.edit({
-                        content: payload.starText,
-                        embeds: [payload.embed],
-                        components: payload.components
-                    });
+                    if (useV2) {
+                        try {
+                            await existingMsg.edit(buildDispatchPayload(true));
+                            return existingMsg.id;
+                        } catch (_) {}
+                    }
+                    await existingMsg.edit(buildDispatchPayload(false));
                     return existingMsg.id;
                 }
             } catch (editErr) {
@@ -206,19 +236,31 @@ async function sendOrEditStarboardMessage(starboardChannel, existingMessageId, p
     // Create new post
     let sentMsg;
     if (webhook) {
-        sentMsg = await webhook.send({
-            content: payload.starText,
-            embeds: [payload.embed],
-            components: payload.components,
-            username: settings.starboardWebhookName || 'Nora Starboard',
-            avatarURL: settings.starboardWebhookAvatar || null
-        }).catch(() => null);
+        if (useV2) {
+            try {
+                sentMsg = await webhook.send({
+                    ...buildDispatchPayload(true),
+                    username: settings.starboardWebhookName || 'Nora Starboard',
+                    avatarURL: settings.starboardWebhookAvatar || null
+                });
+            } catch (_) {}
+        }
+        if (!sentMsg) {
+            sentMsg = await webhook.send({
+                ...buildDispatchPayload(false),
+                username: settings.starboardWebhookName || 'Nora Starboard',
+                avatarURL: settings.starboardWebhookAvatar || null
+            }).catch(() => null);
+        }
     } else {
-        sentMsg = await starboardChannel.send({
-            content: payload.starText,
-            embeds: [payload.embed],
-            components: payload.components
-        }).catch(() => null);
+        if (useV2) {
+            try {
+                sentMsg = await starboardChannel.send(buildDispatchPayload(true));
+            } catch (_) {}
+        }
+        if (!sentMsg) {
+            sentMsg = await starboardChannel.send(buildDispatchPayload(false)).catch(() => null);
+        }
     }
 
     return sentMsg ? sentMsg.id : null;
@@ -315,7 +357,7 @@ async function handleReactionAdd(reaction, user) {
                     if (found) {
                         existingMsgId = found.id;
                         if (!existingAiTake) {
-                            const spotlightField = found.embeds?.[0]?.fields?.find(f => f.name.includes('Nora AI Spotlight'));
+                            const spotlightField = found.embeds?.[0]?.fields?.find(f => f.name.includes('Nora AI Spotlight')) || (found.components?.[0]?.components?.find(c => c.content?.includes('Nora AI Spotlight')));
                             if (spotlightField?.value) {
                                 existingAiTake = spotlightField.value;
                             }
@@ -326,7 +368,7 @@ async function handleReactionAdd(reaction, user) {
         } else if (!existingAiTake) {
             try {
                 const existingMsg = await starboardChannel.messages.fetch(existingMsgId).catch(() => null);
-                const spotlightField = existingMsg?.embeds?.[0]?.fields?.find(f => f.name.includes('Nora AI Spotlight'));
+                const spotlightField = existingMsg?.embeds?.[0]?.fields?.find(f => f.name.includes('Nora AI Spotlight')) || (existingMsg?.components?.[0]?.components?.find(c => c.content?.includes('Nora AI Spotlight')));
                 if (spotlightField?.value) {
                     existingAiTake = spotlightField.value;
                 }

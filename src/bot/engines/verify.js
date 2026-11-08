@@ -632,7 +632,13 @@ async function spawnVerificationPanel(targetChannel, settings, type = 'captcha',
 
         if (botAvatar) embed.setThumbnail(botAvatar);
 
-        const sent = await targetChannel.send({ embeds: [embed] });
+        let sent;
+        try {
+            const v2Payload = buildEmbedV2Container(embed);
+            sent = await targetChannel.send({ ...v2Payload });
+        } catch (_) {
+            sent = await targetChannel.send({ embeds: [embed] });
+        }
         try {
             await sent.react(triggerEmoji);
         } catch (e) {

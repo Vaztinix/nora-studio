@@ -367,9 +367,15 @@ module.exports = {
                             .setThumbnail(member.user.displayAvatarURL({ dynamic: true, size: 256 }))
                             .setFooter({ text: `Member #${member.guild.memberCount}` })
                             .setTimestamp();
-                        await welcomeChannel.send({ embeds: [embed] }).catch((err) => {
-                            console.error(`[Welcomer Error] Could not send welcome message in channel ${settings.welcomeChannelId}:`, err.message);
-                        });
+                        const { buildEmbedV2Container } = require('../utils/embeds');
+                        try {
+                            const v2 = buildEmbedV2Container(embed);
+                            await welcomeChannel.send({ ...v2 });
+                        } catch (_) {
+                            await welcomeChannel.send({ embeds: [embed] }).catch((err) => {
+                                console.error(`[Welcomer Error] Could not send welcome message in channel ${settings.welcomeChannelId}:`, err.message);
+                            });
+                        }
                     }
                 }
             }

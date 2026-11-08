@@ -118,7 +118,13 @@ module.exports = {
                             .setFooter({ text: `Member Count: ${member.guild.memberCount}` })
                             .setTimestamp();
 
-                        await goodbyeChannel.send({ embeds: [embed] }).catch(() => {});
+                        const { buildEmbedV2Container } = require('../utils/embeds');
+                        try {
+                            const v2 = buildEmbedV2Container(embed);
+                            await goodbyeChannel.send({ ...v2 });
+                        } catch (_) {
+                            await goodbyeChannel.send({ embeds: [embed] }).catch(() => {});
+                        }
                     }
                 }
             }

@@ -141,10 +141,16 @@ async function sendTicketPanel(channel, options = {}) {
         new ButtonBuilder().setCustomId('ticket_report').setLabel('Report User').setStyle(ButtonStyle.Danger)
     );
 
-    return await channel.send({
-        embeds: [embed],
-        components: [selectRow, buttonRow]
-    });
+    const { buildEmbedV2Container } = require('../../utils/embeds');
+    try {
+        const v2 = buildEmbedV2Container(embed, [selectRow, buttonRow]);
+        return await channel.send({ ...v2 });
+    } catch (_) {
+        return await channel.send({
+            embeds: [embed],
+            components: [selectRow, buttonRow]
+        });
+    }
 }
 
 /**
@@ -389,11 +395,19 @@ async function handleTicketSubmit(interaction, settings) {
                 .setStyle(ButtonStyle.Danger)
         );
 
-        await ticketChannel.send({
-            content: `<@${interaction.user.id}> ${settings?.ticketSupportRoleId ? `<@&${settings.ticketSupportRoleId}>` : ''}`,
-            embeds: [headerEmbed],
-            components: [actionRow]
-        });
+        try {
+            const v2 = buildEmbedV2Container(headerEmbed, [actionRow]);
+            await ticketChannel.send({
+                content: `<@${interaction.user.id}> ${settings?.ticketSupportRoleId ? `<@&${settings.ticketSupportRoleId}>` : ''}`,
+                ...v2
+            });
+        } catch (_) {
+            await ticketChannel.send({
+                content: `<@${interaction.user.id}> ${settings?.ticketSupportRoleId ? `<@&${settings.ticketSupportRoleId}>` : ''}`,
+                embeds: [headerEmbed],
+                components: [actionRow]
+            });
+        }
 
         return await interaction.editReply({
             content: `Your support ticket has been created! Head over to <#${ticketChannel.id}>.`
