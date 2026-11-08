@@ -2971,6 +2971,225 @@ app.post('/api/user/prefs', async (req, res) => {
     }
 });
 
+
+// ========================================================
+// 🎁 WEEKLY VOTE REWARDS & INVENTORY SYSTEM
+// ========================================================
+
+const REWARDS_SCHEDULE = [
+    { day: 1, name: '+250 Server XP Voucher', type: 'xp_voucher', amount: 250, icon: 'fa-gem', desc: 'Inject +250 XP into any server of your choice.' },
+    { day: 2, name: '5 Free AI Prompt Credits', type: 'ai_credits', amount: 5, icon: 'fa-brain', desc: '5 free questions with the Nora Gemini AI engine.' },
+    { day: 3, name: '3 Tries with My TV Entertainment', type: 'mytv_tokens', amount: 3, icon: 'fa-tv', desc: '3 interactive remote control tries on the entertainment deck.' },
+    { day: 4, name: '+500 Server XP Voucher', type: 'xp_voucher', amount: 500, icon: 'fa-medal', desc: 'Inject +500 XP into any server of your choice.' },
+    { day: 5, name: '10 Free AI Prompt Credits', type: 'ai_credits', amount: 10, icon: 'fa-robot', desc: '10 high-tier credits for Nora AI Studio prompts.' },
+    { day: 6, name: '5 My TV Tries + 1,000 XP Voucher', type: 'mytv_tokens_xp', amount: 1000, tries: 5, icon: 'fa-bolt', desc: '5 entertainment tries plus a mega +1,000 XP server voucher.' },
+    { day: 7, name: '3-Day Nora Premium Pass', type: 'premium_pass', days: 3, icon: 'fa-crown', desc: '3 full days of Nora Premium unlocks for you and your chosen server!' }
+];
+
+app.get('/api/user/rewards/status', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const userId = user.id;
+
+        const UserVoteStreak = require('./database/models/UserVoteStreak');
+        const [streakRecord] = await UserVoteStreak.findOrCreate({
+            where: { userId },
+            defaults: { currentStreak: 0, totalVotesCount: 0, totalRewardsClaimed: 0 }
+        });
+
+        const now = Date.now();
+        const lastClaimTime = streakRecord.lastVoteClaimAt ? new Date(streakRecord.lastVoteClaimAt).getTime() : 0;
+        const hoursSinceLastClaim = lastClaimTime ? (now - lastClaimTime) / (1000 * 60 * 60) : 999;
+
+        // Can claim if it's been at least 20 hours since last claim (or never claimed)
+        const canClaim = hoursSinceLastClaim >= 20;
+        
+        // If > 48 hours, streak resets back to 0 on next claim
+        const isStreakBroken = lastClaimTime > 0 && hoursSinceLastClaim > 48;
+        const effectiveStreak = isStreakBroken ? 0 : streakRecord.currentStreak;
+        const nextDay = (effectiveStreak % 7) + 1;
+
+        res.json({
+            success: true,
+            currentStreak: effectiveStreak,
+            nextDay,
+            canClaim,
+            hoursSinceLastClaim: Math.floor(hoursSinceLastClaim),
+            lastClaimAt: streakRecord.lastVoteClaimAt,
+            totalVotes: streakRecord.totalVotesCount,
+            totalClaimed: streakRecord.totalRewardsClaimed,
+            rewardsSchedule: REWARDS_SCHEDULE
+        });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/rewards/status');
+    }
+});
+
+app.post('/api/user/rewards/claim', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const userId = user.id;
+
+        const UserVoteStreak = require('./database/models/UserVoteStreak');
+        const UserInventoryItem = require('./database/models/UserInventoryItem');
+
+        const [streakRecord] = await UserVoteStreak.findOrCreate({
+            where: { userId },
+            defaults: { currentStreak: 0, totalVotesCount: 0, totalRewardsClaimed: 0 }
+        });
+
+        const now = Date.now();
+        const lastClaimTime = streakRecord.lastVoteClaimAt ? new Date(streakRecord.lastVoteClaimAt).getTime() : 0;
+        const hoursSinceLastClaim = lastClaimTime ? (now - lastClaimTime) / (1000 * 60 * 60) : 999;
+
+        if (hoursSinceLastClaim < 20) {
+            const waitHours = Math.ceil(20 - hoursSinceLastClaim);
+            return res.status(400).json({ error: `Daily reward already claimed. Please wait ${waitHours}h before claiming your next streak reward!` });
+        }
+
+        const isStreakBroken = lastClaimTime > 0 && hoursSinceLastClaim > 48;
+        const baseStreak = isStreakBroken ? 0 : streakRecord.currentStreak;
+        const newStreak = (baseStreak % 7) + 1;
+        const reward = REWARDS_SCHEDULE[newStreak - 1];
+
+        // Update streak record
+        streakRecord.currentStreak = newStreak;
+        streakRecord.lastVoteClaimAt = new Date();
+        streakRecord.totalVotesCount = (streakRecord.totalVotesCount || 0) + 1;
+        streakRecord.totalRewardsClaimed = (streakRecord.totalRewardsClaimed || 0) + 1;
+        await streakRecord.save();
+
+        // Create inventory item
+        const inventoryItem = await UserInventoryItem.create({
+            userId,
+            itemType: reward.type,
+            name: reward.name,
+            description: reward.desc,
+            quantity: 1,
+            metadata: JSON.stringify(reward),
+            isRedeemed: false
+        });
+
+        res.json({
+            success: true,
+            message: `🎉 Claimed Day ${newStreak} Reward: ${reward.name}!`,
+            newStreak,
+            reward,
+            inventoryItem
+        });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/rewards/claim');
+    }
+});
+
+app.get('/api/user/inventory', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const userId = user.id;
+
+        const UserInventoryItem = require('./database/models/UserInventoryItem');
+        const items = await UserInventoryItem.findAll({
+            where: { userId, isRedeemed: false },
+            order: [['createdAt', 'DESC']]
+        });
+        const history = await UserInventoryItem.findAll({
+            where: { userId, isRedeemed: true },
+            order: [['redeemedAt', 'DESC']],
+            limit: 10
+        });
+
+        res.json({
+            success: true,
+            inventory: items,
+            history
+        });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/inventory');
+    }
+});
+
+app.post('/api/user/inventory/redeem', async (req, res) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Unauthorized' });
+    const token = authHeader.split(' ')[1];
+    try {
+        const user = await getDiscordUser(token);
+        const userId = user.id;
+        const { itemId, targetGuildId } = req.body;
+
+        if (!itemId) return res.status(400).json({ error: 'Missing itemId' });
+
+        const UserInventoryItem = require('./database/models/UserInventoryItem');
+        const item = await UserInventoryItem.findOne({
+            where: { id: itemId, userId, isRedeemed: false }
+        });
+
+        if (!item) {
+            return res.status(404).json({ error: 'Item not found or already redeemed.' });
+        }
+
+        let meta = {};
+        try { if (item.metadata) meta = JSON.parse(item.metadata); } catch (_) {}
+
+        // Handle specific item redemption logic
+        if (item.itemType === 'xp_voucher') {
+            if (!targetGuildId) {
+                return res.status(400).json({ error: 'Please select a server to inject this XP voucher into!' });
+            }
+            const UserLevel = require('./database/models/UserLevel');
+            const [userLevel] = await UserLevel.findOrCreate({
+                where: { userId, guildId: targetGuildId },
+                defaults: { xp: 0, level: 1 }
+            });
+            const xpToAdd = meta.amount || 250;
+            await userLevel.increment('xp', { by: xpToAdd });
+        } else if (item.itemType === 'ai_credits') {
+            const aiCreditManager = require('./utils/aiCreditManager');
+            if (typeof aiCreditManager.addUserCredits === 'function') {
+                aiCreditManager.addUserCredits(userId, meta.amount || 5);
+            }
+        } else if (item.itemType === 'mytv_tokens' || item.itemType === 'mytv_tokens_xp') {
+            // If it includes XP bonus, award to targetGuildId if selected
+            if (meta.amount && targetGuildId) {
+                const UserLevel = require('./database/models/UserLevel');
+                const [userLevel] = await UserLevel.findOrCreate({
+                    where: { userId, guildId: targetGuildId },
+                    defaults: { xp: 0, level: 1 }
+                });
+                await userLevel.increment('xp', { by: meta.amount });
+            }
+        } else if (item.itemType === 'premium_pass') {
+            // Grant 3-day Nora Premium
+            const UserPrefs = require('./database/models/UserPrefs');
+            const [prefs] = await UserPrefs.findOrCreate({ where: { userId } });
+            prefs.noraPremium = true;
+            await prefs.save();
+        }
+
+        item.isRedeemed = true;
+        item.redeemedAt = new Date();
+        item.redeemedGuildId = targetGuildId || null;
+        await item.save();
+
+        res.json({
+            success: true,
+            message: `Successfully redeemed "${item.name}"!`,
+            item
+        });
+    } catch (e) {
+        handleRouteError(res, e, '/api/user/inventory/redeem');
+    }
+});
+
 // Download user data pack (Privacy Sovereign Hub)
 app.get('/api/user/privacy/download-data', async (req, res) => {
     const authHeader = req.headers.authorization;

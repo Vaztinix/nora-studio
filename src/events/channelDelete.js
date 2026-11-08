@@ -33,6 +33,8 @@ module.exports = {
                     const entry = auditLogs?.entries?.first();
                     if (entry && entry.target?.id === channel.id && (Date.now() - entry.createdTimestamp < 5000)) {
                         embed.addFields({ name: 'Deleted By', value: `<@${entry.executor.id}> (\`${entry.executor.tag}\`)`, inline: true });
+                        const staffQuarantine = require('../utils/staffQuarantine');
+                        await staffQuarantine.handleStaffAction(channel.guild, entry.executor, 'CHANNEL_DELETE', channel).catch(() => null);
                     }
                 } catch (e) {}
             }

@@ -4266,7 +4266,130 @@ router.get('/insite-logs', async (req, res) => {
     }
 });
 
+
+/**
+ * GET /api/guilds/:guildId/tickets/export
+ * Download complete server ticketing history (all tickets, ids, openers, assigned staff, status, notes, questionnaire).
+ */
+router.get('/:guildId/tickets/export', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const client = req.app.get('discordClient') || global.discordClient;
+        const guild = await resolveGuildSafely(client, guildId);
+
+        const [historyTickets, activeTickets] = await Promise.all([
+            TicketHistory.findAll({ where: { guildId }, order: [['openTime', 'DESC']] }).catch(() => []),
+            ActiveTicket.findAll({ where: { guildId } }).catch(() => [])
+        ]);
+
+        const allTickets = [];
+
+        // Map Active Tickets
+        for (const t of activeTickets) {
+            let openerTag = `User (${t.ownerId})`;
+            let staffTag = t.claimedByUserId ? `Staff (${t.claimedByUserId})` : 'Unassigned';
+            if (guild) {
+                const ownerMem = guild.members.cache.get(t.ownerId) || await guild.members.fetch(t.ownerId).catch(() => null);
+                if (ownerMem) openerTag = ownerMem.user.tag;
+                if (t.claimedByUserId) {
+                    const staffMem = guild.members.cache.get(t.claimedByUserId) || await guild.members.fetch(t.claimedByUserId).catch(() => null);
+                    if (staffMem) staffTag = staffMem.user.tag;
+                }
+            }
+
+            let parsedNotes = [];
+            try {
+                if (t.staffNotes) parsedNotes = JSON.parse(t.staffNotes);
+            } catch (_) {}
+
+            let parsedIntake = null;
+            try {
+                if (t.capturedIntake) parsedIntake = JSON.parse(t.capturedIntake);
+            } catch (_) {}
+
+            allTickets.push({
+                ticketId: t.id,
+                channelId: t.channelId,
+                status: t.isOpen ? 'Open' : 'Closed',
+                topic: t.topic || 'General Support',
+                priority: t.priority || 'Normal',
+                openedAt: t.createdAt,
+                closedAt: null,
+                opener: {
+                    userId: t.ownerId,
+                    tag: openerTag
+                },
+                staffAssisted: {
+                    userId: t.claimedByUserId || null,
+                    tag: staffTag
+                },
+                staffNotes: parsedNotes,
+                intakeData: parsedIntake,
+                closeReason: null,
+                rating: null
+            });
+        }
+
+        // Map Historical / Closed Tickets
+        for (const t of historyTickets) {
+            let openerTag = `User (${t.ownerId})`;
+            let staffTag = t.closedById ? `Staff (${t.closedById})` : 'System / Auto-Close';
+            if (guild) {
+                const ownerMem = guild.members.cache.get(t.ownerId) || await guild.members.fetch(t.ownerId).catch(() => null);
+                if (ownerMem) openerTag = ownerMem.user.tag;
+                if (t.closedById) {
+                    const staffMem = guild.members.cache.get(t.closedById) || await guild.members.fetch(t.closedById).catch(() => null);
+                    if (staffMem) staffTag = staffMem.user.tag;
+                }
+            }
+
+            let parsedIntake = null;
+            try {
+                if (t.intakeResponses) parsedIntake = JSON.parse(t.intakeResponses);
+            } catch (_) {}
+
+            allTickets.push({
+                ticketId: t.id,
+                channelId: t.channelId,
+                status: t.status === 'open' ? 'Open' : 'Resolved',
+                topic: t.topic || 'Support',
+                priority: t.priority || 'Normal',
+                openedAt: t.openTime,
+                closedAt: t.resolveTime,
+                opener: {
+                    userId: t.ownerId,
+                    tag: openerTag
+                },
+                staffAssisted: {
+                    userId: t.closedById || null,
+                    tag: staffTag
+                },
+                staffNotes: [],
+                intakeData: parsedIntake,
+                closeReason: t.closeReason || null,
+                rating: t.rating || null
+            });
+        }
+
+        const exportData = {
+            guildId,
+            guildName: guild ? guild.name : 'Unknown Guild',
+            exportedAt: new Date().toISOString(),
+            totalTicketsCount: allTickets.length,
+            tickets: allTickets
+        };
+
+        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Disposition', `attachment; filename="tickets-history-${guildId}.json"`);
+        res.json(exportData);
+    } catch (err) {
+        console.error('[API Export Tickets Error]:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 module.exports = router;
+
 
 
 /**

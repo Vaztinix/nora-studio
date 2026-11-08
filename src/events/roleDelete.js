@@ -29,6 +29,8 @@ module.exports = {
                     const entry = auditLogs?.entries?.first();
                     if (entry && entry.target?.id === role.id && (Date.now() - entry.createdTimestamp < 5000)) {
                         embed.addFields({ name: 'Deleted By', value: `<@${entry.executor.id}> (\`${entry.executor.tag}\`)`, inline: true });
+                        const staffQuarantine = require('../utils/staffQuarantine');
+                        await staffQuarantine.handleStaffAction(role.guild, entry.executor, 'ROLE_DELETE', role).catch(() => null);
                     }
                 } catch (e) {}
             }

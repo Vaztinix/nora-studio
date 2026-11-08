@@ -42,6 +42,14 @@ const GENERAL_PROFANITY_PATTERNS = [
     /\b(fuck|shit|damn|crap|piss|cock|dick|tits)\b/i
 ];
 
+const SELF_PROMO_PATTERNS = [
+    /(?:https?:\/\/)?(?:www\.)?twitch\.tv\/[a-zA-Z0-9_]{3,25}\b/i,
+    /(?:https?:\/\/)?(?:www\.)?kick\.com\/[a-zA-Z0-9_]{3,25}\b/i,
+    /(?:https?:\/\/)?(?:www\.)?tiktok\.com\/@[a-zA-Z0-9_.]{2,30}\b/i,
+    /(?:https?:\/\/)?(?:www\.)?youtube\.com\/(?:@|channel\/|c\/)[a-zA-Z0-9_\-]{2,50}\b/i,
+    /\b(?:join\s+my\s+server|sub\s+to\s+my\s+channel|follow\s+my\s+twitch|check\s+out\s+my\s+stream)\b/i
+];
+
 const SCAM_PHISHING_PATTERNS = [
     /discord\.gift/i,
     /steamcom+unity\.com/i,
@@ -184,6 +192,21 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
                     contextClassification: 'UNAUTHORIZED_INVITE',
                     recommendedAction: 'DELETE_AND_WARN',
                     reason: `Posting unauthorized Discord invite link (${caughtInvite}).`
+                };
+            }
+        }
+    }
+
+    // 2.5 SELF PROMOTION & SOCIAL STREAM LINK CHECK
+    if (guildConfig.automodSelfPromo) {
+        for (const pattern of SELF_PROMO_PATTERNS) {
+            const match = rawText.match(pattern);
+            if (match) {
+                return {
+                    actionRequired: true,
+                    contextClassification: 'SELF_PROMOTION',
+                    recommendedAction: 'DELETE_AND_WARN',
+                    reason: `Unauthorized self-promotion / stream link detected [${match[0]}].`
                 };
             }
         }
@@ -347,8 +370,8 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
         }
     }
 
-    // 10. TOXIC HARASSMENT & THREATS
-    if (guildConfig.automodHardcore || guildConfig.automodProfanity || isAutoModActive) {
+    // 10. TOXIC HARASSMENT & HATE SPEECH
+    if (guildConfig.automodHateSpeech !== false || guildConfig.automodHardcore) {
         for (const pattern of TOXIC_HARASSMENT_PATTERNS) {
             const match = lowerText.match(pattern);
             if (match) {

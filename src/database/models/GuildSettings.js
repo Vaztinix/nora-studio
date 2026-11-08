@@ -415,6 +415,14 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     },
+    automodSelfPromo: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    automodHateSpeech: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
     allowedInvites: {
         type: DataTypes.TEXT, // JSON array of allowed invite codes or vanity codes
         defaultValue: '[]'
@@ -422,6 +430,35 @@ const GuildSettings = sequelize.define('GuildSettings', {
     quarantineRoleId: {
         type: DataTypes.STRING,
         allowNull: true
+    },
+    // ---- Wick-Style Anti-Nuke Staff Quarantine ----
+    staffQuarantineEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
+    },
+    staffQuarantineRoleId: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+    staffQuarantineMaxChannels: {
+        type: DataTypes.INTEGER,
+        defaultValue: 2
+    },
+    staffQuarantineMaxRoles: {
+        type: DataTypes.INTEGER,
+        defaultValue: 2
+    },
+    staffQuarantineMaxBans: {
+        type: DataTypes.INTEGER,
+        defaultValue: 4
+    },
+    staffQuarantineMaxKicks: {
+        type: DataTypes.INTEGER,
+        defaultValue: 4
+    },
+    staffQuarantineTrustedRoles: {
+        type: DataTypes.TEXT, // JSON array of role IDs
+        defaultValue: '[]'
     },
     modLogChannelId: {
         type: DataTypes.STRING,

@@ -1255,10 +1255,29 @@
             <section class="doc-section" id="topgg">
                 <div class="doc-section-header">
                     <div class="section-icon-badge" style="color: #FF3366; background: rgba(255, 51, 102, 0.15); border-color: rgba(255, 51, 102, 0.3);"><i class="fas fa-chart-line"></i></div>
-                    <h2>2. Top.gg Vote Rewards & Multi-Bot Tracker</h2>
+                    <h2>2. Top.gg Vote Rewards, Weekly Streaks & User Inventory</h2>
                 </div>
                 <div class="doc-body">
-                    <p>Reward your community members for supporting Nora and any linked custom bots on Top.gg with automatic role awards, customizable Leveling XP, weekend multipliers, and loyalty vote streaks.</p>
+                    <p>Reward your community members for supporting Nora and any linked custom bots on Top.gg with automatic role awards, customizable Leveling XP, weekend multipliers, loyalty vote streaks, and consumable reward inventory.</p>
+                    
+                    <div style="background: rgba(255, 51, 102, 0.08); border: 1px solid rgba(255, 51, 102, 0.25); border-radius: 12px; padding: 16px; margin: 16px 0;">
+                        <h4 style="color: #fff; margin: 0 0 8px 0; font-size: 1rem;"><i class="fas fa-gift" style="color: #FF3366; margin-right: 8px;"></i>7-Day Weekly Vote Rewards & Consumable Inventory</h4>
+                        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin: 0 0 10px 0;">
+                            Voters maintain a 7-day vote streak to unlock progressive tiered items stored in their profile inventory:
+                        </p>
+                        <ul style="color: #cbd5e1; font-size: 0.84rem; line-height: 1.6; margin: 0 0 10px 18px;">
+                            <li><strong>Day 1:</strong> +250 XP Server Boost Voucher</li>
+                            <li><strong>Day 2:</strong> 5 Free AI Prompt Credits</li>
+                            <li><strong>Day 3:</strong> 3 Tries with My TV Entertainment</li>
+                            <li><strong>Day 4:</strong> +500 XP Server Boost Voucher</li>
+                            <li><strong>Day 5:</strong> 10 Free AI Prompt Credits</li>
+                            <li><strong>Day 6:</strong> 5 My TV Tries + 1,000 XP Server Boost Voucher</li>
+                            <li><strong>Day 7:</strong> 3-Day Nora Premium Pass</li>
+                        </ul>
+                        <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">
+                            Server-specific vouchers can be redeemed to any server of the user's choice with a server picker modal. Player-to-player perk trading will be supported in an upcoming Nora Marketplace update.
+                        </p>
+                    </div>
 
                     <div class="callout callout-info">
                         <i class="fas fa-bolt"></i>
@@ -1359,10 +1378,17 @@
             <section class="doc-section" id="tickets">
                 <div class="doc-section-header">
                     <div class="section-icon-badge" style="color: #EC4899; background: rgba(236, 72, 153, 0.15); border-color: rgba(236, 72, 153, 0.3);"><i class="fas fa-ticket-alt"></i></div>
-                    <h2>5. Support Ticketing & Mod-Mail Engine</h2>
+                    <h2>5. Support Ticketing, Analytics & Historical Export</h2>
                 </div>
                 <div class="doc-body">
-                    <p>Enterprise support ticket workflow with interactive embeds, intake modal forms, and transcript archives:</p>
+                    <p>Enterprise support ticket workflow with interactive embeds, intake modal forms, transcript archives, activity analytics, and historical export:</p>
+                    
+                    <div style="background: rgba(88, 101, 242, 0.08); border: 1px solid rgba(88, 101, 242, 0.25); border-radius: 12px; padding: 16px; margin: 16px 0;">
+                        <h4 style="color: #fff; margin: 0 0 8px 0; font-size: 1rem;"><i class="fas fa-file-export" style="color: #5865F2; margin-right: 8px;"></i>Recent Activity Chart & Full Ticket History Export</h4>
+                        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin: 0;">
+                            The support dashboard features a 7-day activity volume trendline with interactive line markers and hover/touch details. Administrators can click <strong>Download Server Ticketing History</strong> in the ticket history table to export a comprehensive JSON archive containing all ticket IDs, authors, assisting staff, topics, timestamps, custom questionnaires, and resolution notes.
+                        </p>
+                    </div>
                     
                     <ul>
                         <li><strong>Interactive Panel:</strong> Deploy persistent panels with custom buttons (Support, Reports, Appeals, VIP Inquiry).</li>
@@ -1376,10 +1402,26 @@
             <section class="doc-section" id="safety">
                 <div class="doc-section-header">
                     <div class="section-icon-badge" style="color: #10B981; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.3);"><i class="fas fa-shield-virus"></i></div>
-                    <h2>6. AutoMod & Native Chat Defense Shield</h2>
+                    <h2>6. AutoMod, Threat Defense & Anti-Nuke Staff Quarantine</h2>
                 </div>
                 <div class="doc-body">
-                    <p>Shield your server with sub-4ms gateway regex filtering, phishing domain detection, and automated escalation:</p>
+                    <p>Shield your server with sub-4ms gateway regex filtering, phishing domain detection, automated escalation, and Wick-style Anti-Nuke Staff Quarantine:</p>
+                    
+                    <div style="background: rgba(239, 68, 68, 0.08); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 12px; padding: 16px; margin: 16px 0;">
+                        <h4 style="color: #fff; margin: 0 0 8px 0; font-size: 1rem;"><i class="fas fa-shield-halved" style="color: #f87171; margin-right: 8px;"></i>Wick-Style Anti-Nuke Staff Quarantine</h4>
+                        <p style="color: var(--text-muted); font-size: 0.88rem; line-height: 1.5; margin: 0 0 10px 0;">
+                            Protects communities against compromised administrator accounts and rogue staff by tracking destructive action velocity (mass channel deletions, mass role deletions, mass bans, or mass kicks within a sliding 15-second window). If thresholds are exceeded:
+                        </p>
+                        <ul style="color: #cbd5e1; font-size: 0.84rem; line-height: 1.6; margin: 0 0 10px 18px;">
+                            <li>Revokes dangerous administrative permissions from the offending staff member.</li>
+                            <li>Assigns the configured Quarantine role and enforces a 1-hour containment timeout.</li>
+                            <li>Logs a security audit case with complete forensic metadata.</li>
+                            <li>Dispatches an urgent direct message to the Server Owner.</li>
+                        </ul>
+                        <p style="color: var(--text-muted); font-size: 0.82rem; margin: 0;">
+                            <strong>Enhanced Chat Filters:</strong> Dedicated Hate Speech & Harassment filter, zero-tolerance slur interception, exact-word-boundary profanity filtering (eliminating false positives on normal words like "class" or "assume"), independent Mass Caps and Zalgo toggles, and stream self-promotion filters.
+                        </p>
+                    </div>
                     
                     <div class="table-responsive">
                         <table class="docs-table">
@@ -1431,10 +1473,31 @@
             <section class="doc-section" id="games">
                 <div class="doc-section-header">
                     <div class="section-icon-badge" style="color: #FBBF24; background: rgba(251, 191, 36, 0.15); border-color: rgba(251, 191, 36, 0.3);"><i class="fas fa-star"></i></div>
-                    <h2>7. Games & Tiered Starboard v3.0</h2>
+                    <h2>7. Games, Voice Hangout Minigames & Tiered Starboard v3.0</h2>
                 </div>
                 <div class="doc-body">
-                    <p>Pin outstanding community highlights with dynamic tiered visual flares and reward collaborative engagement:</p>
+                    <p>Pin outstanding community highlights with dynamic tiered visual flares and reward collaborative engagement with interactive minigames:</p>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; margin: 16px 0;">
+                        <div style="background: rgba(168, 85, 247, 0.08); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 14px 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <h4 style="color: #fff; margin: 0; font-size: 0.95rem;">💣 Word Bomb (<code>/wordbomb</code>)</h4>
+                                <span style="font-size: 0.7rem; color: #c084fc; font-weight: 700;">+50 XP</span>
+                            </div>
+                            <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.45; margin: 0;">
+                                15-second syllable reaction countdown! Type a valid dictionary word containing the given letters before the bomb detonates. Playable in any channel or voice text hangout.
+                            </p>
+                        </div>
+                        <div style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.25); border-radius: 12px; padding: 14px 16px;">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                <h4 style="color: #fff; margin: 0; font-size: 0.95rem;">🧠 Trivia Quiz (<code>/trivia</code>)</h4>
+                                <span style="font-size: 0.7rem; color: #60a5fa; font-weight: 700;">+75 XP</span>
+                            </div>
+                            <p style="color: var(--text-muted); font-size: 0.82rem; line-height: 1.45; margin: 0;">
+                                Interactive 4-choice quiz across Gaming, Science, Pop Culture, and Discord lore. Players select answers via Discord interactive buttons with instant explanations and XP rewards.
+                            </p>
+                        </div>
+                    </div>
                     
                     <div class="starboard-tier-grid">
                         <div class="tier-card" style="border-color: rgba(205, 127, 50, 0.4);">

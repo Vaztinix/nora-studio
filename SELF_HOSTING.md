@@ -359,6 +359,15 @@ cp src/database/database.sqlite "Nora Backups/backup_$(date +%F).sqlite"
 
 ## ❓ Troubleshooting & FAQs
 
+### 5. Anti-Nuke Staff Quarantine & Permission Hierarchy
+For Wick-style Staff Quarantine to function properly, **Nora's role must be positioned above moderator and administrator roles** in Discord Server Settings -> Roles. If a rogue moderator exceeds destructive action limits (mass channel/role deletions, mass kicks/bans), Nora requires higher hierarchy to strip permissions, assign the quarantine role, and apply the 1-hour containment timeout.
+
+### 6. Privileged Intents & Presence Routing
+Ensure all three privileged gateway intents are enabled in the Discord Developer Portal:
+1. **Server Members Intent** (required for verification and quarantine)
+2. **Message Content Intent** (required for prefix commands `n!` and chat defense)
+3. **Presence Intent** (required for Activity VC Locks and game-based voice routing)
+
 ### 1. Bot doesn't respond to chat messages or `n!` prefix commands
 - **Cause:** `MESSAGE_CONTENT` intent is disabled.
 - **Fix:** Go to [Discord Developer Portal](https://discord.com/developers/applications) -> Your Bot -> **Bot** tab -> Check **Message Content Intent** -> Save.

@@ -1091,7 +1091,8 @@
                     <li><strong>Vision Safety:</strong> Multimodal image viewing is filtered through Google Safety Filters. Explicit, abusive, or dangerous image uploads will be rejected.</li>
                 </ul>
 
-                <h3>6. Automated Moderation & Adaptive Velocity Shield</h3>
+                <h3>6. Automated Moderation, Adaptive Velocity Shield & Anti-Nuke Staff Quarantine</h3>
+        <p>To safeguard communities against malicious raids, compromised administrator accounts, or rogue staff, Nora provides automated action rate-limiting (Anti-Nuke Staff Quarantine). When destructive action velocities (mass channel deletions, mass role deletions, mass bans, or mass kicks within a 15-second window) exceed configured thresholds, Nora automatically revokes dangerous administrative roles, assigns a Quarantine role, applies a temporary containment timeout, and alerts the server owner. Server owners and administrators accept and configure these security thresholds at their discretion.</p>
                 <p>Nora provides real-time community protection through heuristic raid shields, content filters, and Adaptive Slowmode:</p>
                 <ul>
                     <li><strong>Dynamic Slowmode & Velocity Clamping:</strong> When rapid chat velocity or raid floods are detected, Nora may temporarily escalate channel slowmode (e.g. 3s–10s) and decay back to 0s as chat cools down.</li>
@@ -1189,6 +1190,7 @@
                 <p>Unlike standard Discord bots that log entire message streams or user activity timelines to persistent disks, Nora processes message text, prefix triggers, live user presence/game activity updates (<code>GUILD_PRESENCES</code>), collaborative counting games, and AutoMod events <strong>strictly within volatile, ephemeral RAM</strong>. Once processed, content and presence states are immediately discarded from memory. Chat messages and user activity histories are never dumped to relational databases or long-term files.</p>
 
                 <h3 class="emerald-accent">2. Data We Collect & Specific Retention Periods</h3>
+        <p><strong>Weekly Rewards & Consumable Inventory:</strong> Nora tracks user vote streaks and unredeemed perk vouchers (e.g., XP boost vouchers, AI prompt tokens, temporary premium passes) tied to your Discord User ID. All inventory items, statuses, and expiration timestamps are 100% visible in the "My Data" viewer and can be permanently deleted at any time using 1-Click Data Erasure.</p>
                 <p>We retain only the bare minimum structured metadata strictly necessary to provide server automation and user progression:</p>
 
                 <div class="legal-table-wrapper">

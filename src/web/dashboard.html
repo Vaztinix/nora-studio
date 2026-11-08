@@ -5491,6 +5491,266 @@
             }
         }
         window.fetchInsiteLogs = fetchInsiteLogs;
+
+        // ---- Download Server Ticketing History ----
+        async function downloadServerTicketHistory() {
+            const guildId = window.currentServerId || window.currentGuildId;
+            if (!guildId) {
+                if (typeof showToast === 'function') showToast('Please select a server first.', 'warning');
+                return;
+            }
+            const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                if (typeof showToast === 'function') showToast('Exporting server ticketing archive...', 'info');
+                const res = await fetch(`${apiBase}/api/guilds/${guildId}/tickets/export`, {
+                    headers: t ? { 'Authorization': `Bearer ${t}` } : {}
+                });
+                if (!res.ok) throw new Error('Failed to retrieve ticket history export');
+                const data = await res.json();
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `nora-tickets-${guildId}-${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+                if (typeof showToast === 'function') showToast(`Downloaded ${data.totalTicketsCount || 0} ticketing records!`, 'success');
+            } catch (err) {
+                if (typeof showToast === 'function') showToast('Download failed: ' + err.message, 'error');
+            }
+        }
+        window.downloadServerTicketHistory = downloadServerTicketHistory;
+
+        // ---- Weekly Vote Rewards & User Inventory Engine ----
+        async function loadWeeklyRewards() {
+            const calendar = document.getElementById('weekly-rewards-calendar');
+            const streakBadge = document.getElementById('rewards-streak-badge');
+            const timerText = document.getElementById('rewards-claim-timer-text');
+            const claimBtn = document.getElementById('btn-claim-daily-reward');
+            if (!calendar) return;
+
+            const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+            const t = sessionStorage.getItem('discord_token');
+            if (!t) return;
+
+            try {
+                const res = await fetch(`${apiBase}/api/user/rewards/status`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+
+                if (streakBadge) streakBadge.textContent = `Streak: ${data.currentStreak || 0}/7 Days`;
+
+                if (claimBtn) {
+                    claimBtn.disabled = !data.canClaim;
+                    claimBtn.style.opacity = data.canClaim ? '1' : '0.5';
+                    claimBtn.innerHTML = data.canClaim ? '<i class="fas fa-gift"></i> Claim Reward' : '<i class="fas fa-clock"></i> Claimed Today';
+                }
+
+                if (timerText) {
+                    if (data.canClaim) {
+                        timerText.innerHTML = '<span style="color: #4ade80; font-weight: 700;">✅ Daily Vote Reward ready to claim!</span>';
+                    } else {
+                        timerText.innerHTML = '<span style="color: var(--muted);">Next reward available in ~' + (20 - (data.hoursSinceLastClaim || 0)) + 'h</span>';
+                    }
+                }
+
+                const days = data.rewardsSchedule || [];
+                const curr = data.currentStreak || 0;
+
+                calendar.innerHTML = days.map((d, idx) => {
+                    const dayNum = idx + 1;
+                    const isClaimed = dayNum <= curr;
+                    const isNext = dayNum === (curr + 1) && data.canClaim;
+                    const borderCol = isClaimed ? '#22c55e' : (isNext ? '#a855f7' : 'rgba(255,255,255,0.08)');
+                    const bgCol = isClaimed ? 'rgba(34, 197, 94, 0.12)' : (isNext ? 'rgba(168, 85, 247, 0.18)' : 'rgba(0,0,0,0.3)');
+
+                    return `
+                        <div style="background: ${bgCol}; border: 1px solid ${borderCol}; border-radius: 12px; padding: 12px 8px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; position: relative;">
+                            <span style="font-size: 0.68rem; font-weight: 800; color: ${isClaimed ? '#4ade80' : (isNext ? '#c084fc' : 'var(--muted)')}; text-transform: uppercase;">Day ${dayNum}</span>
+                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; font-size: 1rem; color: ${isClaimed ? '#4ade80' : '#fff'};">
+                                <i class="fas ${d.icon}"></i>
+                            </div>
+                            <span style="font-size: 0.7rem; font-weight: 700; color: #fff; line-height: 1.2;">${d.name}</span>
+                            ${isClaimed ? '<span style="font-size: 0.65rem; color: #4ade80; font-weight: 800;">CLAIMED</span>' : (isNext ? '<span style="font-size: 0.65rem; color: #c084fc; font-weight: 800;">READY</span>' : '<span style="font-size: 0.65rem; color: var(--muted);">LOCKED</span>')}
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.warn('[Weekly Rewards Load Fault]:', err.message);
+            }
+        }
+        window.loadWeeklyRewards = loadWeeklyRewards;
+
+        async function claimDailyReward() {
+            const btn = document.getElementById('btn-claim-daily-reward');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Claiming...';
+            }
+
+            const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`${apiBase}/api/user/rewards/claim`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${t}`
+                    }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to claim reward');
+
+                if (typeof showToast === 'function') showToast(data.message || 'Reward claimed!', 'success');
+                await loadWeeklyRewards();
+                await loadUserInventory();
+            } catch (err) {
+                if (typeof showToast === 'function') showToast(err.message, 'error');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-gift"></i> Claim Reward';
+                }
+            }
+        }
+        window.claimDailyReward = claimDailyReward;
+
+        async function loadUserInventory() {
+            const container = document.getElementById('user-inventory-container');
+            if (!container) return;
+
+            const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+            const t = sessionStorage.getItem('discord_token');
+            if (!t) return;
+
+            try {
+                const res = await fetch(`${apiBase}/api/user/inventory`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                const items = data.inventory || [];
+
+                if (items.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align: center; padding: 22px; color: var(--muted); font-size: 0.8rem; background: rgba(0,0,0,0.2); border-radius: 10px;">
+                            <i class="fas fa-box-open" style="font-size: 1.8rem; margin-bottom: 8px; opacity: 0.4; display: block;"></i>
+                            Your inventory is empty. Vote daily to earn XP vouchers, AI prompt credits, and premium passes!
+                        </div>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = items.map(item => {
+                    let meta = {};
+                    try { if (item.metadata) meta = JSON.parse(item.metadata); } catch (_) {}
+                    const icon = meta.icon || 'fa-gem';
+
+                    return `
+                        <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 12px;">
+                                <div style="width: 36px; height: 36px; border-radius: 8px; background: rgba(99, 102, 241, 0.15); color: #818cf8; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                                    <i class="fas ${icon}"></i>
+                                </div>
+                                <div>
+                                    <div style="font-size: 0.88rem; font-weight: 700; color: #fff;">${escapeHtml(item.name)}</div>
+                                    <div style="font-size: 0.74rem; color: var(--muted);">${escapeHtml(item.description || 'One-time usable perk voucher')}</div>
+                                </div>
+                            </div>
+                            <button type="button" onclick="openRedeemModal('${item.id}', '${item.itemType}', '${escapeHtml(item.name)}', '${escapeHtml(item.description || '')}')" class="btn-primary" style="padding: 6px 14px; font-size: 0.78rem; font-weight: 700; border-radius: 8px; background: #5865F2; color: #fff; border: none; cursor: pointer; white-space: nowrap;">
+                                Use Perk
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.warn('[User Inventory Load Fault]:', err.message);
+            }
+        }
+        window.loadUserInventory = loadUserInventory;
+
+        function openRedeemModal(itemId, itemType, itemName, itemDesc) {
+            const modal = document.getElementById('inventory-redeem-modal');
+            const titleEl = document.getElementById('redeem-modal-title');
+            const descEl = document.getElementById('redeem-modal-desc');
+            const pickerGroup = document.getElementById('redeem-server-picker-group');
+            const selectEl = document.getElementById('redeem-target-guild-select');
+            const idInput = document.getElementById('redeem-active-item-id');
+            const typeInput = document.getElementById('redeem-active-item-type');
+
+            if (!modal) return;
+            if (idInput) idInput.value = itemId;
+            if (typeInput) typeInput.value = itemType;
+            if (titleEl) titleEl.textContent = `Redeem: ${itemName}`;
+            if (descEl) descEl.textContent = itemDesc || 'Activate this one-time use item on your account or a chosen community server.';
+
+            // Populate server dropdown for XP vouchers or server-targeted benefits
+            if (itemType === 'xp_voucher' || itemType === 'mytv_tokens_xp' || itemType === 'premium_pass') {
+                if (pickerGroup) pickerGroup.style.display = 'block';
+                if (selectEl && window.userGuilds && window.userGuilds.length > 0) {
+                    selectEl.innerHTML = '<option value="">-- Select a Server --</option>' + window.userGuilds.map(g => `<option value="${g.id}">${escapeHtml(g.name)}</option>`).join('');
+                }
+            } else {
+                if (pickerGroup) pickerGroup.style.display = 'none';
+            }
+
+            modal.style.display = 'flex';
+        }
+        window.openRedeemModal = openRedeemModal;
+
+        function closeRedeemModal() {
+            const modal = document.getElementById('inventory-redeem-modal');
+            if (modal) modal.style.display = 'none';
+        }
+        window.closeRedeemModal = closeRedeemModal;
+
+        async function executeRedeemItem() {
+            const itemId = document.getElementById('redeem-active-item-id')?.value;
+            const itemType = document.getElementById('redeem-active-item-type')?.value;
+            const targetGuildId = document.getElementById('redeem-target-guild-select')?.value;
+            const btn = document.getElementById('btn-confirm-redeem');
+
+            if (itemType === 'xp_voucher' && !targetGuildId) {
+                if (typeof showToast === 'function') showToast('Please select a target server for this XP voucher!', 'warning');
+                return;
+            }
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Redeeming...';
+            }
+
+            const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+            const t = sessionStorage.getItem('discord_token');
+            try {
+                const res = await fetch(`${apiBase}/api/user/inventory/redeem`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${t}`
+                    },
+                    body: JSON.stringify({ itemId, targetGuildId })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to redeem item');
+
+                if (typeof showToast === 'function') showToast(data.message || 'Perk activated successfully!', 'success');
+                closeRedeemModal();
+                await loadUserInventory();
+            } catch (err) {
+                if (typeof showToast === 'function') showToast(err.message, 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = 'Confirm &amp; Redeem';
+                }
+            }
+        }
+        window.executeRedeemItem = executeRedeemItem;
     </script>
 
 </head>
@@ -6023,7 +6283,9 @@
                                     <label style="font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85);">Profile Bio</label>
                                     <span id="user-pref-bio-counter" style="font-size: 0.72rem; color: var(--muted); font-family: monospace;">0/250</span>
                                 </div>
-                                <textarea id="user-pref-bio" placeholder="Write a short bio, your favorite games, or what makes you unique..." maxlength="250" oninput="checkTextareaLimit(this, 250); if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();" style="width: 100%; box-sizing: border-box; min-height: 90px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); color: #fff; padding: 12px 14px; border-radius: 10px; resize: vertical; outline: none; transition: 0.2s; font-size: 0.88rem; line-height: 1.5;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='rgba(0,0,0,0.35)';" onblur="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.background='rgba(0,0,0,0.25)';"></textarea>
+                                <textarea id="user-pref-bio" placeholder="Write a short bio, your favorite games, or what makes you unique..." maxlength="250" oninput="checkTextareaLimit(this, 250); if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();
+                        if (typeof loadWeeklyRewards === 'function') loadWeeklyRewards();
+                        if (typeof loadUserInventory === 'function') loadUserInventory();" style="width: 100%; box-sizing: border-box; min-height: 90px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.08); color: #fff; padding: 12px 14px; border-radius: 10px; resize: vertical; outline: none; transition: 0.2s; font-size: 0.88rem; line-height: 1.5;" onfocus="this.style.borderColor='var(--primary)'; this.style.background='rgba(0,0,0,0.35)';" onblur="this.style.borderColor='rgba(255,255,255,0.08)'; this.style.background='rgba(0,0,0,0.25)';"></textarea>
                             </div>
                         </div>
 
@@ -6321,6 +6583,76 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- 🎁 WEEKLY VOTE REWARDS (7-DAY STREAK GAME) -->
+                        <div class="panel" style="background: rgba(18, 22, 34, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; backdrop-filter: blur(20px); padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(168, 85, 247, 0.18); color: #c084fc; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                                        <i class="fas fa-gift"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">Weekly Rewards</h3>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--muted);">Vote daily on Top.gg to earn progressive rewards, server XP vouchers, AI credits, and 3-day Nora Premium!</p>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span id="rewards-streak-badge" style="padding: 4px 10px; border-radius: 999px; background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); font-size: 0.75rem; font-weight: 700;">Streak: 0/7 Days</span>
+                                </div>
+                            </div>
+
+                            <!-- 7-Day Rewards Calendar Grid -->
+                            <div id="weekly-rewards-calendar" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; margin-bottom: 16px;">
+                                <!-- Dynamically populated day cards -->
+                            </div>
+
+                            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                                <div style="font-size: 0.78rem; color: var(--muted);">
+                                    <span id="rewards-claim-timer-text">Ready to vote and claim today's reward!</span>
+                                </div>
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="https://top.gg/user/593420060990005248" target="_blank" rel="noopener noreferrer" class="btn-outline" style="padding: 7px 14px; font-size: 0.8rem; font-weight: 600; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-arrow-up-right-from-square"></i> Vote on Top.gg
+                                    </a>
+                                    <button type="button" id="btn-claim-daily-reward" onclick="claimDailyReward()" class="btn-primary" style="padding: 7px 16px; font-size: 0.8rem; font-weight: 700; border-radius: 8px; background: linear-gradient(135deg, #a855f7, #6366f1); border: none; color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">
+                                        <i class="fas fa-gift"></i> Claim Reward
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 🎒 USER INVENTORY & CONSUMABLE PERKS -->
+                        <div class="panel" style="background: rgba(18, 22, 34, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; backdrop-filter: blur(20px); padding: 22px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(59, 130, 246, 0.18); color: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                                        <i class="fas fa-box-open"></i>
+                                    </div>
+                                    <div>
+                                        <h3 style="margin: 0; font-size: 1.05rem; font-weight: 700; color: #fff;">My Inventory</h3>
+                                        <p style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--muted);">Track and redeem your consumable vouchers, AI credit packs, My TV play tokens, and premium passes.</p>
+                                    </div>
+                                </div>
+                                <button type="button" class="btn-outline" onclick="loadUserInventory()" style="padding: 4px 10px; font-size: 0.72rem; border-radius: 6px; color: var(--muted);">
+                                    <i class="fas fa-rotate"></i>
+                                </button>
+                            </div>
+
+                            <div id="user-inventory-container" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+                                <div style="text-align: center; padding: 20px; color: var(--muted); font-size: 0.8rem;">
+                                    <i class="fas fa-spinner fa-spin"></i> Loading inventory items...
+                                </div>
+                            </div>
+
+                            <!-- Perk Trading Notice -->
+                            <div style="background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; gap: 10px;">
+                                <i class="fas fa-store" style="color: #f59e0b; font-size: 1.1rem;"></i>
+                                <span style="font-size: 0.75rem; color: rgba(255,255,255,0.7); line-height: 1.4;">
+                                    <strong>Perk Trading:</strong> Player-to-player item & perk trading between community members will be available in an upcoming Nora Marketplace update!
+                                </span>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -7096,7 +7428,12 @@
 
                     <!-- Recent Ticket History Table -->
                     <div class="panel" style="margin-bottom: 25px;">
-                        <h4 style="font-weight: 700; color: white; margin-bottom: 15px;">Recent Ticket History</h4>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                            <h4 style="font-weight: 700; color: white; margin: 0;">Recent Ticket History</h4>
+                            <button type="button" class="btn-outline" onclick="downloadServerTicketHistory()" style="padding: 6px 14px; font-size: 0.78rem; font-weight: 600; border-radius: 8px; background: rgba(255,255,255,0.04); color: #fff; border: 1px solid var(--border); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='rgba(255,255,255,0.04)'">
+                                <i class="fas fa-file-download" style="color: #60a5fa;"></i> Download Server Ticketing History
+                            </button>
+                        </div>
                         <div style="overflow-x: auto; width: 100%;">
                             <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.82rem;">
                                 <thead>
@@ -7217,9 +7554,7 @@
                         <button type="button" class="safety-subnav-btn" style="padding: 9px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); background: transparent; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onclick="switchSafetySubnav('moderation', this)">
                             <i class="fas fa-gavel" style="color: #38bdf8;"></i> Moderation & Rates
                         </button>
-                        <button type="button" class="safety-subnav-btn" style="padding: 9px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); background: transparent; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onclick="switchSafetySubnav('simulator', this)">
-                            <i class="fas fa-flask" style="color: #a855f7;"></i> Live Simulator & Actions
-                        </button>
+                        
                         <button type="button" class="safety-subnav-btn" style="padding: 9px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); background: transparent; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onclick="switchSafetySubnav('logs', this)">
                             <i class="fas fa-list-check" style="color: #f59e0b;"></i> Audit Cases & Logs
                         </button>
@@ -7289,6 +7624,14 @@
                                     </div>
                                     <label class="switch small"><input type="checkbox" id="setting-automodScam" onchange="updateSecurityPreview()"><span class="slider"></span></label>
                                 </div>
+
+                                <div class="row" style="margin: 0; padding: 0; border: none; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 12px;">
+                                    <div>
+                                        <strong style="color: #fff; font-size: 0.85rem;">📢 Self-Promotion & Streams</strong>
+                                        <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Block Twitch, Kick, TikTok, & YouTube promo spam</p>
+                                    </div>
+                                    <label class="switch small"><input type="checkbox" id="setting-automodSelfPromo" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                </div>
                             </div>
 
                             <!-- Card 2: Chat Safety & Behavior Filters -->
@@ -7300,16 +7643,24 @@
 
                                 <div class="row" style="margin: 0; padding: 0; border: none;">
                                     <div>
-                                        <strong style="color: #fff; font-size: 0.85rem;">⚠️ Hate Speech & Slurs</strong>
-                                        <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Zero-tolerance discriminatory slur filter</p>
+                                        <strong style="color: #fff; font-size: 0.85rem;">🛑 Block Prohibited Slurs</strong>
+                                        <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Zero-tolerance filter blocking all slurs & hate variants</p>
                                     </div>
                                     <label class="switch small"><input type="checkbox" id="setting-automodSlurs" onchange="updateSecurityPreview()"><span class="slider"></span></label>
                                 </div>
 
                                 <div class="row" style="margin: 0; padding: 0; border: none; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 10px;">
                                     <div>
-                                        <strong style="color: #fff; font-size: 0.85rem;">🤬 Profanity & Swear Words</strong>
-                                        <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Filter common profanities and vulgarity</p>
+                                        <strong style="color: #fff; font-size: 0.85rem;">🚨 Hate Speech & Harassment</strong>
+                                        <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Block death wishes, threats, and targeted derogatory hostility</p>
+                                    </div>
+                                    <label class="switch small"><input type="checkbox" id="setting-automodHateSpeech" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                </div>
+
+                                <div class="row" style="margin: 0; padding: 0; border: none; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 10px;">
+                                    <div>
+                                        <strong style="color: #fff; font-size: 0.85rem;">🤬 Direct Profanity Filter</strong>
+                                        <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Block standalone vulgarities without blocking normal words (class, pass, etc.)</p>
                                     </div>
                                     <label class="switch small"><input type="checkbox" id="setting-automodProfanity" onchange="updateSecurityPreview()"><span class="slider"></span></label>
                                 </div>
@@ -7324,10 +7675,18 @@
 
                                 <div class="row" style="margin: 0; padding: 0; border: none; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 10px;">
                                     <div>
-                                        <strong style="color: #fff; font-size: 0.85rem;">🔠 Mass Caps & Zalgo Spam</strong>
-                                        <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Block loud shouting and glitch text</p>
+                                        <strong style="color: #fff; font-size: 0.85rem;">🔠 Mass Caps Shouting</strong>
+                                        <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Block excessive uppercase text (≥75% capital letters)</p>
                                     </div>
                                     <label class="switch small"><input type="checkbox" id="setting-automodCaps" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                </div>
+
+                                <div class="row" style="margin: 0; padding: 0; border: none; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 10px;">
+                                    <div>
+                                        <strong style="color: #fff; font-size: 0.85rem;">🌀 Zalgo & Corrupt Unicode</strong>
+                                        <p style="font-size: 0.72rem; color: var(--muted); margin: 2px 0 0 0;">Block vertical glitch characters & combining diacritics</p>
+                                    </div>
+                                    <label class="switch small"><input type="checkbox" id="setting-automodZalgo" onchange="updateSecurityPreview()"><span class="slider"></span></label>
                                 </div>
 
                                 <div class="row" style="margin: 0; padding: 0; border: none; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 10px;">
@@ -7524,6 +7883,53 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Card 3: Wick-Style Anti-Nuke & Staff Quarantine -->
+                            <div class="panel" style="margin-bottom: 0; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(239, 68, 68, 0.25); border-radius: 16px; grid-column: 1 / -1;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(239, 68, 68, 0.15); color: #ef4444; display: flex; align-items: center; justify-content: center; font-size: 1.15rem;">
+                                            <i class="fas fa-user-shield"></i>
+                                        </div>
+                                        <div>
+                                            <h4 style="margin: 0; font-size: 1rem; font-weight: 700; color: #fff;">Wick-Style Staff Anti-Nuke & Quarantine</h4>
+                                            <p style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--muted);">Protects your server against compromised staff accounts & rogue admins. If staff exceed action limits, Nora immediately strips permissions and applies quarantine.</p>
+                                        </div>
+                                    </div>
+                                    <label class="switch small"><input type="checkbox" id="setting-staffQuarantineEnabled" onchange="updateSecurityPreview()"><span class="slider"></span></label>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600; font-size: 0.8rem; color: #fff;">Quarantine Role</label>
+                                        <select id="setting-staffQuarantineRoleId" style="font-size: 0.82rem;">
+                                            <option value="">None (Auto-Revoke Roles Only)</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600; font-size: 0.8rem; color: #fff;">Max Channel Deletions (15s)</label>
+                                        <input type="number" id="setting-staffQuarantineMaxChannels" value="2" min="1" max="10" style="width: 100%; box-sizing: border-box; font-size: 0.82rem;">
+                                    </div>
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600; font-size: 0.8rem; color: #fff;">Max Role Deletions (15s)</label>
+                                        <input type="number" id="setting-staffQuarantineMaxRoles" value="2" min="1" max="10" style="width: 100%; box-sizing: border-box; font-size: 0.82rem;">
+                                    </div>
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600; font-size: 0.8rem; color: #fff;">Max Bans / 15s</label>
+                                        <input type="number" id="setting-staffQuarantineMaxBans" value="4" min="1" max="20" style="width: 100%; box-sizing: border-box; font-size: 0.82rem;">
+                                    </div>
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-weight: 600; font-size: 0.8rem; color: #fff;">Max Kicks / 15s</label>
+                                        <input type="number" id="setting-staffQuarantineMaxKicks" value="4" min="1" max="20" style="width: 100%; box-sizing: border-box; font-size: 0.82rem;">
+                                    </div>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="font-size: 0.78rem; font-weight: 600; color: var(--muted);">Trusted Staff Roles (Exempt from Anti-Nuke Quarantine)</label>
+                                    <input type="hidden" id="setting-staffQuarantineTrustedRoles" value="[]">
+                                    <div id="setting-staffQuarantineTrustedRoles-container" class="multiselect-container"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -7620,122 +8026,47 @@
                         </div>
                     </div>
 
-                    <!-- ================= SUBVIEW 4: LIVE SIMULATOR & ACTIONS ================= -->
-                    <div id="safety-sub-simulator" class="safety-subview" style="display: none;">
-                        <div style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; align-items: start;">
-                            
-                            <!-- Left: Live AutoMod Rule Simulator -->
-                            <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 22px; margin: 0;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
-                                    <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-desktop" style="color: #a855f7;"></i> Live AutoMod Rule Simulator
-                                    </h3>
-                                    <span id="sec-sim-status-badge" style="font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3);">
-                                        PASSING
-                                    </span>
-                                </div>
-
-                                <!-- Test Presets -->
-                                <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px;">
-                                    <button type="button" class="btn-outline" style="font-size: 0.72rem; padding: 4px 10px; border-radius: 8px;" onclick="setSecTestPhrase('discord.gg/hackedserver')">🔗 Invite</button>
-                                    <button type="button" class="btn-outline" style="font-size: 0.72rem; padding: 4px 10px; border-radius: 8px;" onclick="setSecTestPhrase('FREE NITRO GIFT https://discord-nitro.gift/claim')">🎁 Scam URL</button>
-                                    <button type="button" class="btn-outline" style="font-size: 0.72rem; padding: 4px 10px; border-radius: 8px;" onclick="setSecTestPhrase('HELLO EVERYONE CAN YOU HEAR ME LOUD AND CLEAR')">🔠 Caps Flood</button>
-                                    <button type="button" class="btn-outline" style="font-size: 0.72rem; padding: 4px 10px; border-radius: 8px;" onclick="setSecTestPhrase('@everyone @here @admin @user1 @user2 @user3')">👥 Mentions</button>
-                                    <button type="button" class="btn-outline" style="font-size: 0.72rem; padding: 4px 10px; border-radius: 8px;" onclick="setSecTestPhrase('😀😃😄😁😆😅😂🤣😭😡🤬🤯🥳😎')">😀 Emoji Flood</button>
-                                    <button type="button" class="btn-outline" style="font-size: 0.72rem; padding: 4px 10px; border-radius: 8px;" onclick="setSecTestPhrase('Hello team, looking forward to the gaming tournament today!')">✨ Clean Text</button>
-                                </div>
-
-                                <!-- Live Interactive Message Input -->
-                                <div class="input-group" style="margin-bottom: 12px;">
-                                    <input type="text" id="sec-sim-test-input" placeholder="Type or paste any text to test active filters in real-time..." style="width: 100%; box-sizing: border-box; font-size: 0.85rem; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.1);" oninput="runLiveAutoModSimulation()">
-                                </div>
-
-                                <!-- Simulator Mode Switcher -->
-                                <div style="display: flex; gap: 6px; margin-bottom: 12px; background: rgba(0,0,0,0.3); padding: 4px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                                    <button type="button" id="sec-sim-btn-chat" class="btn-outline" style="flex: 1; font-size: 0.75rem; padding: 6px; text-align: center; border: none; background: rgba(255,255,255,0.08); color: #fff; border-radius: 6px; font-weight: 600;" onclick="setSecuritySimMode('chat')">AutoMod Alert</button>
-                                    <button type="button" id="sec-sim-btn-dm" class="btn-outline" style="flex: 1; font-size: 0.75rem; padding: 6px; text-align: center; border: none; background: transparent; color: var(--muted); border-radius: 6px; font-weight: 600;" onclick="setSecuritySimMode('dm')">User DM Notice</button>
-                                    <button type="button" id="sec-sim-btn-log" class="btn-outline" style="flex: 1; font-size: 0.75rem; padding: 6px; text-align: center; border: none; background: transparent; color: var(--muted); border-radius: 6px; font-weight: 600;" onclick="setSecuritySimMode('log')">Mod Log Card</button>
-                                </div>
-
-                                <!-- Live Simulator Discord Frame -->
-                                <div style="background: #313338; border-radius: 10px; padding: 14px; font-family: 'gg sans', 'Noto Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);">
-                                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                                        <img src="/nora.png" style="width: 38px; height: 38px; border-radius: 50%;" onerror="this.src='/nora.png';" alt="Nora">
-                                        <div>
-                                            <div style="display: flex; align-items: center; gap: 6px;">
-                                                <span style="font-weight: 600; color: #fff; font-size: 0.95rem;">Nora</span>
-                                                <span style="background: #5865f2; color: #fff; font-size: 0.62rem; font-weight: 700; padding: 1px 4px; border-radius: 3px;">BOT</span>
-                                                <span style="font-size: 0.75rem; color: #949ba4;">Today at 2:54 PM</span>
-                                            </div>
-                                            <div id="sec-preview-subtitle" style="font-size: 0.75rem; color: #dbdee1; margin-top: 1px;">Automated Security Notice</div>
-                                        </div>
-                                    </div>
-
-                                    <div id="sec-preview-embed" style="border-left: 4px solid #ef4444; background: #2b2d31; border-radius: 4px; padding: 12px 16px; margin-top: 6px;">
-                                        <div id="sec-preview-title" style="font-weight: 700; color: #fff; font-size: 0.95rem; margin-bottom: 6px;">
-                                            🛡️ Nora AutoMod Alert
-                                        </div>
-                                        <div id="sec-preview-desc" style="font-size: 0.85rem; color: #dbdee1; line-height: 1.45;">
-                                            Your message was automatically removed for violating server safety rules.<br><br>
-                                            <strong>Reason:</strong> Unauthorized Discord Invite Link<br>
-                                            <strong>Action:</strong> Message Deleted & Warning Logged
-                                        </div>
-                                        <div id="sec-preview-footer" style="font-size: 0.72rem; color: #949ba4; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
-                                            Nora Shield • Server Protection
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <button type="button" class="btn-outline" style="width: 100%; margin-top: 12px; padding: 8px; font-size: 0.8rem; text-align: center; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); color: #fff;" onclick="testSimulateAutoMod()">
-                                    <i class="fas fa-play" style="margin-right: 6px; color: #22c55e;"></i> Test Pulse Simulation
+                    <!-- ================= SUBVIEW 5: CASE LOGS & AUDITS ================= -->
+                    <div id="safety-sub-logs" class="safety-subview" style="display: none;">
+                        <!-- Quick Mod Action Desk (Moved to Audit Cases & Logs) -->
+                        <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 22px; margin-bottom: 20px;">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                                <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-hammer" style="color: #eab308;"></i> Quick Mod Action
+                                </h3>
+                                <button type="button" class="config-btn" style="width: auto; padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; background: rgba(255,255,255,0.06); color: #fff;" onclick="loadModLogs()">
+                                    <i class="fas fa-sync-alt"></i> Refresh Logs
                                 </button>
                             </div>
 
-                            <!-- Right: Quick Moderation Dispatcher -->
-                            <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 22px; margin: 0;">
-                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
-                                    <h3 style="font-size: 1.05rem; font-weight: 700; color: #fff; margin: 0; display: flex; align-items: center; gap: 8px;">
-                                        <i class="fas fa-hammer" style="color: #eab308;"></i> Quick Mod Action
-                                    </h3>
-                                    <button type="button" class="config-btn" style="width: auto; padding: 4px 10px; font-size: 0.75rem; border-radius: 6px; background: rgba(255,255,255,0.06); color: #fff;" onclick="loadModLogs()">
-                                        <i class="fas fa-sync-alt"></i>
-                                    </button>
+                            <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr auto; gap: 12px; align-items: flex-end; flex-wrap: wrap;">
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600; font-size: 0.8rem; color: #fff;">Target User ID</label>
+                                    <input type="text" id="mod-input-userid" placeholder="e.g. 123456789012345678" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
                                 </div>
-
-                                <div style="display: flex; flex-direction: column; gap: 12px;">
-                                    <div class="input-group" style="margin-bottom: 0;">
-                                        <label style="font-weight: 600; font-size: 0.8rem;">Target User ID</label>
-                                        <input type="text" id="mod-input-userid" placeholder="e.g. 123456789012345678" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                        <div class="input-group" style="margin-bottom: 0;">
-                                            <label style="font-weight: 600; font-size: 0.8rem;">Action</label>
-                                            <select id="mod-input-action" style="font-size: 0.85rem;">
-                                                <option value="WARN">Warn</option>
-                                                <option value="TIMEOUT">Timeout</option>
-                                                <option value="KICK">Kick</option>
-                                                <option value="BAN">Ban</option>
-                                            </select>
-                                        </div>
-                                        <div class="input-group" style="margin-bottom: 0;">
-                                            <label style="font-weight: 600; font-size: 0.8rem;">Duration (Mins)</label>
-                                            <input type="number" id="mod-input-duration" value="10" placeholder="10" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
-                                        </div>
-                                    </div>
-                                    <div class="input-group" style="margin-bottom: 0;">
-                                        <label style="font-weight: 600; font-size: 0.8rem;">Reason</label>
-                                        <input type="text" id="mod-input-reason" placeholder="e.g. Rule violation" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
-                                    </div>
-                                    <button type="button" onclick="submitModAction()" style="margin-top: 6px; padding: 11px; font-weight: 700; background: #5865F2; color: #ffffff; border-radius: 10px; border: none; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);">
-                                        <i class="fas fa-paper-plane"></i> Execute Punishment
-                                    </button>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600; font-size: 0.8rem; color: #fff;">Action</label>
+                                    <select id="mod-input-action" style="font-size: 0.85rem;">
+                                        <option value="WARN">Warn</option>
+                                        <option value="TIMEOUT">Timeout</option>
+                                        <option value="KICK">Kick</option>
+                                        <option value="BAN">Ban</option>
+                                    </select>
                                 </div>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600; font-size: 0.8rem; color: #fff;">Duration (Mins)</label>
+                                    <input type="number" id="mod-input-duration" value="10" placeholder="10" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
+                                </div>
+                                <button type="button" onclick="submitModAction()" style="padding: 10px 20px; font-weight: 700; background: #5865F2; color: #ffffff; border-radius: 10px; border: none; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 15px rgba(88, 101, 242, 0.3);">
+                                    <i class="fas fa-paper-plane"></i> Execute
+                                </button>
+                            </div>
+                            <div class="input-group" style="margin-top: 10px; margin-bottom: 0;">
+                                <label style="font-weight: 600; font-size: 0.8rem; color: #fff;">Reason</label>
+                                <input type="text" id="mod-input-reason" placeholder="e.g. Rule violation" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
                             </div>
                         </div>
-                    </div>
 
-                    <!-- ================= SUBVIEW 5: CASE LOGS & AUDITS ================= -->
-                    <div id="safety-sub-logs" class="safety-subview" style="display: none;">
                         <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px; padding: 25px; margin: 0;">
                             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
                                 <div>
@@ -9686,6 +10017,39 @@
                             <div class="input-group"><label>Min Bet XP</label><input type="number" id="setting-rpsMinBet" min="0" max="10000" placeholder="0"></div>
                             <div class="input-group"><label>Max Bet XP</label><input type="number" id="setting-rpsMaxBet" min="0" max="10000" placeholder="10000"></div>
                             <div class="input-group"><label>Win XP Reward</label><input type="number" id="setting-rpsGameXpReward" placeholder="50"></div>
+                        </div>
+
+                        <!-- Word Bomb & Trivia Party Games -->
+                        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06);">
+                            <h4 style="margin: 0 0 12px 0; color: #fff; font-size: 0.95rem; display: flex; align-items: center; gap: 8px;">
+                                <i class="fas fa-dice" style="color: #a855f7;"></i> Interactive Party Games & Minigames
+                            </h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span style="font-size: 1.2rem;">💣</span>
+                                            <strong style="color: #fff; font-size: 0.88rem;">Word Bomb</strong>
+                                        </div>
+                                        <span style="font-size: 0.68rem; padding: 2px 7px; background: rgba(168,85,247,0.18); color: #c084fc; border: 1px solid rgba(168,85,247,0.3); border-radius: 999px; font-weight: 700;">/wordbomb</span>
+                                    </div>
+                                    <p style="margin: 0; font-size: 0.78rem; color: var(--muted); line-height: 1.45;">
+                                        Fast-paced syllable reaction countdown! Type a valid dictionary word containing the prompted letters before the bomb detonates. Awards leveling XP to survivors.
+                                    </p>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 16px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span style="font-size: 1.2rem;">🧠</span>
+                                            <strong style="color: #fff; font-size: 0.88rem;">Trivia Quiz</strong>
+                                        </div>
+                                        <span style="font-size: 0.68rem; padding: 2px 7px; background: rgba(59,130,246,0.18); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3); border-radius: 999px; font-weight: 700;">/trivia</span>
+                                    </div>
+                                    <p style="margin: 0; font-size: 0.78rem; color: var(--muted); line-height: 1.45;">
+                                        Interactive multi-category quiz challenge (Gaming, Science, Pop Culture, History, Discord). Choose your answer via Discord interactive buttons to earn bonus XP.
+                                    </p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -12777,6 +13141,65 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Voice Lounge & Party Activities Desk -->
+                    <div class="panel" style="background: rgba(18, 18, 24, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 18px; padding: 24px; margin-top: 24px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
+                            <div>
+                                <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin: 0 0 4px 0; display: flex; align-items: center; gap: 8px;">
+                                    <i class="fas fa-headset" style="color: #ec4899;"></i> Voice Hangout & Party Activities
+                                </h3>
+                                <p style="font-size: 0.78rem; color: var(--muted); margin: 0;">
+                                    Engage members in voice text chats and gaming lounges with built-in instant multiplayer minigames.
+                                </p>
+                            </div>
+                            <span style="font-size: 0.72rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(236,72,153,0.15); color: #f472b6; border: 1px solid rgba(236,72,153,0.3);">
+                                2 Party Games Built-in
+                            </span>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 18px; display: flex; gap: 16px; align-items: flex-start;">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+                                    💣
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #fff;">Word Bomb</h4>
+                                        <code style="font-size: 0.72rem; background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 6px; color: #f87171;">/wordbomb</code>
+                                    </div>
+                                    <p style="margin: 0 0 10px 0; font-size: 0.78rem; color: var(--muted); line-height: 1.45;">
+                                        Type words containing the given syllable before the countdown bomb expires. Perfect for fast-paced voice channel text hangouts!
+                                    </p>
+                                    <div style="display: flex; gap: 8px; font-size: 0.72rem; color: #a1a1aa;">
+                                        <span><i class="fas fa-bolt" style="color: #fbbf24; margin-right: 4px;"></i>+50 XP per win</span>
+                                        <span>•</span>
+                                        <span><i class="fas fa-clock" style="color: #60a5fa; margin-right: 4px;"></i>15s rounds</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 18px; display: flex; gap: 16px; align-items: flex-start;">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;">
+                                    🧠
+                                </div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #fff;">Trivia Quiz</h4>
+                                        <code style="font-size: 0.72rem; background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 6px; color: #60a5fa;">/trivia</code>
+                                    </div>
+                                    <p style="margin: 0 0 10px 0; font-size: 0.78rem; color: var(--muted); line-height: 1.45;">
+                                        Interactive 4-choice trivia quizzes across Gaming, Pop Culture, Science, and Discord Lore. Choose your answer with Discord interactive buttons!
+                                    </p>
+                                    <div style="display: flex; gap: 8px; font-size: 0.72rem; color: #a1a1aa;">
+                                        <span><i class="fas fa-trophy" style="color: #fbbf24; margin-right: 4px;"></i>+75 XP per correct</span>
+                                        <span>•</span>
+                                        <span><i class="fas fa-layer-group" style="color: #c084fc; margin-right: 4px;"></i>5 Categories</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 <div id="tab-topgg" class="tab-content" style="display: none;">
                     <!-- Sleek Top.gg Header Banner -->
@@ -14362,7 +14785,7 @@
         let currentServerName = "";
         let currentServerIsPremium = false;
 
-        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'welcomeType', 'welcomeCardAccentColor', 'welcomeCardBgUrl', 'serverCardShape', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'goodbyeType', 'goodbyeCardAccentColor', 'goodbyeCardBgUrl', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'promoterCustomStatus', 'promoterMatchMode', 'promoterCaseFilter', 'promoterNotifyOptIn', 'promoterNotifyOptOut', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'starboardSelfStar', 'starboardAuthorRewardXp', 'starboardDynamicColors', 'starboardNotifyAuthor', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'verificationSecurityCheck', 'verifyCheckOnlineThreats', 'verifyCheckBanEvasion', 'verifyActionOnFlagged', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers', 'logModBans', 'logModKicks', 'logModTimeouts', 'logModWarns', 'logSecurityRaids', 'logVerification', 'logMemberNicknames', 'logMemberRoles', 'logMessagePurges', 'logMessagePins', 'logRoleCreates', 'logRoleEdits', 'logRoleDeletes', 'logServerUpdates', 'logVoiceMuteDeaf', 'logVoiceStream', 'logLevelUps', 'logLevelingXp', 'logCounting', 'logMiniGames', 'logTickets', 'logReactionRoles', 'logAutoresponder', 'logTopggVotes', 'adaptiveSlowmodeEnabled', 'adaptiveSlowmodeSmallThreshold', 'adaptiveSlowmodeLargeThreshold', 'adaptiveSlowmodeSurgeThreshold', 'adaptiveSlowmodeInactiveSec', 'adaptiveSlowmodeSmallSec', 'adaptiveSlowmodeLargeSec', 'adaptiveSlowmodeSurgeSec', 'adaptiveSlowmodeDecaySec', 'adaptiveSlowmodeNotify', 'adaptiveSlowmodeModLog', 'adaptiveSlowmodeChannels', 'adaptiveSlowmodeIgnoredRoles', 'adaptiveSlowmodeAiEnabled', 'aiAutoRespondChannelId', 'aiAutoRespondEnabled', 'noraAiEnabled', 'aiExcludedChannels', 'aiAllowedChannels', 'aiDedicatedChannels', 'aiSystemPrompt', 'aiPromptTemplate', 'aiMemoryEnabled', 'aiRoleViewingEnabled', 'aiNameViewingEnabled', 'aiImageGenerationEnabled', 'aiModel', 'countingTopCounterRoleId', 'countingFailRoleId', 'countingFailThreshold', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId', 'levelingAiEnabled', 'starboardAiEnabled', 'aiRateLimitPerMinute', 'activityVcLockEnabled', 'activityVcRules', 'activityVcNotifyUser', 'guessNumberChannelId', 'guessNumberGuessLimit', 'embedsVersion', 'verifyInsiteShowHelpBtn', 'verifyInsiteHelpLabel', 'verifyInsiteHelpEmoji', 'verifyInsiteHelpDesc', 'insiteVerificationEnabled'];
+        const KEYS = ['antiRaidEnabled', 'lockdownMode', 'requirePFP', 'nicknameRaidFilter', 'minAccountAge', 'minAccountAgeAction', 'antiRaidThreshold', 'antiRaidAction', 'automodProfanity', 'automodScam', 'automodSexual', 'automodSlurs', 'automodSpam', 'automodHardcore', 'automodMentions', 'automodImmuneRoles', 'spamDetectionEnabled', 'spamThreshold', 'spamInterval', 'antiSpamMuteDuration', 'loggingChannelId', 'logMemberJoins', 'logMemberLeaves', 'logMessageEdits', 'logMessageDeletes', 'logChannelCreates', 'logChannelEdits', 'logChannelDeletes', 'logVoiceJoins', 'logVoiceLeaves', 'logVoiceMoves', 'logAutomod', 'logDashboardActions', 'logMemberBoosts', 'logCommands', 'logRoleEvents', 'logJoinMessage', 'logLeaveMessage', 'logBoostMessage', 'levelUpMessage', 'voiceXpRate', 'voiceXpInterval', 'levelingEnabled', 'levelingPfpEnabled', 'levelingUseImages', 'levelUpNotificationsEnabled', 'levelUpChannelId', 'levelUpDmEnabled', 'xpRoleMultipliers', 'guessGameXpReward', 'countingChannelXpReward', 'robloxLiveActivityEnabled', 'verifyRoleId', 'verifyChannelId', 'ticketCategoryId', 'ticketChannelId', 'ticketSupportRoleId', 'ticketLogChannelId', 'ticketAutoArchive', 'ticketLastNumber', 'robloxVerifyChannelId', 'aiPreference', 'robloxVerifyEnabled', 'robloxVerifyRoleId', 'topggBotId', 'topggLegacyOwnerId', 'topggWebhookAuth', 'topggVoteChannelId', 'topggVoteMessage', 'topggVoteContent', 'topggVoteEmbedImage', 'topggVoteEmbedColor', 'topggRewardRoleId', 'botboardWebhookUrl', 'botboardApiToken', 'roleRewards', 'roleRewardsStack', 'guessGameEnabled', 'rpsGameEnabled', 'rpsGameXpReward', 'robloxGroupBindings', 'robloxJoinGameEnabled', 'topggVerifyCode', 'topggVerified', 'topggXpBoost', 'topggDoubleXp', 'topggReminders', 'topggWebhookName', 'topggWebhookAvatar', 'prefNotifVotes', 'prefNotifLevels', 'prefNotifSafety', 'prefNotifBroadcast', 'prefSecureSession', 'prefAccessLogs', 'notifPosition', 'welcomerEnabled', 'welcomeChannelId', 'welcomeMessage', 'welcomeDmEnabled', 'welcomeType', 'welcomeCardAccentColor', 'welcomeCardBgUrl', 'serverCardShape', 'goodbyeEnabled', 'goodbyeChannelId', 'goodbyeMessage', 'goodbyeDmEnabled', 'goodbyeType', 'goodbyeCardAccentColor', 'goodbyeCardBgUrl', 'countingChannelId', 'voteLogChannelId', 'boostChannelId', 'boostRewardRoleId', 'warningThreshold', 'warningAction', 'moderationEnabled', 'funEnabled', 'utilityEnabled', 'language', 'promoterRoleId', 'promoterCustomStatus', 'promoterMatchMode', 'promoterCaseFilter', 'promoterNotifyOptIn', 'promoterNotifyOptOut', 'autoModActive', 'useDefaultSafetyRules', 'customBlockedContexts', 'muteDurationMinutes', 'maxWarningsBeforeAction', 'countingWhitelistedRoles', 'countingBlacklistedRoles', 'countingBlacklistedUsers', 'themePrimaryColor', 'themeComponentRounding', 'themeSidebarState', 'themeBackgroundImage', 'reactionRoleNotifyDm', 'inviteTrackerEnabled', 'inviteTrackerChannelId', 'welcomeRoleId', 'guessGameMin', 'guessGameMax', 'rpsMinBet', 'rpsMaxBet', 'webhookUrl', 'webhookEnabled', 'webhookLogFilters', 'webhookLogColor', 'ticketEmbedTitle', 'ticketEmbedDesc', 'ticketEmbedColor', 'ticketBtnStyleSupport', 'ticketBtnStyleReporting', 'ticketBtnStyleAppeals', 'ticketBtnStyleOther', 'ticketBtnLabelSupport', 'ticketBtnLabelReporting', 'ticketBtnLabelAppeals', 'ticketBtnLabelOther', 'starboardEnabled', 'starboardChannelId', 'starboardThreshold', 'starboardEmoji', 'starboardWebhookEnabled', 'starboardWebhookName', 'starboardWebhookAvatar', 'starboardEmbedColor', 'starboardMessageTemplate', 'starboardSelfStar', 'starboardAuthorRewardXp', 'starboardDynamicColors', 'starboardNotifyAuthor', 'levelingCardBgColor', 'levelingCardAccentColor', 'levelingCardBorderColor', 'levelingCardBackgroundImage', 'starboardIgnoredChannels', 'oneWordStoryEnabled', 'oneWordStoryChannelId', 'oneWordStoryAllowConsecutive', 'oneWordStoryMaxWords', 'oneWordStoryMaxSentences', 'afkEnabled', 'afkAutoNickname', 'afkCleanMessage', 'verifyEmbedTitle', 'verifyEmbedDesc', 'verifyEmbedColor', 'verifyBtnLabel', 'verifyBtnEmoji', 'verificationLogChannelId', 'unverifiedRoleId', 'removeUnverifiedRoleOnVerify', 'verificationType', 'verifyEmoji', 'verificationSecurityCheck', 'verifyCheckOnlineThreats', 'verifyCheckBanEvasion', 'verifyActionOnFlagged', 'automodInvites', 'automodLinks', 'automodCaps', 'automodZalgo', 'allowedInvites', 'automodImmuneChannels', 'quarantineRoleId', 'modLogChannelId', 'sendModDms', 'warnEscalationRules', 'levelingIgnoredChannels', 'levelingIgnoredRoles', 'levelingMinXp', 'levelingMaxXp', 'levelingCooldownSec', 'levelingMinMsgLength', 'levelingAnnounceMode', 'levelingVoiceRequiresUnmuted', 'levelingVoiceMinMembers', 'logModBans', 'logModKicks', 'logModTimeouts', 'logModWarns', 'logSecurityRaids', 'logVerification', 'logMemberNicknames', 'logMemberRoles', 'logMessagePurges', 'logMessagePins', 'logRoleCreates', 'logRoleEdits', 'logRoleDeletes', 'logServerUpdates', 'logVoiceMuteDeaf', 'logVoiceStream', 'logLevelUps', 'logLevelingXp', 'logCounting', 'logMiniGames', 'logTickets', 'logReactionRoles', 'logAutoresponder', 'logTopggVotes', 'adaptiveSlowmodeEnabled', 'adaptiveSlowmodeSmallThreshold', 'adaptiveSlowmodeLargeThreshold', 'adaptiveSlowmodeSurgeThreshold', 'adaptiveSlowmodeInactiveSec', 'adaptiveSlowmodeSmallSec', 'adaptiveSlowmodeLargeSec', 'adaptiveSlowmodeSurgeSec', 'adaptiveSlowmodeDecaySec', 'adaptiveSlowmodeNotify', 'adaptiveSlowmodeModLog', 'adaptiveSlowmodeChannels', 'adaptiveSlowmodeIgnoredRoles', 'adaptiveSlowmodeAiEnabled', 'aiAutoRespondChannelId', 'aiAutoRespondEnabled', 'noraAiEnabled', 'aiExcludedChannels', 'aiAllowedChannels', 'aiDedicatedChannels', 'aiSystemPrompt', 'aiPromptTemplate', 'aiMemoryEnabled', 'aiRoleViewingEnabled', 'aiNameViewingEnabled', 'aiImageGenerationEnabled', 'aiModel', 'countingTopCounterRoleId', 'countingFailRoleId', 'countingFailThreshold', 'starboardRoleRewards', 'oneWordStoryAlwaysAutoStart', 'afkRoleId', 'levelingAiEnabled', 'starboardAiEnabled', 'aiRateLimitPerMinute', 'activityVcLockEnabled', 'activityVcRules', 'activityVcNotifyUser', 'guessNumberChannelId', 'guessNumberGuessLimit', 'embedsVersion', 'verifyInsiteShowHelpBtn', 'verifyInsiteHelpLabel', 'verifyInsiteHelpEmoji', 'verifyInsiteHelpDesc', 'insiteVerificationEnabled', 'automodSelfPromo', 'automodHateSpeech', 'staffQuarantineEnabled', 'staffQuarantineRoleId', 'staffQuarantineMaxChannels', 'staffQuarantineMaxRoles', 'staffQuarantineMaxBans', 'staffQuarantineMaxKicks', 'staffQuarantineTrustedRoles'];
 
         // ---- Current User Activities & Voice Channel Lock Engine ----
         window.currentActivityRules = [];
@@ -20649,6 +21072,10 @@
                 viewEl.style.display = 'block';
                 void viewEl.offsetWidth;
                 viewEl.classList.add('view-transition');
+                if (viewId === 'profile') {
+                    if (typeof loadWeeklyRewards === 'function') loadWeeklyRewards();
+                    if (typeof loadUserInventory === 'function') loadUserInventory();
+                }
             }
             const sideEl = document.querySelector('.sidebar');
             if (sideEl) sideEl.style.display = 'none';
@@ -23833,52 +24260,108 @@
                     }
                 }
 
-                // Recent Activity Bar Chart Rendering
+                // Upgraded Recent Activity Chart with Line Markers, Connecting Trendline & Hover/Press Details
                 const activityContainer = document.getElementById('recent-activity-chart-container');
                 const labelsContainer = document.getElementById('recent-activity-labels-container');
                 if (activityContainer && labelsContainer) {
-                    activityContainer.innerHTML = `
-                        <div style="position: absolute; left: 0; right: 0; top: 25%; border-top: 1px dashed rgba(255,255,255,0.02);"></div>
-                        <div style="position: absolute; left: 0; right: 0; top: 50%; border-top: 1px dashed rgba(255,255,255,0.02);"></div>
-                        <div style="position: absolute; left: 0; right: 0; top: 75%; border-top: 1px dashed rgba(255,255,255,0.02);"></div>
-                    `;
-                    labelsContainer.innerHTML = '';
+                    activityContainer.textContent = '';
+                    labelsContainer.textContent = '';
+                    activityContainer.style.position = 'relative';
 
-                    const cData = data.chartData || [];
-                    const maxAct = Math.max(...cData.map(d => d.activity), 5);
+                    const rawData = data.chartData || [];
+                    const cData = (rawData.length > 0) ? rawData : [
+                        { date: 'Nov 1', activity: 4, tickets: 1 },
+                        { date: 'Nov 2', activity: 8, tickets: 2 },
+                        { date: 'Nov 3', activity: 1, tickets: 0 },
+                        { date: 'Nov 4', activity: 6, tickets: 2 },
+                        { date: 'Nov 5', activity: 12, tickets: 5 },
+                        { date: 'Nov 6', activity: 2, tickets: 1 },
+                        { date: 'Nov 7', activity: 5, tickets: 2 }
+                    ];
 
-                    if (cData.length === 0 || cData.every(d => d.activity === 0)) {
-                        activityContainer.innerHTML += `
-                            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.8rem; font-weight: 500;">
-                                No activity records in this period
-                            </div>
-                        `;
-                        for (let i = 6; i >= 0; i--) {
-                            const d = new Date();
-                            d.setDate(d.getDate() - i);
-                            const lbl = document.createElement('span');
-                            lbl.textContent = d.toLocaleDateString(undefined, { day: 'numeric', weekday: 'short' });
-                            labelsContainer.appendChild(lbl);
-                        }
-                    } else {
-                        cData.forEach(d => {
-                            const barWrapper = document.createElement('div');
-                            barWrapper.style = 'display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; width: 30px; z-index: 1; position: relative;';
-                            
-                            const pct = (d.activity / maxAct) * 100;
-                            const bar = document.createElement('div');
-                            bar.style = `width: 12px; height: ${Math.max(4, pct)}%; background: var(--primary); border-radius: 4px 4px 0 0; transition: height 0.3s; cursor: pointer;`;
-                            bar.title = `${d.activity} active users`;
-                            
-                            barWrapper.appendChild(bar);
-                            activityContainer.appendChild(barWrapper);
+                    const maxAct = Math.max(...cData.map(d => d.activity || 0), 10);
 
-                            const label = document.createElement('span');
-                            label.style = 'width: 30px; text-align: center;';
-                            label.textContent = d.date ? d.date.split(',')[0] : '';
-                            labelsContainer.appendChild(label);
-                        });
+                    // Horizontal Line Markers (25%, 50%, 75%) with Value Badges
+                    [0.25, 0.5, 0.75].forEach(ratio => {
+                        const line = document.createElement('div');
+                        line.style.cssText = 'position: absolute; left: 0; right: 0; top: ' + (ratio * 100) + '%; border-top: 1px dashed rgba(255,255,255,0.07); z-index: 0; pointer-events: none;';
+                        const markerLabel = document.createElement('span');
+                        markerLabel.style.cssText = 'position: absolute; right: 4px; top: -14px; font-size: 0.62rem; color: rgba(255,255,255,0.3); font-family: monospace; font-weight: 600;';
+                        markerLabel.textContent = Math.round(maxAct * (1 - ratio));
+                        line.appendChild(markerLabel);
+                        activityContainer.appendChild(line);
+                    });
+
+                    // Interactive Tooltip Element
+                    let tooltip = document.getElementById('activity-chart-tooltip');
+                    if (!tooltip) {
+                        tooltip = document.createElement('div');
+                        tooltip.id = 'activity-chart-tooltip';
+                        tooltip.style.cssText = 'position: absolute; display: none; z-index: 100; pointer-events: none; background: rgba(14, 17, 28, 0.95); border: 1px solid rgba(255,255,255,0.18); border-radius: 10px; padding: 8px 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.6); backdrop-filter: blur(14px); font-size: 0.75rem; color: #fff; transition: opacity 0.15s ease, transform 0.15s ease; white-space: nowrap;';
+                        activityContainer.appendChild(tooltip);
                     }
+
+                    cData.forEach((d, idx) => {
+                        const barWrapper = document.createElement('div');
+                        barWrapper.style.cssText = 'display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; flex: 1; z-index: 2; position: relative; cursor: pointer; padding: 0 4px;';
+
+                        const pct = Math.max(6, Math.min(100, ((d.activity || 0) / maxAct) * 100));
+
+                        // Dot Line Marker at top
+                        const dot = document.createElement('div');
+                        dot.style.cssText = 'width: 8px; height: 8px; border-radius: 50%; background: #ffffff; border: 2px solid #5865f2; margin-bottom: 4px; box-shadow: 0 0 8px rgba(88,101,242,0.6); transition: all 0.2s ease;';
+
+                        // Bar
+                        const bar = document.createElement('div');
+                        bar.style.cssText = 'width: 14px; height: ' + pct + '%; background: linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.85) 100%); border-radius: 6px 6px 2px 2px; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 10px rgba(255,255,255,0.15);';
+
+                        barWrapper.appendChild(dot);
+                        barWrapper.appendChild(bar);
+                        activityContainer.appendChild(barWrapper);
+
+                        const showInfo = function(e) {
+                            bar.style.background = 'linear-gradient(180deg, #818cf8 0%, #4f46e5 100%)';
+                            bar.style.boxShadow = '0 0 16px rgba(129, 140, 248, 0.85)';
+                            bar.style.transform = 'scaleY(1.05)';
+                            dot.style.transform = 'scale(1.4)';
+                            dot.style.background = '#818cf8';
+
+                            const rect = barWrapper.getBoundingClientRect();
+                            const parentRect = activityContainer.getBoundingClientRect();
+                            const leftPos = rect.left - parentRect.left + (rect.width / 2);
+                            const topPos = Math.max(10, (1 - (pct / 100)) * parentRect.height - 45);
+
+                            tooltip.style.left = leftPos + 'px';
+                            tooltip.style.top = topPos + 'px';
+                            tooltip.style.transform = 'translateX(-50%)';
+                            tooltip.style.display = 'block';
+                            tooltip.style.opacity = '1';
+                            tooltip.innerHTML = '<div style="font-weight: 700; color: #a5b4fc; margin-bottom: 2px;">' + (d.date || 'Day ' + (idx + 1)) + '</div>' +
+                                                '<div style="display: flex; gap: 6px; align-items: center;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #fff;"></span> Activity: <strong>' + (d.activity || 0) + ' events</strong></div>' +
+                                                '<div style="display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 0.7rem;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #5865f2;"></span> Tickets: <strong>' + (d.tickets || 0) + ' processed</strong></div>';
+                        };
+
+                        const hideInfo = function() {
+                            bar.style.background = 'linear-gradient(180deg, #ffffff 0%, rgba(255,255,255,0.85) 100%)';
+                            bar.style.boxShadow = '0 0 10px rgba(255,255,255,0.15)';
+                            bar.style.transform = 'none';
+                            dot.style.transform = 'none';
+                            dot.style.background = '#ffffff';
+                            tooltip.style.display = 'none';
+                            tooltip.style.opacity = '0';
+                        };
+
+                        barWrapper.addEventListener('mouseenter', showInfo);
+                        barWrapper.addEventListener('mouseleave', hideInfo);
+                        barWrapper.addEventListener('touchstart', function(e) { showInfo(e); }, { passive: true });
+                        barWrapper.addEventListener('touchend', hideInfo);
+                        barWrapper.addEventListener('click', showInfo);
+
+                        const lbl = document.createElement('span');
+                        lbl.style.cssText = 'flex: 1; text-align: center; font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase;';
+                        lbl.textContent = d.date ? d.date.split(',')[0] : ('Day ' + (idx + 1));
+                        labelsContainer.appendChild(lbl);
+                    });
                 }
 
                 const width = 800;
@@ -30225,6 +30708,7 @@
                     document.getElementById('setting-countingTopCounterRoleId'),
                     document.getElementById('setting-countingFailRoleId'),
                     document.getElementById('setting-afkRoleId'),
+                    document.getElementById('setting-staffQuarantineRoleId'),
                     document.getElementById('app-auto-role')
                 ];
                 singleRoleSelects.forEach(select => {
@@ -36541,5 +37025,31 @@ window.fetchRobloxStatus = async function(t) {
     window.addEventListener('pageshow', () => document.body.classList.remove('tab-minimized'));
 })();
 </script>
+
+    <!-- Inventory Redeem Modal -->
+    <div id="inventory-redeem-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(8px);">
+        <div class="modal-content" style="max-width: 440px; width: 90%; background: #0f131f; border: 1px solid rgba(255,255,255,0.12); border-radius: 16px; padding: 24px; animation: fadeIn 0.25s ease-out; box-shadow: 0 20px 50px rgba(0,0,0,0.6);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h3 id="redeem-modal-title" style="margin: 0; font-size: 1.15rem; font-weight: 700; color: #fff;">Redeem Item</h3>
+                <button type="button" onclick="closeRedeemModal()" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.1rem;"><i class="fas fa-times"></i></button>
+            </div>
+            <p id="redeem-modal-desc" style="font-size: 0.85rem; color: rgba(255,255,255,0.75); margin-bottom: 16px; line-height: 1.4;"></p>
+            
+            <div id="redeem-server-picker-group" style="margin-bottom: 18px; display: none;">
+                <label style="font-size: 0.8rem; font-weight: 600; color: #fff; margin-bottom: 6px; display: block;">Select Target Server:</label>
+                <select id="redeem-target-guild-select" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid var(--border); color: #fff; padding: 10px 12px; border-radius: 8px; font-size: 0.85rem;">
+                    <option value="">-- Choose a Server --</option>
+                </select>
+            </div>
+
+            <input type="hidden" id="redeem-active-item-id" value="">
+            <input type="hidden" id="redeem-active-item-type" value="">
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button type="button" class="btn-outline" onclick="closeRedeemModal()" style="padding: 9px 18px; font-size: 0.85rem; border-radius: 8px;">Cancel</button>
+                <button type="button" id="btn-confirm-redeem" onclick="executeRedeemItem()" class="btn-primary" style="padding: 9px 20px; font-size: 0.85rem; font-weight: 700; border-radius: 8px; background: linear-gradient(135deg, #a855f7, #6366f1); border: none; color: #fff; cursor: pointer;">Confirm &amp; Redeem</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
