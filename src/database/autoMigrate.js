@@ -95,6 +95,15 @@ async function autoMigrateDatabase() {
         }
         
         console.log('[DB Auto-Migrate] Schema verification and migration complete.');
+        
+        try {
+            const { applyEarlyAdopterPremium } = require('../utils/premiumManager');
+            if (typeof applyEarlyAdopterPremium === 'function') {
+                await applyEarlyAdopterPremium();
+            }
+        } catch (premErr) {
+            console.warn('[DB Auto-Migrate] Early adopter premium enforcer warning:', premErr.message);
+        }
     } catch (err) {
         console.error('[DB Auto-Migrate] Migration failed:', err.message);
     }

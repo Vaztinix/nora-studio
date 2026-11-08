@@ -3,20 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nora Admin Desk | Security & Operations</title>
+    <title>Nora Studio | Owner Operations & Intelligence Desk</title>
+    <meta name="description" content="Central administrative desk for Nora Studio infrastructure, server telemetry, In-Site security passes, AI quota management, and global incident response.">
     <link rel="icon" type="image/png" href="/nora.png">
     
-    <!-- Modern Typography & Icons (matching main site) -->
+    <!-- Modern Typography & Icons (matching /docs and /index) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="/nora-sentinel.js?v=2.2" defer></script>
     
     <style>
         :root {
-            --bg-base: #03050a;
-            --bg-surface: rgba(14, 16, 26, 0.75);
-            --bg-surface-elevated: rgba(22, 24, 38, 0.88);
+            --bg-base: #08090E;
+            --bg-surface: rgba(15, 17, 26, 0.85);
+            --bg-surface-elevated: rgba(22, 25, 38, 0.92);
             --border-subtle: rgba(255, 255, 255, 0.08);
             --border-hover: rgba(255, 255, 255, 0.18);
             --border-glow: rgba(88, 101, 242, 0.4);
@@ -40,16 +43,15 @@
             
             --primary: #5865F2;
             --primary-hover: #4752C4;
-            --site-bg: #03050a;
             --muted: #9CA3AF;
             --text: #F3F4F6;
             
             --radius-sm: 8px;
             --radius-md: 14px;
-            --radius-lg: 20px;
+            --radius-lg: 22px;
             --radius-full: 9999px;
             
-            --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-smooth: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         * {
@@ -63,15 +65,15 @@
         }
 
         body {
-            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-color: var(--bg-base);
             color: var(--text-main);
             min-height: 100vh;
-            overflow-x: hidden;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
             background-image: 
-                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.18) 0%, transparent 65%),
+                radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.16) 0%, transparent 65%),
                 radial-gradient(ellipse 60% 40% at 100% 100%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
                 radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
             background-size: 100% 100%, 100% 100%, 28px 28px;
@@ -80,280 +82,92 @@
         }
 
         /* Custom Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(3, 5, 10, 0.6);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: var(--radius-full);
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: rgba(88, 101, 242, 0.5);
-        }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(8, 9, 14, 0.8); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.14); border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(88, 101, 242, 0.6); }
 
         /* Lock Screen State */
         .lock-container {
             position: fixed;
             inset: 0;
-            background: radial-gradient(circle at 50% 40%, #0d0f1a 0%, #03050a 100%);
-            z-index: 1000;
+            z-index: 9999;
+            background: rgba(8, 9, 14, 0.95);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 24px;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
         }
-
-        .lock-container::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-image: 
-                radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-            background-size: 28px 28px;
-            mask-image: radial-gradient(circle, black 40%, transparent 80%);
-            -webkit-mask-image: radial-gradient(circle, black 40%, transparent 80%);
-            pointer-events: none;
-        }
-
         .lock-card {
-            background: var(--bg-surface);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            background: var(--bg-surface-elevated);
             border: 1px solid var(--border-subtle);
-            padding: 56px 40px;
-            border-radius: 28px;
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 440px;
+            padding: 38px 32px;
             text-align: center;
-            max-width: 480px;
-            width: 100%;
-            box-shadow: 
-                0 30px 70px rgba(0, 0, 0, 0.8),
-                0 0 80px rgba(88, 101, 242, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            transition: var(--transition-smooth);
-            position: relative;
-            overflow: hidden;
-            animation: card-appear 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-            z-index: 2;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 40px rgba(88, 101, 242, 0.15);
         }
 
-        @keyframes card-appear {
-            0% { transform: translateY(20px) scale(0.96); opacity: 0; }
-            100% { transform: translateY(0) scale(1); opacity: 1; }
-        }
-
-        .lock-card::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -50%;
-            width: 200%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, rgba(88, 101, 242, 0.5), transparent);
-            animation: sweep 4s infinite linear;
-        }
-
-        @keyframes sweep {
-            0% { transform: translateX(-50%); }
-            100% { transform: translateX(50%); }
-        }
-
-        .lock-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(88, 101, 242, 0.35);
-            box-shadow: 
-                0 35px 85px rgba(0, 0, 0, 0.9),
-                0 0 100px rgba(88, 101, 242, 0.18),
-                inset 0 1px 0 rgba(255, 255, 255, 0.15);
-        }
-
-        .lock-icon-container {
-            position: relative;
-            display: inline-flex;
-            justify-content: center;
-            align-items: center;
-            width: 86px;
-            height: 86px;
-            border-radius: 24px;
-            background: rgba(88, 101, 242, 0.1);
-            margin-bottom: 24px;
-            border: 1px solid rgba(88, 101, 242, 0.25);
-            box-shadow: 0 0 30px rgba(88, 101, 242, 0.2);
-            transition: var(--transition-smooth);
-        }
-
-        .lock-card:hover .lock-icon-container {
-            transform: scale(1.08) rotate(4deg);
-            border-color: var(--blurple);
-        }
-
-        .lock-icon-container i {
-            font-size: 2.2rem;
-            color: var(--blurple);
-            filter: drop-shadow(0 0 12px rgba(88, 101, 242, 0.6));
-        }
-
-        .lock-card h1 {
-            font-size: 1.85rem;
-            font-weight: 800;
-            margin-bottom: 12px;
-            letter-spacing: -0.02em;
-            color: #FFFFFF;
-            background: linear-gradient(135deg, #ffffff 60%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .lock-card p {
-            color: var(--text-muted);
-            font-size: 0.92rem;
-            line-height: 1.6;
-            margin-bottom: 32px;
-            padding: 0 8px;
-        }
-
-        .btn-discord {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            background: linear-gradient(135deg, #5865F2, #4752c4);
-            color: white;
-            padding: 15px 32px;
-            border-radius: var(--radius-md);
-            font-weight: 700;
-            text-decoration: none;
-            transition: var(--transition-smooth);
-            box-shadow: 0 8px 24px rgba(88, 101, 242, 0.35);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            cursor: pointer;
-            font-size: 0.95rem;
-            width: 100%;
-        }
-
-        .btn-discord:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 32px rgba(88, 101, 242, 0.55);
-            border-color: rgba(255, 255, 255, 0.3);
-            filter: brightness(1.08);
-        }
-
-        /* ===== STICKY ADMIN NAVBAR ===== */
-        .admin-sticky-nav {
+        /* Sticky Header */
+        .admin-nav {
             position: sticky;
             top: 0;
-            z-index: 900;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            background: rgba(7, 8, 12, 0.85);
+            z-index: 100;
+            background: rgba(10, 12, 19, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-bottom: 1px solid var(--border-subtle);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            transition: var(--transition-smooth);
-            margin-bottom: 32px;
-        }
-
-        .admin-nav-inner {
-            max-width: 1440px;
-            margin: 0 auto;
-            padding: 0 24px;
-            height: 72px;
+            padding: 12px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 16px;
         }
-
         .admin-brand {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
             text-decoration: none;
+            color: #fff;
         }
-
-        .admin-brand-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 11px;
-            box-shadow: 0 0 20px rgba(88, 101, 242, 0.4);
-            border: 1px solid rgba(255, 255, 255, 0.12);
+        .admin-brand img {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            box-shadow: 0 0 16px var(--blurple-glow);
         }
-
         .admin-brand-title {
-            font-size: 1.15rem;
+            font-size: 1.05rem;
             font-weight: 800;
-            color: #FFFFFF;
-            letter-spacing: -0.02em;
+            letter-spacing: -0.01em;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
-
-        .admin-pill-badge {
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            padding: 3px 9px;
+        .admin-badge {
+            font-size: 0.65rem;
+            font-weight: 800;
+            padding: 2px 8px;
             border-radius: var(--radius-full);
             background: rgba(88, 101, 242, 0.15);
-            border: 1px solid rgba(88, 101, 242, 0.35);
-            color: #818CF8;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
+            color: #818cf8;
+            border: 1px solid rgba(88, 101, 242, 0.3);
+            text-transform: uppercase;
         }
-
-        .admin-brand-subtitle {
-            font-size: 0.74rem;
-            color: var(--text-muted);
-            margin-top: 1px;
-        }
-
-        .admin-nav-actions {
+        .nav-actions {
             display: flex;
             align-items: center;
             gap: 10px;
             flex-wrap: wrap;
         }
-
-        .system-status-indicator {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            color: #34D399;
-            font-size: 0.78rem;
-            font-weight: 700;
-            padding: 6px 14px;
-            border-radius: var(--radius-full);
-        }
-
-        .pulse-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #10B981;
-            box-shadow: 0 0 10px #10B981;
-            animation: pulse-live 2s infinite;
-        }
-
-        @keyframes pulse-live {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
-        }
-
-        .nav-ghost-btn {
-            background: var(--bg-surface-elevated);
+        .btn-nav-ghost {
+            background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--border-subtle);
-            color: #E2E8F0;
-            padding: 8px 16px;
+            color: var(--text-muted);
+            padding: 7px 14px;
             border-radius: var(--radius-full);
             text-decoration: none;
             font-weight: 600;
@@ -361,825 +175,1013 @@
             transition: var(--transition-smooth);
             display: inline-flex;
             align-items: center;
-            gap: 8px;
+            gap: 6px;
         }
-        .nav-ghost-btn:hover {
-            border-color: var(--border-hover);
+        .btn-nav-ghost:hover {
+            color: #fff;
             background: rgba(255, 255, 255, 0.08);
-            color: #FFFFFF;
-            transform: translateY(-1px);
+            border-color: var(--border-hover);
         }
-
-        .logout-btn, .logout {
-            background: rgba(244, 63, 94, 0.1);
-            border: 1px solid rgba(244, 63, 94, 0.25);
-            color: #F87171;
-            padding: 8px 18px;
+        .btn-nav-logout {
+            background: rgba(244, 63, 94, 0.12);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: #fca5a5;
+            padding: 7px 16px;
             border-radius: var(--radius-full);
-            cursor: pointer;
-            transition: var(--transition-smooth);
             font-weight: 700;
             font-size: 0.82rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            text-decoration: none;
+            gap: 6px;
         }
-        .logout-btn:hover, .logout:hover {
-            background: rgba(244, 63, 94, 0.2);
-            color: #FFFFFF;
+        .btn-nav-logout:hover {
+            background: rgba(244, 63, 94, 0.22);
+            color: #fff;
             border-color: rgba(244, 63, 94, 0.5);
-            transform: translateY(-1px);
-            box-shadow: 0 0 15px rgba(244, 63, 94, 0.25);
         }
 
-        /* ===== WORKSPACE LAYOUT ===== */
-        .admin-layout {
-            display: none;
-            width: 100%;
-            max-width: 1440px;
-            margin: 0 auto;
-            padding: 0 24px 60px;
-            opacity: 0;
-            transition: opacity 0.5s ease;
-            box-sizing: border-box;
-        }
-
-        .admin-grid-top {
+        /* 2-Column Docs Layout */
+        .owner-layout {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
-            gap: 24px;
-            margin-bottom: 32px;
+            grid-template-columns: 270px minmax(0, 1fr);
+            gap: 28px;
+            max-width: 1680px;
+            margin: 0 auto;
+            padding: 24px 28px 80px 28px;
+            width: 100%;
         }
 
-        .span-full {
-            grid-column: 1 / -1;
+        /* Sidebar Navigation */
+        .owner-sidebar {
+            position: sticky;
+            top: 76px;
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            padding-right: 8px;
         }
-
-        /* ===== MODERN GLASS CARDS ===== */
-        .card {
-            background: var(--bg-surface);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid var(--border-subtle);
-            border-radius: var(--radius-lg);
-            padding: 28px 24px;
-            box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
-            transition: var(--transition-smooth);
+        .search-box {
             position: relative;
+            width: 100%;
+        }
+        .search-box input {
+            width: 100%;
+            padding: 9px 12px 9px 36px;
+            background: var(--bg-surface-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: #FFFFFF;
+            font-size: 0.84rem;
+            outline: none;
+            transition: var(--transition-smooth);
+        }
+        .search-box input:focus {
+            border-color: var(--blurple);
+            box-shadow: 0 0 16px var(--blurple-glow);
+        }
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            font-size: 0.85rem;
         }
 
-        .card:hover {
-            border-color: var(--border-hover);
-            box-shadow: 0 25px 55px rgba(0, 0, 0, 0.55), 0 0 35px rgba(88, 101, 242, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        .side-nav-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
         }
-
-        .card h3 {
-            font-size: 1.18rem;
+        .side-nav-title {
+            font-size: 0.72rem;
             font-weight: 800;
-            margin-bottom: 20px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 8px 12px 4px 12px;
+        }
+        .side-nav-link {
             display: flex;
             align-items: center;
-            gap: 12px;
-            letter-spacing: -0.01em;
-            color: #FFFFFF;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 9px 12px;
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.84rem;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: var(--transition-smooth);
+            background: transparent;
+        }
+        .side-nav-link:hover {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+        .side-nav-link.active {
+            color: #fff;
+            background: rgba(88, 101, 242, 0.12);
+            border-color: rgba(88, 101, 242, 0.35);
+            box-shadow: 0 2px 10px rgba(88, 101, 242, 0.15);
+        }
+        .side-nav-link i {
+            width: 18px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #818cf8;
+        }
+        .side-nav-badge {
+            font-size: 0.7rem;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.07);
+            padding: 2px 7px;
+            border-radius: 999px;
+            color: var(--text-muted);
         }
 
+        /* Glass Cards & Containers */
+        .glass-panel {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 22px;
+            position: relative;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: var(--transition-smooth);
+        }
+        .glass-panel:hover {
+            border-color: var(--border-hover);
+        }
+        .glass-panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .glass-panel-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
         .card-icon-badge {
-            width: 38px;
-            height: 38px;
-            border-radius: 11px;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.05rem;
+            font-size: 0.95rem;
             flex-shrink: 0;
         }
 
-        /* ===== FORM INPUTS & BUTTONS ===== */
-        .form-group {
-            margin-bottom: 20px;
+        /* Stats Ribbon Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 22px;
         }
-
-        .form-group label {
-            display: block;
-            font-size: 0.76rem;
-            font-weight: 700;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-        }
-
-        .form-group input, .form-group select, .form-group textarea,
-        input[type="text"], input[type="number"], select, textarea {
-            width: 100%;
-            background: rgba(8, 10, 18, 0.7);
+        .stat-card {
+            background: var(--bg-surface-elevated);
             border: 1px solid var(--border-subtle);
             border-radius: var(--radius-sm);
-            padding: 12px 16px;
-            color: var(--text-main);
-            font-family: inherit;
-            font-size: 0.92rem;
-            transition: var(--transition-smooth);
-            box-sizing: border-box;
+            padding: 14px 18px;
+            position: relative;
+        }
+        .stat-card-title {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .stat-card-value {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: #fff;
+            margin-top: 4px;
+            letter-spacing: -0.02em;
         }
 
-        .form-group input:focus, .form-group select:focus, .form-group textarea:focus,
-        input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+        /* Form elements */
+        .form-group {
+            margin-bottom: 14px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            box-sizing: border-box;
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            padding: 9px 12px;
+            color: #fff;
+            font-size: 0.84rem;
+            font-family: inherit;
             outline: none;
-            border-color: rgba(88, 101, 242, 0.65);
-            box-shadow: 0 0 0 3px rgba(88, 101, 242, 0.2), 0 4px 16px rgba(88, 101, 242, 0.12);
-            background: rgba(12, 14, 24, 0.92);
+            transition: var(--transition-smooth);
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--blurple);
+            box-shadow: 0 0 12px var(--blurple-glow);
         }
 
         .btn-action {
-            width: 100%;
-            background: linear-gradient(135deg, #5865F2 0%, #4752c4 100%);
+            background: linear-gradient(180deg, #5865F2 0%, #4752C4 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             color: #FFFFFF;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 9px 16px;
             border-radius: var(--radius-sm);
-            padding: 13px 20px;
             font-weight: 700;
-            font-size: 0.92rem;
+            font-size: 0.84rem;
             cursor: pointer;
             transition: var(--transition-smooth);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            box-shadow: 0 4px 16px rgba(88, 101, 242, 0.35);
         }
-
         .btn-action:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(88, 101, 242, 0.55);
-            border-color: rgba(255, 255, 255, 0.25);
-            filter: brightness(1.08);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px var(--blurple-glow);
         }
-
-        .btn-action:active {
-            transform: translateY(0);
-        }
-
         .btn-danger {
-            background: linear-gradient(135deg, #F43F5E 0%, #E11D48 100%) !important;
-            box-shadow: 0 4px 16px rgba(244, 63, 94, 0.35) !important;
-            border-color: rgba(255, 255, 255, 0.15) !important;
-            color: #FFFFFF !important;
+            background: linear-gradient(180deg, #f43f5e 0%, #e11d48 100%);
+            border-color: rgba(244, 63, 94, 0.3);
         }
-
         .btn-danger:hover {
-            box-shadow: 0 8px 25px rgba(244, 63, 94, 0.55) !important;
+            box-shadow: 0 4px 14px rgba(244, 63, 94, 0.35);
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-subtle);
+            color: #fff;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
 
-        /* Status Flags Badges */
-        .badge-info { background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.35); color: #38bdf8; }
-        .badge-degraded { background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.35); color: #f59e0b; }
-        .badge-outage { background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #ef4444; }
-        .badge-maintenance { background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.35); color: #c084fc; }
-
-        /* Dynamic list items override for elevated glass look */
-        [style*="background: rgba(255,255,255,0.02)"] {
-            background: rgba(16, 19, 32, 0.65) !important;
-            border: 1px solid var(--border-subtle) !important;
-            border-radius: var(--radius-md) !important;
-            backdrop-filter: blur(12px) !important;
-            -webkit-backdrop-filter: blur(12px) !important;
-            transition: var(--transition-smooth) !important;
+        /* View switcher */
+        .tab-view {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
         }
-        [style*="background: rgba(255,255,255,0.02)"]:hover {
-            background: rgba(24, 28, 48, 0.85) !important;
-            border-color: rgba(88, 101, 242, 0.35) !important;
-            transform: translateY(-2px) !important;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 16px rgba(88, 101, 242, 0.08) !important;
+        .tab-view.active {
+            display: flex;
+            animation: fadeIn 0.25s ease;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        @media (max-width: 900px) {
-            .admin-grid-top { grid-template-columns: 1fr; }
-            .admin-nav-inner { height: auto; padding: 14px 18px; flex-direction: column; align-items: flex-start; gap: 12px; }
-            .admin-nav-actions { width: 100%; justify-content: space-between; }
-            .admin-layout { padding: 0 14px 40px; }
-            .card { padding: 20px 16px; border-radius: var(--radius-md); }
-            .lock-card { padding: 36px 20px; border-radius: var(--radius-lg); }
+        @media (max-width: 960px) {
+            .owner-layout {
+                grid-template-columns: 1fr;
+            }
+            .owner-sidebar {
+                position: static;
+                height: auto;
+            }
         }
     </style>
 </head>
 <body>
 
-    <!-- Blurred Lock Overlay -->
-    <div id="lock-screen" class="lock-container">
+    <!-- Lock Screen for Unauthenticated Admins -->
+    <div id="lock-screen" class="lock-container" style="display: flex;">
         <div class="lock-card">
-            <div class="lock-icon-container">
-                <i class="fas fa-shield-halved"></i>
-            </div>
-            <h1>Console Access Required</h1>
-            <p>Access is restricted to primary developers and system administrators. Authenticate via Discord to initialize authorization protocols.</p>
-            <button id="discord-login-btn" class="btn-discord">
-                <i class="fab fa-discord"></i> Authenticate with Discord
+            <img src="/nora.png" alt="Nora" style="width: 58px; height: 58px; border-radius: 14px; margin: 0 auto 16px auto; box-shadow: 0 0 24px var(--blurple-glow);">
+            <h2 style="font-size: 1.45rem; font-weight: 800; color: #fff; margin-bottom: 6px;">Nora Owner Operations</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 24px; line-height: 1.5;">Authenticate via authorized Discord developer profile to unlock central operational telemetry and controls.</p>
+            
+            <button id="discord-login-btn" class="btn-action" style="width: 100%; padding: 12px; font-size: 0.92rem;">
+                <i class="fab fa-discord" style="font-size: 1.1rem;"></i> Authenticate with Discord
             </button>
-            <div id="login-error-alert" style="display: none; margin-top: 20px; padding: 12px 16px; background: rgba(244, 63, 94, 0.1); border: 1px solid rgba(244, 63, 94, 0.25); border-radius: 10px; color: #f43f5e; font-size: 0.85rem; text-align: left; line-height: 1.4;"></div>
+
+            <div id="login-error-alert" style="display: none; margin-top: 18px; padding: 10px 14px; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: var(--radius-sm); color: #fca5a5; font-size: 0.8rem;"></div>
         </div>
     </div>
 
-    <!-- Protected Workspace UI -->
-    <div id="admin-workspace" class="admin-layout">
-        <!-- Top Sticky Header -->
-        <header class="admin-sticky-nav">
-            <div class="admin-nav-inner">
-                <div class="admin-brand">
-                    <img src="/nora.png" alt="Nora" class="admin-brand-icon">
-                    <div>
-                        <div class="admin-brand-title">
-                            Nora Studio <span class="admin-pill-badge"><i class="fas fa-shield-halved"></i> ADMIN DESK</span>
-                        </div>
-                        <div class="admin-brand-subtitle">Central Security Operations & Infrastructure Management</div>
+    <!-- Main Admin Workspace Layout -->
+    <div id="admin-workspace" style="display: none; opacity: 0; transition: opacity 0.3s ease;">
+        
+        <!-- Sticky Header Bar -->
+        <header class="admin-nav">
+            <a href="/owner" class="admin-brand">
+                <img src="/nora.png" alt="Nora">
+                <div>
+                    <div class="admin-brand-title">
+                        Nora Studio <span class="admin-badge"><i class="fas fa-shield-halved"></i> Owner Ops</span>
                     </div>
+                    <div style="font-size: 0.72rem; color: var(--text-dim);">Central Security & Infrastructure Hub</div>
                 </div>
-                <div class="admin-nav-actions">
-                    <div class="system-status-indicator">
-                        <span class="pulse-dot"></span>
-                        <span>Core Operational</span>
-                    </div>
-                    <a href="/" class="nav-ghost-btn"><i class="fas fa-globe"></i> Main Site</a>
-                    <a href="/dashboard" class="nav-ghost-btn"><i class="fas fa-columns"></i> Dashboard</a>
-                    <a href="/status" class="nav-ghost-btn"><i class="fas fa-signal"></i> Status</a>
-                    <button class="logout-btn" onclick="performLogout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </a>
+
+            <div class="nav-actions">
+                <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.25); padding: 5px 12px; border-radius: 999px; font-size: 0.76rem; font-weight: 700; color: #34d399;">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></span>
+                    <span>Core Operational</span>
                 </div>
+                <a href="/" class="btn-nav-ghost"><i class="fas fa-globe"></i> Main Site</a>
+                <a href="/docs" class="btn-nav-ghost"><i class="fas fa-book"></i> Docs</a>
+                <a href="/dashboard" class="btn-nav-ghost"><i class="fas fa-columns"></i> Dashboard</a>
+                <a href="/status" class="btn-nav-ghost"><i class="fas fa-signal"></i> Status</a>
+                <button onclick="performLogout()" class="btn-nav-logout"><i class="fas fa-sign-out-alt"></i> Logout</button>
             </div>
         </header>
 
-        <!-- Top Control Panels Grid -->
-        <div class="admin-grid-top">
-
-            <!-- Premium Manager Card -->
-            <div class="card">
-                <h3><span class="card-icon-badge" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #ffd700;"><i class="fas fa-gem"></i></span> Manual Premium Provision</h3>
-                <div class="form-group">
-                    <label>Target Type</label>
-                    <select id="premium-type">
-                        <option value="server">Server (Guild)</option>
-                        <option value="user">User Account</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Target Discord ID</label>
-                    <input type="text" id="premium-id" placeholder="e.g. 1351304498185900184">
-                </div>
-                <div class="form-group">
-                    <label>Action</label>
-                    <div style="display: flex; gap: 10px;">
-                        <button class="btn-action" onclick="managePremium('grant')">Grant Lifetime</button>
-                        <button class="btn-action btn-danger" onclick="managePremium('revoke')">Revoke</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Global Bans Manager Card -->
-            <div class="card">
-                <h3><span class="card-icon-badge" style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--danger);"><i class="fas fa-ban"></i></span> Global Mitigation Desk</h3>
-                <div class="form-group">
-                    <label>Action</label>
-                    <select id="ban-action" onchange="toggleBanDuration()">
-                        <option value="ban">Permanent Blacklist</option>
-                        <option value="temp_ban">Temporary Blacklist</option>
-                        <option value="unban">Revoke Blacklist</option>
-                    </select>
-                </div>
-                <div class="form-group" id="ban-duration-group" style="display: none;">
-                    <label>Blacklist Duration (Hours)</label>
-                    <select id="ban-duration" onchange="toggleBanDurationCustom()" style="width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; color: white;">
-                        <option value="1">1 Hour</option>
-                        <option value="24">24 Hours</option>
-                        <option value="168">7 Days (168 Hours)</option>
-                        <option value="720">30 Days (720 Hours)</option>
-                        <option value="custom">Custom Hours</option>
-                    </select>
-                    <input type="number" id="ban-duration-custom" placeholder="Enter custom hours..." style="display: none; margin-top: 8px; width: 100%; padding: 10px; background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 6px; color: white;">
-                </div>
-                <div class="form-group">
-                    <label>Target User ID</label>
-                    <input type="text" id="ban-user-id" placeholder="e.g. 1214048435632603137">
-                </div>
-                <div class="form-group" id="ban-reason-group">
-                    <label>Reason for Suspension</label>
-                    <input type="text" id="ban-reason" placeholder="e.g. Exploiting or API abuse">
-                </div>
-                <button class="btn-action btn-danger" onclick="executeGlobalBan()">Execute Security Action</button>
-            </div>
-
+        <!-- 2-Column Docs-Style Layout -->
+        <div class="owner-layout">
             
-            <!-- 📡 Shard Gateway & Cluster Host Diagnostics Desk -->
-            <div class="card span-full" style="border-color: rgba(139, 92, 246, 0.35); background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.09) 0%, rgba(13, 16, 27, 0.95) 70%);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; color: #a78bfa;">
-                        <i class="fas fa-network-wired"></i> Shard Gateway & Cluster Host Diagnostics
-                    </h3>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem; background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.4); color: #c4b5fd; width: auto;" onclick="forceShardPresenceReload()">
-                            <i class="fas fa-satellite-dish"></i> Recalculate Shard Status
-                        </button>
-                        <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; width: auto;" onclick="loadSystemDiagnostics()">
-                            <i class="fas fa-sync-alt"></i> Refresh
-                        </button>
-                    </div>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 12px;">
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Shard Routing</div>
-                        <div id="diag-shard-id" style="font-size: 1.15rem; font-weight: 700; color: #a78bfa; margin-top: 4px;">Shard #0</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Gateway Ping</div>
-                        <div id="diag-ping" style="font-size: 1.15rem; font-weight: 700; color: #10b981; margin-top: 4px;">-- ms</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Host RSS Memory</div>
-                        <div id="diag-rss" style="font-size: 1.15rem; font-weight: 700; color: #38bdf8; margin-top: 4px;">-- MB</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">V8 Heap Used</div>
-                        <div id="diag-heap" style="font-size: 1.15rem; font-weight: 700; color: #fbbf24; margin-top: 4px;">-- / -- MB</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Cluster Uptime</div>
-                        <div id="diag-uptime" style="font-size: 1.15rem; font-weight: 700; color: #fff; margin-top: 4px;">--</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 🧠 Gemini AI Engine & Quota Balancing Desk -->
-            <div class="card span-full" style="border-color: rgba(56, 189, 248, 0.25); background: radial-gradient(circle at top right, rgba(56, 189, 248, 0.08) 0%, rgba(15, 15, 17, 0.95) 70%);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; color: #38bdf8;">
-                        <i class="fas fa-brain"></i> Gemini Multi-Pool AI Engine & Quotas
-                    </h3>
-                    <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); color: #38bdf8; width: auto;" onclick="loadAiStats()">
-                        <i class="fas fa-sync-alt"></i> Refresh Telemetry
-                    </button>
-                </div>
-
-                <!-- Stats Grid -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin-bottom: 20px;">
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Active Projects</div>
-                        <div id="ai-active-keys" style="font-size: 1.25rem; font-weight: 700; color: #38bdf8; margin-top: 4px;">-- / --</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Word Headroom</div>
-                        <div id="ai-words-headroom" style="font-size: 1.25rem; font-weight: 700; color: #10b981; margin-top: 4px;">--</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Active Capacity</div>
-                        <div id="ai-rpm-capacity" style="font-size: 1.25rem; font-weight: 700; color: #ffd700; margin-top: 4px;">-- RPM</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 12px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase;">Cooling Down</div>
-                        <div id="ai-cooldown-count" style="font-size: 1.25rem; font-weight: 700; color: #f43f5e; margin-top: 4px;">--</div>
-                    </div>
-                </div>
-
-                <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                    <button class="btn-action" style="background: #38bdf8; color: #000; font-weight: 700; width: auto;" onclick="flushAiCooldowns()">
-                        <i class="fas fa-bolt"></i> Flush & Reset Key Cooldowns
-                    </button>
-                    <button class="btn-action" style="background: rgba(255,255,255,0.08); color: #fff; width: auto;" onclick="testAiLatency()">
-                        <i class="fas fa-vial"></i> Test AI Ping & Latency
-                    </button>
-                    <span id="ai-test-result" style="font-size: 0.82rem; color: #38bdf8; font-weight: 600;"></span>
-                </div>
-            </div>
-
-            <!-- 🪙 Server AI Credit Limits & Controls Desk -->
-            <div class="card span-full" style="border-color: rgba(245, 158, 11, 0.35); background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.08) 0%, rgba(15, 15, 17, 0.96) 70%);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; flex-wrap: wrap; gap: 12px;">
-                    <div>
-                        <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; color: #fbbf24;">
-                            <i class="fas fa-coins"></i> Server AI Credit Controls & Overrides Desk
-                        </h3>
-                        <div style="font-size: 0.82rem; color: var(--muted); margin-top: 4px;">
-                            Monitor server credit depletion, expand daily limits, inject extra balance (exceeding the 1k ceiling), force toggle AI usage, or force instant resets.
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 10px; flex-wrap: wrap; align-items: center;">
-                        <button class="btn-action" style="padding: 7px 15px; font-size: 0.78rem; background: rgba(245, 158, 11, 0.18); border: 1px solid rgba(245, 158, 11, 0.4); color: #fbbf24; width: auto;" onclick="triggerAiRolloverAll()">
-                            <i class="fas fa-sync-alt"></i> Run 00:00 UTC Rollover Now
-                        </button>
-                        <button class="btn-action" style="padding: 7px 15px; font-size: 0.78rem; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); color: #fff; width: auto;" onclick="loadAiCreditsDesk()">
-                            <i class="fas fa-redo"></i> Refresh
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Live Metrics Summary Bar -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px;">
-                    <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(244, 63, 94, 0.35); border-radius: 12px; padding: 14px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Depleted Servers</div>
-                        <div id="ai-credit-depleted-count" style="font-size: 1.45rem; font-weight: 800; color: #f43f5e; margin-top: 4px;">--</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(245, 158, 11, 0.35); border-radius: 12px; padding: 14px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Low Balance (&lt;200)</div>
-                        <div id="ai-credit-low-count" style="font-size: 1.45rem; font-weight: 800; color: #fbbf24; margin-top: 4px;">--</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Tracked Servers</div>
-                        <div id="ai-credit-total-servers" style="font-size: 1.45rem; font-weight: 800; color: #38bdf8; margin-top: 4px;">--</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">Consumed Today</div>
-                        <div id="ai-credit-total-used" style="font-size: 1.45rem; font-weight: 800; color: #10b981; margin-top: 4px;">--</div>
-                    </div>
-                    <div style="background: rgba(0,0,0,0.35); border: 1px solid var(--border); border-radius: 12px; padding: 14px; text-align: center;">
-                        <div style="font-size: 0.72rem; color: var(--muted); text-transform: uppercase; font-weight: 700;">00:00 UTC Rollover In</div>
-                        <div id="ai-credit-rollover-countdown" style="font-size: 1.25rem; font-weight: 800; color: #a78bfa; margin-top: 4px;">--h --m --s</div>
-                    </div>
-                </div>
-
-                <!-- Filter & Search Toolbar -->
-                <div style="display: flex; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button id="ai-filter-all" class="logout" style="padding: 6px 14px; font-size: 0.78rem; background: rgba(245, 158, 11, 0.2); border-color: #fbbf24; color: #fff; font-weight: 700;" onclick="setAiCreditsFilter('all')">
-                            All Servers (<span id="ai-filter-all-count">0</span>)
-                        </button>
-                        <button id="ai-filter-depleted" class="logout" style="padding: 6px 14px; font-size: 0.78rem; border-color: rgba(244, 63, 94, 0.35); color: #f43f5e;" onclick="setAiCreditsFilter('depleted')">
-                            <i class="fas fa-exclamation-triangle"></i> Depleted (<span id="ai-filter-depleted-count">0</span>)
-                        </button>
-                        <button id="ai-filter-low" class="logout" style="padding: 6px 14px; font-size: 0.78rem; border-color: rgba(245, 158, 11, 0.35); color: #fbbf24;" onclick="setAiCreditsFilter('low')">
-                            <i class="fas fa-battery-quarter"></i> Low Balance (<span id="ai-filter-low-count">0</span>)
-                        </button>
-                        <button id="ai-filter-disabled" class="logout" style="padding: 6px 14px; font-size: 0.78rem; border-color: rgba(148, 163, 184, 0.35); color: var(--muted);" onclick="setAiCreditsFilter('disabled')">
-                            <i class="fas fa-power-off"></i> AI Disabled (<span id="ai-filter-disabled-count">0</span>)
-                        </button>
-                    </div>
-                    <div style="flex: 1; max-width: 320px; min-width: 220px; position: relative;">
-                        <input type="text" id="ai-credits-search-input" placeholder="Search server name or ID..." oninput="renderAiCreditsTable()" style="width: 100%; box-sizing: border-box; padding: 8px 12px 8px 34px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 0.82rem; outline: none;">
-                        <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.8rem;"></i>
-                    </div>
-                </div>
-
-                <!-- Scrollable Server Cards Matrix -->
-                <div id="ai-credits-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 520px; overflow-y: auto; padding-right: 4px;">
-                    <div style="color: var(--muted); font-size: 0.85rem; padding: 20px; text-align: center;">Loading server AI credits telemetry...</div>
-                </div>
-            </div>
-
-            <!-- 🚨 Operational Status Flags Desk (vaztinix.dev/status) -->
-            <div class="card span-full" style="border-color: rgba(239, 68, 68, 0.3); background: radial-gradient(circle at top right, rgba(239, 68, 68, 0.08) 0%, rgba(15, 15, 17, 0.95) 70%);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; color: #ef4444;">
-                        <i class="fas fa-flag"></i> Operational Status Flags & Incident Management (vaztinix.dev/status)
-                    </h3>
-                    <button class="btn-action" style="padding: 6px 14px; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.35); color: #ef4444; width: auto;" onclick="loadStatusFlags()">
-                        <i class="fas fa-sync-alt"></i> Refresh Flags
-                    </button>
-                </div>
-
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px;">
-                    <!-- Live Flags Column -->
-                    <div>
-                        <h4 style="font-size: 0.82rem; color: var(--muted); margin-bottom: 10px; text-transform: uppercase;">
-                            Active & Recent Status Flags (<span id="active-flags-count">0</span>)
-                        </h4>
-                        <div id="status-flags-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 280px; overflow-y: auto; padding-right: 4px;">
-                            <div style="color: var(--muted); font-size: 0.85rem;">Loading status flags...</div>
-                        </div>
-                    </div>
-
-                    <!-- Create Flag Form Column -->
-                    <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px; padding: 18px;">
-                        <h4 style="font-size: 0.9rem; color: #fff; margin-bottom: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                            <i class="fas fa-plus-circle" style="color: #ef4444;"></i> Create & Publish Status Flag
-                        </h4>
-                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; margin-bottom: 10px;">
-                            <input type="text" id="flag-title" placeholder="Title (e.g. Elevated API Latency)" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff; font-size: 0.88rem;">
-                            <select id="flag-severity" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff; font-size: 0.88rem;">
-                                <option value="info">Info (Blue)</option>
-                                <option value="degraded">Degraded (Yellow)</option>
-                                <option value="outage">Outage (Red)</option>
-                                <option value="maintenance">Maintenance (Purple)</option>
-                            </select>
-                            <input type="number" id="flag-shard" placeholder="Shard #0" value="0" style="background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff; font-size: 0.88rem;">
-                        </div>
-                        <textarea id="flag-message" rows="3" placeholder="Detailed explanation or public operational note visible on vaztinix.dev/status..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff; font-family: inherit; font-size: 0.88rem; margin-bottom: 10px; outline: none;"></textarea>
-                        <button class="btn-action" style="background: #ef4444; color: #fff; font-weight: 700; padding: 10px;" onclick="createStatusFlag()">
-                            <i class="fas fa-bullhorn"></i> Publish Status Flag
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 💎 Personal Entitlements & Bound Server Slots -->
-            <div class="card" style="border-color: rgba(168, 85, 247, 0.25); background: radial-gradient(circle at top right, rgba(168, 85, 247, 0.08) 0%, rgba(15, 15, 17, 0.95) 70%);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; color: #c084fc;">
-                        <i class="fas fa-link"></i> Personal Entitlements & Target Server Slots
-                    </h3>
-                    <button class="btn-action" style="padding: 6px 12px; font-size: 0.75rem; background: rgba(168, 85, 247, 0.15); border: 1px solid rgba(168, 85, 247, 0.3); color: #c084fc;" onclick="loadEntitlementBindings()">
-                        <i class="fas fa-sync-alt"></i> Refresh Slots
-                    </button>
-                </div>
+            <!-- Left Sticky Sidebar -->
+            <aside class="owner-sidebar">
                 
-                <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 14px;">
-                    Users with Studio Plus or personal entitlements can bind their premium slot to any server they manage. Inspect active bindings or grant custom duration below.
-                </p>
-
-                <!-- Active Bindings List -->
-                <div id="entitlement-bindings-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 240px; overflow-y: auto; margin-bottom: 22px; padding-right: 4px;">
-                    <div style="color: var(--muted); font-size: 0.85rem;">Loading active entitlement bindings...</div>
+                <!-- Fast Global Search -->
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="global-admin-search" placeholder="Search servers, users, alts..." oninput="filterLists()">
                 </div>
 
-                <!-- Custom Time Extension Sub-Panel -->
-                <div style="border-top: 1px solid var(--border); padding-top: 16px;">
-                    <h4 style="font-size: 0.92rem; color: #fff; margin-bottom: 12px; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                        <i class="fas fa-hourglass-half" style="color: #ffd700;"></i> Grant Custom Duration / Expanded Time
-                    </h4>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 12px;">
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label>Target Type</label>
-                            <select id="time-target-type">
-                                <option value="server">Server (Guild)</option>
-                                <option value="user">User Account</option>
-                            </select>
+                <div class="side-nav-group">
+                    <div class="side-nav-title">System & Telemetry</div>
+                    <button class="side-nav-link active" onclick="switchOwnerTab('overview')">
+                        <span style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-chart-line"></i> Overview & Health</span>
+                        <span class="side-nav-badge" id="badge-diag-ping">-- ms</span>
+                    </button>
+                    <button class="side-nav-link" onclick="switchOwnerTab('insite')">
+                        <span style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-fingerprint"></i> In-Site Forensics</span>
+                        <span class="side-nav-badge" id="badge-insite-count">0</span>
+                    </button>
+                </div>
+
+                <div class="side-nav-group">
+                    <div class="side-nav-title">Servers & Guilds</div>
+                    <button class="side-nav-link" onclick="switchOwnerTab('servers')">
+                        <span style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-server"></i> Guild Directory</span>
+                        <span class="side-nav-badge" id="badge-servers-count">0</span>
+                    </button>
+                    <button class="side-nav-link" onclick="switchOwnerTab('early')">
+                        <span style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-star" style="color: #fbbf24;"></i> Early Adopters (50+100)</span>
+                        <span class="side-nav-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;">150</span>
+                    </button>
+                </div>
+
+                <div class="side-nav-group">
+                    <div class="side-nav-title">Enforcement & Moderation</div>
+                    <button class="side-nav-link" onclick="switchOwnerTab('users')">
+                        <span style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-user-shield"></i> User Enforcement</span>
+                        <span class="side-nav-badge" id="badge-users-count">0</span>
+                    </button>
+                    <button class="side-nav-link" onclick="switchOwnerTab('incidents')">
+                        <span style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-triangle-exclamation" style="color: #f43f5e;"></i> Status & Incidents</span>
+                        <span class="side-nav-badge" id="badge-flags-count">0</span>
+                    </button>
+                </div>
+
+                <div class="side-nav-group">
+                    <div class="side-nav-title">Operations & Automation</div>
+                    <button class="side-nav-link" onclick="switchOwnerTab('ai')">
+                        <span style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-robot"></i> AI Diagnostics & Quotas</span>
+                        <span class="side-nav-badge" id="badge-ai-count">Ready</span>
+                    </button>
+                    <button class="side-nav-link" onclick="switchOwnerTab('broadcasts')">
+                        <span style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-bullhorn"></i> Alerts & Broadcasts</span>
+                        <span class="side-nav-badge" id="badge-alerts-count">0</span>
+                    </button>
+                    <button class="side-nav-link" onclick="switchOwnerTab('maintenance')">
+                        <span style="display: flex; align-items: center; gap: 10px;"><i class="fas fa-screwdriver-wrench"></i> Cache & Maintenance</span>
+                    </button>
+                </div>
+
+            </aside>
+
+            <!-- Right Workspace Main Panels -->
+            <main style="min-width: 0;">
+
+                <!-- 1. OVERVIEW & HEALTH TAB -->
+                <div id="sec-overview" class="tab-view active">
+                    
+                    <!-- Top Telemetry Ribbon -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-title"><i class="fas fa-microchip" style="color: #38bdf8;"></i> Host RSS Memory</div>
+                            <div id="diag-rss" class="stat-card-value" style="color: #38bdf8;">-- MB</div>
                         </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label>Target ID</label>
-                            <input type="text" id="time-target-id" placeholder="Discord Guild or User ID">
+                        <div class="stat-card">
+                            <div class="stat-card-title"><i class="fas fa-memory" style="color: #fbbf24;"></i> Heap Allocated</div>
+                            <div id="diag-heap" class="stat-card-value" style="color: #fbbf24;">-- MB</div>
                         </div>
-                        <div class="form-group" style="margin-bottom: 0;">
-                            <label>Duration</label>
-                            <select id="time-duration-select" onchange="toggleCustomTimeInput()">
-                                <option value="3600000">1 Hour</option>
-                                <option value="86400000">24 Hours</option>
-                                <option value="604800000">7 Days</option>
-                                <option value="2592000000">30 Days</option>
-                                <option value="7776000000">90 Days</option>
-                                <option value="custom">Custom (Hours)</option>
-                            </select>
+                        <div class="stat-card">
+                            <div class="stat-card-title"><i class="fas fa-bolt" style="color: #10b981;"></i> WebSocket Ping</div>
+                            <div id="diag-ping" class="stat-card-value" style="color: #10b981;">-- ms</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title"><i class="fas fa-network-wired" style="color: #a78bfa;"></i> Shard Cluster</div>
+                            <div id="diag-shard-id" class="stat-card-value" style="color: #a78bfa;">Shard 0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title"><i class="fas fa-clock" style="color: #fff;"></i> Bot Uptime</div>
+                            <div id="diag-uptime" class="stat-card-value">--</div>
                         </div>
                     </div>
-                    <div class="form-group" id="time-custom-group" style="display: none; margin-bottom: 12px;">
-                        <label>Custom Hours to Add</label>
-                        <input type="number" id="time-custom-hours" placeholder="e.g. 48">
-                    </div>
-                    <button class="btn-action" style="background: linear-gradient(135deg, #ffd700 0%, #f59e0b 100%); color: #000; font-weight: 700;" onclick="executeTimeExtension()">
-                        Grant Time Extension
-                    </button>
-                </div>
-            </div>
 
-            <!-- 📢 Site Alerts & User Inbox Broadcasts -->
-            <div class="card" style="border-color: rgba(245, 158, 11, 0.25); background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.08) 0%, rgba(15, 15, 17, 0.95) 70%);">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-                    <h3 style="margin: 0; display: flex; align-items: center; gap: 10px; color: #f59e0b;">
-                        <i class="fas fa-bullhorn"></i> Site Alerts & User Inbox Broadcasts
-                    </h3>
+                    <!-- Quick Action Panels Grid -->
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 20px;">
+                        
+                        <!-- Manual Premium Grant Panel -->
+                        <div class="glass-panel">
+                            <div class="glass-panel-header">
+                                <div class="glass-panel-title">
+                                    <span class="card-icon-badge" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #ffd700;"><i class="fas fa-gem"></i></span>
+                                    Manual Premium Provisioning
+                                </div>
+                            </div>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Directly assign or revoke permanent Studio Plus entitlement on any guild or user.</p>
+                            
+                            <div class="form-group">
+                                <label>Target Type</label>
+                                <select id="premium-type">
+                                    <option value="server">Server (Guild)</option>
+                                    <option value="user">User Account</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Target Discord Snowflake ID</label>
+                                <input type="text" id="premium-id" placeholder="e.g. 1351304498185900184">
+                            </div>
+                            <div style="display: flex; gap: 10px; margin-top: 16px;">
+                                <button class="btn-action" style="flex: 1;" onclick="managePremium('grant')"><i class="fas fa-check"></i> Grant Lifetime</button>
+                                <button class="btn-action btn-danger" style="flex: 1;" onclick="managePremium('revoke')"><i class="fas fa-ban"></i> Revoke</button>
+                            </div>
+                        </div>
+
+                        <!-- Global Blacklist Mitigation -->
+                        <div class="glass-panel">
+                            <div class="glass-panel-header">
+                                <div class="glass-panel-title">
+                                    <span class="card-icon-badge" style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--danger);"><i class="fas fa-ban"></i></span>
+                                    Global User Mitigation Desk
+                                </div>
+                            </div>
+                            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Enforce platform-wide bans, timeouts, and API access restrictions across all bot operations.</p>
+                            
+                            <div class="form-group">
+                                <label>Action Mode</label>
+                                <select id="ban-action" onchange="toggleBanDuration()">
+                                    <option value="ban">Permanent Blacklist</option>
+                                    <option value="temp_ban">Temporary Blacklist</option>
+                                    <option value="unban">Revoke Blacklist</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="ban-duration-group" style="display: none;">
+                                <label>Duration</label>
+                                <select id="ban-duration" onchange="toggleBanDurationCustom()">
+                                    <option value="1">1 Hour</option>
+                                    <option value="24">24 Hours</option>
+                                    <option value="168">7 Days (168 Hours)</option>
+                                    <option value="720">30 Days (720 Hours)</option>
+                                    <option value="custom">Custom Hours</option>
+                                </select>
+                                <input type="number" id="ban-duration-custom" placeholder="Enter custom hours..." style="display: none; margin-top: 8px;">
+                            </div>
+                            <div class="form-group">
+                                <label>Target User ID</label>
+                                <input type="text" id="ban-user-id" placeholder="e.g. 1214048435632603137">
+                            </div>
+                            <div class="form-group" id="ban-reason-group">
+                                <label>Reason for Suspension</label>
+                                <input type="text" id="ban-reason" placeholder="e.g. Exploiting, spam, or API abuse">
+                            </div>
+                            <button class="btn-action btn-danger" style="width: 100%;" onclick="executeGlobalBan()"><i class="fas fa-shield"></i> Execute Action</button>
+                        </div>
+
+                    </div>
+
+                    <!-- Host Shard Diagnostic Card -->
+                    <div class="glass-panel" style="border-color: rgba(139, 92, 246, 0.3); background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.08) 0%, rgba(15, 17, 26, 0.95) 70%);">
+                        <div class="glass-panel-header">
+                            <div class="glass-panel-title" style="color: #c4b5fd;">
+                                <i class="fas fa-satellite-dish"></i> Shard Gateway & Cluster Host Diagnostics
+                            </div>
+                            <button class="btn-action btn-secondary" onclick="forceShardPresenceReload()" style="font-size: 0.78rem; padding: 6px 12px;">
+                                <i class="fas fa-rotate"></i> Recalculate Shard Status
+                            </button>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; font-size: 0.85rem;">
+                            <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="color: var(--text-dim); font-size: 0.74rem;">NODE RUNTIME</div>
+                                <div style="font-weight: 700; color: #fff; margin-top: 2px;">Node.js ${process.version || 'v25.x'}</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="color: var(--text-dim); font-size: 0.74rem;">DATABASE ENGINE</div>
+                                <div style="font-weight: 700; color: #fff; margin-top: 2px;">SQLite3 + WAL Mode</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="color: var(--text-dim); font-size: 0.74rem;">SECURITY TELEMETRY</div>
+                                <div style="font-weight: 700; color: #10b981; margin-top: 2px;">AES-256-GCM + Zero-Access</div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
-                <!-- Site Alert Form -->
-                <div style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px; padding: 18px; margin-bottom: 18px;">
-                    <h4 style="font-size: 0.9rem; color: #fff; margin-bottom: 10px; font-weight: 700;">
-                        Publish Site-Wide Announcement Banner
-                    </h4>
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px;">
-                        <input type="text" id="alert-title" placeholder="Alert Title (e.g. 🚀 Scheduled Maintenance)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff;">
-                        <select id="alert-type" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff;">
-                            <option value="announcement">Announcement (Blue)</option>
-                            <option value="info">Information (Cyan)</option>
-                            <option value="warning">Warning (Orange)</option>
-                            <option value="success">Success (Green)</option>
-                        </select>
-                    </div>
-                    <textarea id="alert-message" rows="2" placeholder="Banner message visible to all dashboard visitors..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff; font-family: inherit; margin-bottom: 10px; outline: none;"></textarea>
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <button class="btn-action" style="background: #f59e0b; color: #000; font-weight: 700;" onclick="publishSiteAlert()">
-                            Publish Banner Alert
-                        </button>
-                        <button type="button" class="btn-action" style="background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.5); color: #ddd6fe; font-weight: 700;" onclick="previewSiteAlertBubble()">
-                            <i class="fas fa-eye" style="margin-right: 6px;"></i> Preview Pop-Up Bubble
-                        </button>
-                        <span style="display:none">
-                            Publish Banner Alert
-                        </button>
+                <!-- 2. IN-SITE GATEKEEPER & FORENSICS TAB -->
+                <div id="sec-insite" class="tab-view">
+                    <div class="glass-panel">
+                        <div class="glass-panel-header">
+                            <div>
+                                <div class="glass-panel-title"><i class="fas fa-fingerprint" style="color: #818cf8;"></i> In-Site Gatekeeper Forensics Dossiers</div>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Inspect incoming member verification passes, composite browser fingerprints, and auto-flagged evasion alts.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="btn-action btn-secondary" onclick="filterInsiteTab('all')" style="font-size: 0.76rem; padding: 6px 12px;">All Sessions</button>
+                                <button class="btn-action btn-secondary" onclick="filterInsiteTab('flagged')" style="font-size: 0.76rem; padding: 6px 12px; color: #fca5a5; border-color: rgba(244, 63, 94, 0.3);">Flagged Alts</button>
+                                <button class="btn-action btn-secondary" onclick="fetchInsiteVerifications()" style="font-size: 0.76rem; padding: 6px 12px;"><i class="fas fa-rotate"></i> Refresh</button>
+                            </div>
+                        </div>
+
+                        <!-- Forensics Dossiers Container -->
+                        <div id="insite-verifications-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+                            <div style="text-align: center; padding: 30px; color: var(--text-dim);">Loading verification dossiers...</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Active Site Alerts List -->
-                <div style="margin-bottom: 20px;">
-                    <h4 style="font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; text-transform: uppercase;">Active Site Banners</h4>
-                    <div id="site-alerts-container" style="display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto;">
-                        <div style="color: var(--muted); font-size: 0.85rem;">Loading active alerts...</div>
+                <!-- 3. SERVERS & GUILDS TAB -->
+                <div id="sec-servers" class="tab-view">
+                    <div class="glass-panel">
+                        <div class="glass-panel-header">
+                            <div>
+                                <div class="glass-panel-title"><i class="fas fa-server" style="color: #38bdf8;"></i> Connected Server Directory</div>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Search and manage all servers running Nora Studio. Inspect owners, member counts, and enforce blacklists.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <div id="servers-sort-wrapper" style="display: flex; align-items: center; gap: 8px;">
+                                    <label style="font-size: 0.75rem; color: var(--text-muted);">Sort:</label>
+                                    <select id="servers-sort" onchange="loadAdminDeskData()" style="padding: 5px 10px; font-size: 0.78rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 6px; color: #fff;">
+                                        <option value="newest">Newest Joined</option>
+                                        <option value="oldest">Oldest (Early Adopters)</option>
+                                        <option value="members">Highest Member Count</option>
+                                        <option value="alpha">Alphabetical</option>
+                                    </select>
+                                </div>
+                                <button class="btn-action btn-secondary" onclick="switchServerTab('active')" id="tab-btn-active-servers" style="font-size: 0.76rem; padding: 6px 12px;">Active (<span id="count-active-servers">0</span>)</button>
+                                <button class="btn-action btn-secondary" onclick="switchServerTab('revoked')" id="tab-btn-revoked-servers" style="font-size: 0.76rem; padding: 6px 12px; color: #fca5a5;">Blacklisted (<span id="count-revoked-servers">0</span>)</button>
+                            </div>
+                        </div>
+
+                        <!-- Active Servers Container -->
+                        <div id="servers-list-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+                            <div style="text-align: center; padding: 30px; color: var(--text-dim);">Loading servers...</div>
+                        </div>
+
+                        <!-- Blacklisted Servers Container -->
+                        <div id="revoked-servers-list-container" style="display: none; flex-direction: column; gap: 10px; margin-top: 14px;">
+                            <div style="text-align: center; padding: 30px; color: var(--text-dim);">No blacklisted servers recorded.</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Broadcast Notification Form -->
-                <div style="border-top: 1px solid var(--border); padding-top: 16px;">
-                    <h4 style="font-size: 0.9rem; color: #fff; margin-bottom: 10px; font-weight: 700;">
-                        Send System Notification to User Inboxes
-                    </h4>
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px; margin-bottom: 10px;">
-                        <input type="text" id="notif-broadcast-title" placeholder="Notification Title" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff;">
-                        <input type="text" id="notif-broadcast-target" placeholder="User ID (Leave blank for ALL)" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff;">
-                    </div>
-                    <textarea id="notif-broadcast-content" rows="2" placeholder="Notification content displayed in dashboard notifications center..." style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 10px; color: #fff; font-family: inherit; margin-bottom: 10px; outline: none;"></textarea>
-                    <button class="btn-action" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2);" onclick="broadcastNotification()">
-                        Send Dashboard Inbox Notification
-                    </button>
-                </div>
-            </div>
+                <!-- 4. EARLY ADOPTERS & PREMIUM TAB -->
+                <div id="sec-early" class="tab-view">
+                    
+                    <div class="glass-panel" style="border-color: rgba(245, 158, 11, 0.35); background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.08) 0%, rgba(15, 17, 26, 0.95) 70%);">
+                        <div class="glass-panel-header">
+                            <div>
+                                <div class="glass-panel-title" style="color: #fbbf24;">
+                                    <i class="fas fa-crown"></i> Permanent Early Adopter Grants
+                                </div>
+                                <p style="font-size: 0.84rem; color: var(--text-muted); margin-top: 4px;">Universal free trials have ended. Lifetime Nora Premium has been permanently granted to the first 50 guilds and 100 users who joined Nora.</p>
+                            </div>
+                            <span class="admin-badge" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border-color: rgba(245, 158, 11, 0.4);">50 GUILDS • 100 USERS</span>
+                        </div>
 
-            <!-- ⚙️ Core Operations & Static Telemetry Synchronizer -->
-            <div class="card" style="border-color: rgba(16, 185, 129, 0.25); background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.08) 0%, rgba(15, 15, 17, 0.95) 70%);">
-                <h3 style="margin-bottom: 12px; display: flex; align-items: center; gap: 10px; color: #10b981;">
-                    <i class="fas fa-cogs"></i> System Core Operations & Static Telemetry
-                </h3>
-                <p style="font-size: 0.8rem; color: var(--muted); margin-bottom: 16px;">
-                    Trigger system-wide synchronizations, invalidate shard caches, and update the 30-minute static telemetry snapshot on demand.
-                </p>
-                <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-                    <button class="btn-action" style="background: #10b981; color: #000; font-weight: 700;" onclick="syncStaticTelemetry()">
-                        <i class="fas fa-satellite-dish"></i> Force Sync 30-Minute Static Telemetry
-                    </button>
-                    <button class="btn-action btn-danger" onclick="clearSettingsCache()">
-                        <i class="fas fa-broom"></i> Purge Settings & Shard Memory Cache
-                    </button>
-                    <span id="core-ops-feedback" style="font-size: 0.82rem; color: #10b981; font-weight: 600;"></span>
+                        <!-- Early Adopter Summary Badges -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 14px;">
+                            <div style="background: rgba(0,0,0,0.35); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                                <div style="font-size: 0.72rem; color: #fbbf24; font-weight: 700; text-transform: uppercase;">EARLY ADOPTER GUILDS</div>
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #fff; margin-top: 2px;">50 Servers</div>
+                                <div style="font-size: 0.74rem; color: var(--text-dim); margin-top: 2px;">Permanent Lifetime Studio Plus</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.35); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                                <div style="font-size: 0.72rem; color: #fbbf24; font-weight: 700; text-transform: uppercase;">EARLY ADOPTER USERS</div>
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #fff; margin-top: 2px;">100 Members</div>
+                                <div style="font-size: 0.74rem; color: var(--text-dim); margin-top: 2px;">Permanent Personal Premium</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.35); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                                <div style="font-size: 0.72rem; color: #10b981; font-weight: 700; text-transform: uppercase;">STATUS ENFORCEMENT</div>
+                                <div style="font-size: 1.5rem; font-weight: 800; color: #10b981; margin-top: 2px;">Active & Locked</div>
+                                <div style="font-size: 0.74rem; color: var(--text-dim); margin-top: 2px;">Trials Revoked • Database Synced</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Staff Sponsorship Bindings & Time Extensions -->
+                    <div class="glass-panel">
+                        <div class="glass-panel-header">
+                            <div>
+                                <div class="glass-panel-title"><i class="fas fa-handshake" style="color: #a78bfa;"></i> Staff Sponsorship Bindings & Slot Allocations</div>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Review staff members whose personal Studio Plus subscriptions are actively sponsoring guilds.</p>
+                            </div>
+                            <button class="btn-action btn-secondary" onclick="loadEntitlementBindings()" style="font-size: 0.76rem; padding: 6px 12px;"><i class="fas fa-rotate"></i> Refresh</button>
+                        </div>
+                        <div id="entitlement-bindings-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+                            <div style="text-align: center; padding: 24px; color: var(--text-dim);">Loading sponsorship allocations...</div>
+                        </div>
+                    </div>
+
                 </div>
-            </div>
+
+                <!-- 5. USER ENFORCEMENT TAB -->
+                <div id="sec-users" class="tab-view">
+                    
+                    <!-- Watched Users Desk -->
+                    <div class="glass-panel" style="margin-bottom: 20px;">
+                        <div class="glass-panel-header">
+                            <div>
+                                <div class="glass-panel-title"><i class="fas fa-binoculars" style="color: #f59e0b;"></i> Observed High-Profile Entities & Watched Users</div>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Tracked entities and bots monitored in memory.</p>
+                            </div>
+                            <span class="side-nav-badge" id="watched-count">0</span>
+                        </div>
+                        <div id="watched-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 10px;">
+                            <div style="color: var(--text-dim); font-size: 0.85rem; padding: 20px;">Loading observed entities...</div>
+                        </div>
+                    </div>
+
+                    <!-- Global Bans & Terminations -->
+                    <div class="glass-panel">
+                        <div class="glass-panel-header">
+                            <div>
+                                <div class="glass-panel-title"><i class="fas fa-gavel" style="color: #f43f5e;"></i> Global Bans & Account Terminations</div>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Users terminated across all Nora Studio clusters.</p>
+                            </div>
+                        </div>
+                        <div id="terminated-list-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                            <div style="color: var(--text-dim); font-size: 0.85rem; padding: 20px;">No active global bans.</div>
+                        </div>
+                    </div>
+
+                    <!-- IP Bans Container -->
+                    <div class="glass-panel" style="margin-top: 20px;">
+                        <div class="glass-panel-header">
+                            <div>
+                                <div class="glass-panel-title"><i class="fas fa-network-wired" style="color: #f43f5e;"></i> Network & IP Ban Shield</div>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">IP addresses blocked from accessing web verification and API nodes.</p>
+                            </div>
+                        </div>
+                        <div id="ip-bans-list-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 10px;">
+                            <div style="color: var(--text-dim); font-size: 0.85rem; padding: 20px;">No IP bans recorded.</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 6. STATUS & INCIDENTS TAB -->
+                <div id="sec-incidents" class="tab-view">
+                    
+                    <div class="glass-panel">
+                        <div class="glass-panel-header">
+                            <div>
+                                <div class="glass-panel-title"><i class="fas fa-bullhorn" style="color: #f43f5e;"></i> Incident Flags & Service Component Status</div>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Publish live degradation or outage notices to <code>/status</code>, the main site, and dashboard banners.</p>
+                            </div>
+                        </div>
+
+                        <!-- Create Incident Form -->
+                        <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 12px; border: 1px solid var(--border-subtle); margin-bottom: 20px;">
+                            <h4 style="font-size: 0.92rem; font-weight: 700; color: #fff; margin-bottom: 12px;">Create Status Incident</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Component Target</label>
+                                    <select id="flag-component">
+                                        <option value="discord_bot">Discord Bot Core</option>
+                                        <option value="dashboard">Web Dashboard</option>
+                                        <option value="roblox_sync">Roblox Group Sync</option>
+                                        <option value="ai_engine">Nora AI Engine</option>
+                                        <option value="verification">In-Site Gatekeeper</option>
+                                        <option value="voice_system">Voice & Audio Hub</option>
+                                        <option value="automod">AutoMod Threat Shield</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0;">
+                                    <label>Severity Level</label>
+                                    <select id="flag-severity">
+                                        <option value="operational">Operational</option>
+                                        <option value="degraded">Degraded Performance</option>
+                                        <option value="partial_outage">Partial Outage</option>
+                                        <option value="major_outage">Major Outage</option>
+                                        <option value="maintenance">Scheduled Maintenance</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-top: 12px; margin-bottom: 12px;">
+                                <label>Incident Notice Message</label>
+                                <input type="text" id="flag-message" placeholder="e.g. Investigating Discord API websocket latency spikes...">
+                            </div>
+                            <button class="btn-action" onclick="createStatusFlag()"><i class="fas fa-plus"></i> Publish Incident Notice</button>
+                        </div>
+
+                        <!-- Active Flags Container -->
+                        <div id="status-flags-container" style="display: flex; flex-direction: column; gap: 10px;">
+                            <div style="text-align: center; padding: 24px; color: var(--text-dim);">No active incident flags. All components operational.</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 7. AI DIAGNOSTICS & QUOTAS TAB -->
+                <div id="sec-ai" class="tab-view">
+                    
+                    <!-- AI Quota Counters Ribbon -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-card-title"><i class="fas fa-key" style="color: #38bdf8;"></i> Active Gemini Keys</div>
+                            <div id="ai-active-keys" class="stat-card-value" style="color: #38bdf8;">--</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title"><i class="fas fa-gauge" style="color: #10b981;"></i> Headroom Cap</div>
+                            <div id="ai-words-headroom" class="stat-card-value" style="color: #10b981;">--</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title"><i class="fas fa-tachometer-alt" style="color: #fbbf24;"></i> RPM Pool</div>
+                            <div id="ai-rpm-capacity" class="stat-card-value" style="color: #fbbf24;">--</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title"><i class="fas fa-snowflake" style="color: #f43f5e;"></i> Cooldowns</div>
+                            <div id="ai-cooldown-count" class="stat-card-value" style="color: #f43f5e;">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-card-title"><i class="fas fa-calendar" style="color: #a78bfa;"></i> Rollover In</div>
+                            <div id="ai-credit-rollover-countdown" class="stat-card-value" style="color: #a78bfa; font-size: 1.1rem;">--</div>
+                        </div>
+                    </div>
+
+                    <!-- AI Actions & Table -->
+                    <div class="glass-panel">
+                        <div class="glass-panel-header">
+                            <div>
+                                <div class="glass-panel-title"><i class="fas fa-robot" style="color: #818cf8;"></i> Guild AI Usage & Monthly Credits Desk</div>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Monitor per-server AI query consumption, grant bonus credits, or trigger automated monthly rollovers.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                <button class="btn-action btn-secondary" onclick="testAiLatency()" style="font-size: 0.76rem; padding: 6px 12px;"><i class="fas fa-stopwatch"></i> Test Latency</button>
+                                <button class="btn-action btn-secondary" onclick="flushAiCooldowns()" style="font-size: 0.76rem; padding: 6px 12px;"><i class="fas fa-fire"></i> Flush Cooldowns</button>
+                                <button class="btn-action btn-secondary" onclick="triggerAiRolloverAll()" style="font-size: 0.76rem; padding: 6px 12px;"><i class="fas fa-rotate"></i> Trigger Rollover</button>
+                            </div>
+                        </div>
+
+                        <!-- AI Credits List -->
+                        <div id="ai-credits-list-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px;">
+                            <div style="text-align: center; padding: 30px; color: var(--text-dim);">Loading AI consumption data...</div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- 8. ALERTS & BROADCASTS TAB -->
+                <div id="sec-broadcasts" class="tab-view">
+                    
+                    <div class="glass-panel">
+                        <div class="glass-panel-header">
+                            <div>
+                                <div class="glass-panel-title"><i class="fas fa-bullhorn" style="color: #818cf8;"></i> Live Site Alert Bubble & Broadcast Desk</div>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Publish dismissible banner announcements across <code>vaztinix.dev</code> and the web dashboard.</p>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 18px;">
+                            
+                            <!-- Alert Builder Form -->
+                            <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                                <h4 style="font-size: 0.92rem; font-weight: 700; color: #fff; margin-bottom: 12px;">Alert Configuration</h4>
+                                
+                                <div class="form-group">
+                                    <label>Alert Title</label>
+                                    <input type="text" id="site-alert-title" placeholder="e.g. Nora Studio v18.0 Update" oninput="previewSiteAlertBubble()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Alert Message Body</label>
+                                    <textarea id="site-alert-message" rows="3" placeholder="Announce new features, maintenance schedules, or community updates..." oninput="previewSiteAlertBubble()"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label>Severity Type</label>
+                                    <select id="site-alert-type" onchange="previewSiteAlertBubble()">
+                                        <option value="info">Info (Blurple)</option>
+                                        <option value="success">Success (Emerald)</option>
+                                        <option value="warning">Warning (Amber)</option>
+                                        <option value="danger">Critical (Rose)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Action Link URL (Optional)</label>
+                                    <input type="text" id="site-alert-url" placeholder="https://vaztinix.dev/docs" oninput="previewSiteAlertBubble()">
+                                </div>
+                                <button class="btn-action" style="width: 100%; margin-top: 8px;" onclick="publishSiteAlert()"><i class="fas fa-paper-plane"></i> Publish Site Alert</button>
+                            </div>
+
+                            <!-- Live Alert Preview -->
+                            <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                                <h4 style="font-size: 0.92rem; font-weight: 700; color: #fff; margin-bottom: 12px;">Live Preview</h4>
+                                <div id="site-alert-preview-box" style="padding: 16px; border-radius: 10px; background: rgba(88, 101, 242, 0.1); border: 1px solid rgba(88, 101, 242, 0.3); color: #fff;">
+                                    <div id="preview-alert-title" style="font-weight: 800; font-size: 0.95rem; margin-bottom: 4px;">Nora Studio Announcement</div>
+                                    <div id="preview-alert-body" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4;">Your announcement will appear here in real-time.</div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <!-- Active Alerts Container -->
+                        <div style="margin-top: 24px;">
+                            <h4 style="font-size: 0.92rem; font-weight: 700; color: #fff; margin-bottom: 12px;">Active Published Alerts</h4>
+                            <div id="site-alerts-container" style="display: flex; flex-direction: column; gap: 8px;">
+                                <div style="color: var(--text-dim); font-size: 0.85rem;">No active alerts published.</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <!-- 9. CACHE & MAINTENANCE TAB -->
+                <div id="sec-maintenance" class="tab-view">
+                    
+                    <div class="glass-panel">
+                        <div class="glass-panel-header">
+                            <div>
+                                <div class="glass-panel-title"><i class="fas fa-screwdriver-wrench" style="color: #38bdf8;"></i> Memory & Cache Maintenance</div>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Purge in-memory settings caches, synchronize static telemetry, and recalculate shard presences.</p>
+                            </div>
+                        </div>
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+                            
+                            <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                                <h4 style="font-size: 0.92rem; font-weight: 700; color: #fff; margin-bottom: 6px;"><i class="fas fa-trash-can" style="color: #f43f5e;"></i> Settings Cache</h4>
+                                <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px;">Forces Nora to dump cached GuildSettings instances from memory and re-query the SQLite database on next message event.</p>
+                                <button class="btn-action btn-danger" onclick="clearSettingsCache()" style="width: 100%;">Flush Settings Cache</button>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                                <h4 style="font-size: 0.92rem; font-weight: 700; color: #fff; margin-bottom: 6px;"><i class="fas fa-satellite-dish" style="color: #a78bfa;"></i> Shard Presences</h4>
+                                <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px;">Forces all shards to broadcast current operational status and reconnect websockets if stale.</p>
+                                <button class="btn-action" onclick="forceShardPresenceReload()" style="width: 100%;">Reload Shard Presence</button>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                                <h4 style="font-size: 0.92rem; font-weight: 700; color: #fff; margin-bottom: 6px;"><i class="fas fa-rotate" style="color: #10b981;"></i> Static Telemetry</h4>
+                                <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px;">Synchronizes public guild counts and member metrics across static site pages.</p>
+                                <button class="btn-action" onclick="syncStaticTelemetry()" style="width: 100%;">Sync Public Telemetry</button>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+            </main>
+
         </div>
 
-        <!-- Search Bar -->
-        <div style="margin: 36px 0 28px 0; position: relative;">
-            <input type="text" id="search-input" placeholder="Search premium servers, users, or terminated accounts..." oninput="filterLists()" style="width: 100%; padding: 15px 20px 15px 48px; background: rgba(14, 16, 26, 0.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); color: #FFFFFF; outline: none; font-size: 0.95rem; font-family: inherit; transition: var(--transition-smooth); box-shadow: 0 8px 30px rgba(0,0,0,0.4);" onfocus="this.style.borderColor='rgba(88, 101, 242, 0.65)'; this.style.boxShadow='0 8px 30px rgba(88, 101, 242, 0.25)';" onblur="this.style.borderColor='var(--border-subtle)'; this.style.boxShadow='0 8px 30px rgba(0,0,0,0.4)';">
-            <i class="fas fa-search" style="position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.05rem;"></i>
-        </div>
-        
-        <!-- Watched Members & Public Figures Section -->
-        <div class="card" style="margin-top: 36px;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 16px; flex-wrap: wrap; gap: 14px;">
-                <h3 style="font-size: 1.2rem; margin: 0; display: flex; align-items: center; gap: 12px; font-weight: 800;">
-                    <span class="card-icon-badge" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b;"><i class="fas fa-eye"></i></span> Observed Members & Cached Public Figures (<span id="watched-count">0</span>)
-                </h3>
-                <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 600; background: rgba(255,255,255,0.04); padding: 5px 14px; border-radius: var(--radius-full); border: 1px solid rgba(255,255,255,0.08);">Minimal Public Metadata Only</span>
-            </div>
+    </div>
 
-            <div style="padding: 14px 18px; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.22); border-radius: var(--radius-sm); font-size: 0.82rem; color: #f59e0b; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; line-height: 1.5;">
-                <i class="fas fa-shield-halved" style="font-size: 1.2rem; flex-shrink: 0;"></i>
-                <span><strong>Privacy Safeguard Active:</strong> Non-authenticated Discord figures only display minimal public metadata (Public User ID, Username, Avatar & Server Presence). No private personal data or expanded telemetries are cached.</span>
-            </div>
-
-            <div id="watched-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; max-height: 480px; overflow-y: auto; padding-right: 6px;">
-                <div style="color: var(--muted); font-size: 0.88rem; padding: 20px 0;">Loading observed public figures...</div>
-            </div>
-        </div>
-
-
-
-        
-        <!-- In-Site Anti-Alt & Ban Evasion Intelligence Panel (Milo's World & Nora's Hub) -->
-        <div class="card" style="padding: 24px; margin-bottom: 30px; border-color: rgba(88, 101, 242, 0.4); box-shadow: 0 12px 36px rgba(88, 101, 242, 0.15);">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 14px; flex-wrap: wrap; gap: 12px;">
-                <div>
-                    <h3 style="font-size: 1.25rem; margin: 0; display: flex; align-items: center; gap: 12px; font-weight: 800; color: #fff;">
-                        <span class="card-icon-badge" style="background: rgba(88, 101, 242, 0.2); border: 1px solid rgba(88, 101, 242, 0.45); color: #818cf8;"><i class="fas fa-user-shield"></i></span>
-                        In-Site Verification & Forensic Intelligence Center
-                    </h3>
-                    <div style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">
-                        Full Telemetry, Automated Ban-Evasion, Subnet & Canvas Correlation for <strong style="color: #cbd5e1;">Milo's World</strong> & <strong style="color: #cbd5e1;">Nora's Hub</strong>
-                    </div>
-                </div>
-                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-                    <span style="font-size: 0.75rem; background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); padding: 5px 10px; border-radius: var(--radius-full); font-weight: 700;">
-                        <i class="fas fa-database"></i> Captured: <span id="insite-total-count">0</span>
+    <!-- Modals Section -->
+    <div id="revoke-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: rgba(14, 16, 26, 0.96); backdrop-filter: blur(25px) saturate(200%); -webkit-backdrop-filter: blur(25px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--radius-lg); width: 100%; max-width: 540px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(244, 63, 94, 0.12); overflow: hidden; animation: card-appear 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;">
+            <div id="revoke-modal-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; background: rgba(244, 63, 94, 0.08);">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="card-icon-badge" style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #f43f5e; width: 34px; height: 34px; font-size: 0.95rem;">
+                        <i id="revoke-modal-icon" class="fas fa-triangle-exclamation"></i>
                     </span>
-                    <span style="font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); padding: 5px 10px; border-radius: var(--radius-full); font-weight: 700;">
-                        <i class="fas fa-exclamation-triangle"></i> Flagged Alts: <span id="insite-alts-count">0</span>
-                    </span>
-                    <span style="font-size: 0.75rem; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); padding: 5px 10px; border-radius: var(--radius-full); font-weight: 700;">
-                        <i class="fas fa-shield-virus"></i> VPN/Tor: <span id="insite-vpn-count">0</span>
-                    </span>
-                    <span style="font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 10px; border-radius: var(--radius-full); font-weight: 700;">
-                        <i class="fas fa-check-circle"></i> Clean: <span id="insite-clean-count">0</span>
-                    </span>
-                    <button onclick="fetchInsiteVerifications()" class="btn-action" style="padding: 6px 14px; font-size: 0.8rem; margin-left: 4px;">
-                        <i class="fas fa-sync-alt"></i> Refresh Stream
+                    <h3 id="revoke-modal-title" style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff;">Server Revocation</h3>
+                </div>
+                <button onclick="closeRevokeModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; padding: 4px 8px; line-height: 1; transition: var(--transition-smooth);" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
+            </div>
+            <div style="padding: 24px;">
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 18px;">
+                    <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em;">Target Server</div>
+                    <div id="revoke-modal-target" style="font-size: 0.98rem; font-weight: 700; color: #fff; margin-top: 4px; word-break: break-all;">--</div>
+                </div>
+                <div id="revoke-modal-warning" style="font-size: 0.84rem; line-height: 1.6; color: #f59e0b; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 18px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.78rem; margin-bottom: 8px;">
+                        <span>Reason for Revocation <span style="color: #f43f5e;">*</span></span>
+                        <span id="revoke-char-count" style="color: var(--text-muted); font-size: 0.75rem;">0 / 500</span>
+                    </label>
+                    <textarea id="revoke-reason-input" rows="4" maxlength="500" placeholder="State why this server is being revoked. Nora will send this directly in an official DM embed to the server owner before departing..." oninput="updateRevokeCharCount()" style="width: 100%; box-sizing: border-box; background: rgba(8, 10, 18, 0.75); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; color: #fff; font-family: inherit; font-size: 0.9rem; outline: none; line-height: 1.5; transition: var(--transition-smooth);" onfocus="this.style.borderColor='#f43f5e'; this.style.boxShadow='0 0 0 3px rgba(244, 63, 94, 0.2)';" onblur="this.style.borderColor='var(--border-subtle)'; this.style.boxShadow='none';"></textarea>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; align-items: center;">
+                    <button onclick="closeRevokeModal()" class="logout" style="padding: 10px 20px; font-size: 0.85rem; border-color: var(--border-subtle); color: var(--text-muted); cursor: pointer;">Cancel</button>
+                    <button id="revoke-modal-submit-btn" onclick="submitServerRevoke()" class="btn-action" style="padding: 10px 24px; font-size: 0.88rem; font-weight: 700; width: auto; background: linear-gradient(135deg, #f43f5e, #e11d48); color: #fff; cursor: pointer; box-shadow: 0 4px 16px rgba(244, 63, 94, 0.4);">
+                        Confirm Revocation
                     </button>
-                </div>
-            </div>
-
-            <div style="padding: 12px 16px; background: rgba(88, 101, 242, 0.08); border: 1px solid rgba(88, 101, 242, 0.22); border-radius: var(--radius-sm); font-size: 0.82rem; color: #c7d2fe; margin-bottom: 18px; display: flex; align-items: center; gap: 12px; line-height: 1.45;">
-                <i class="fas fa-lock" style="font-size: 1.25rem; flex-shrink: 0; color: #818cf8;"></i>
-                <span><strong>Lead Developer Vaztinix Exclusive (<code style="font-family: monospace; background: rgba(0,0,0,0.3); padding: 1px 5px; border-radius: 4px;">1214048435632603137</code>):</strong> Unredacted IP addresses, GPU canvas hashes, and cross-account links are stored strictly in the local host SQLite database. Never exposed on GitHub or to public staff.</span>
-            </div>
-
-            <!-- Filter and Search Toolbar -->
-            <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap;">
-                <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                    <button id="insite-tab-all" class="logout" style="padding: 5px 12px; font-size: 0.78rem; background: rgba(88, 101, 242, 0.25); border-color: #5865F2; color: #fff; font-weight: 700;" onclick="filterInsiteTab('all')">
-                        All Stream
-                    </button>
-                    <button id="insite-tab-alts" class="logout" style="padding: 5px 12px; font-size: 0.78rem; border-color: rgba(239, 68, 68, 0.4); color: #f87171;" onclick="filterInsiteTab('alts')">
-                        🚨 Flagged Alts
-                    </button>
-                    <button id="insite-tab-vpn" class="logout" style="padding: 5px 12px; font-size: 0.78rem; border-color: rgba(245, 158, 11, 0.4); color: #fbbf24;" onclick="filterInsiteTab('vpn')">
-                        🛡️ VPN / Proxy
-                    </button>
-                    <button id="insite-tab-clean" class="logout" style="padding: 5px 12px; font-size: 0.78rem; border-color: rgba(16, 185, 129, 0.4); color: #34d399;" onclick="filterInsiteTab('clean')">
-                        ✅ Clean
-                    </button>
-                </div>
-                <div style="display: flex; gap: 10px; align-items: center; flex: 1; max-width: 520px; justify-content: flex-end;">
-                    <select id="insite-server-filter" onchange="renderInsiteVerificationsTable()" style="padding: 6px 10px; font-size: 0.78rem; background: rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); border-radius: 6px; color: #fff; outline: none; cursor: pointer;">
-                        <option value="all">All Servers</option>
-                        <option value="1487342521133830174">Milo's World</option>
-                        <option value="1515800329889779954">Nora's Hub</option>
-                    </select>
-                    <input type="text" id="insite-search-input" oninput="renderInsiteVerificationsTable()" placeholder="Search user, ID, IP, GPU, or canvas hash..." style="width: 100%; max-width: 280px; padding: 6px 12px; font-size: 0.78rem; background: rgba(0,0,0,0.35); border: 1px solid var(--border-subtle); border-radius: 6px; color: #fff; outline: none;">
-                </div>
-            </div>
-
-            <div id="insite-verifications-container" style="display: flex; flex-direction: column; gap: 14px; max-height: 560px; overflow-y: auto; padding-right: 6px;">
-                <div style="color: var(--text-muted); font-size: 0.88rem; padding: 20px 0; text-align: center;">Loading in-site verification and alt intelligence stream...</div>
-            </div>
-        </div>
-
-        <!-- Lists Grid (Vertical Stack) -->
-        <div style="display: flex; flex-direction: column; gap: 30px; margin-bottom: 30px; width: 100%;">
-            <!-- Active & Revoked Servers List -->
-            <div class="card" style="padding: 24px; min-height: 250px;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 12px; flex-wrap: wrap; gap: 10px;">
-                    <div style="display: flex; gap: 8px;">
-                        <button id="tab-active-servers" class="logout" style="padding: 6px 14px; font-size: 0.8rem; background: rgba(88, 101, 242, 0.2); border-color: #5865F2; color: #fff; font-weight: 700;" onclick="switchServerTab('active')">
-                            <i class="fas fa-server"></i> Active Servers (<span id="server-count">0</span>)
-                        </button>
-                        <button id="tab-revoked-servers" class="logout" style="padding: 6px 14px; font-size: 0.8rem; border-color: rgba(244, 63, 94, 0.3); color: var(--muted);" onclick="switchServerTab('revoked')">
-                            <i class="fas fa-ban" style="color: #f43f5e;"></i> Permanently Revoked (<span id="revoked-server-count">0</span>)
-                        </button>
-                    </div>
-                    <div id="servers-sort-wrapper" style="display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 0.75rem; color: var(--muted); font-weight: 600;">Sort By:</span>
-                        <select id="servers-sort" onchange="loadAdminDeskData()" style="padding: 4px 8px; font-size: 0.75rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 6px; color: white; cursor: pointer; outline: none;">
-                            <option value="newest">Newest Joined</option>
-                            <option value="oldest">Oldest Joined</option>
-                            <option value="members_desc">Most Members</option>
-                            <option value="members_asc">Least Members</option>
-                            <option value="alphabetical">Alphabetical</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div id="servers-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 440px; overflow-y: auto;">
-                    <div style="color: var(--muted); font-size: 0.85rem;">Loading servers...</div>
-                </div>
-
-                <div id="revoked-servers-list-container" style="display: none; flex-direction: column; gap: 10px; max-height: 440px; overflow-y: auto;">
-                    <div style="color: var(--muted); font-size: 0.85rem;">Loading permanently revoked servers...</div>
-                </div>
-            </div>
-            <!-- Authenticated Users List -->
-            <div class="card" style="padding: 24px; min-height: 250px;">
-                <h3 style="font-size: 1.15rem; margin-bottom: 12px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
-                    <span class="card-icon-badge" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981;"><i class="fas fa-user-check"></i></span> Authenticated Users (<span id="user-count">0</span>)
-                </h3>
-                <div style="margin-bottom: 14px; display: flex; align-items: center; gap: 8px;">
-                    <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Sort By:</span>
-                    <select id="users-sort" onchange="loadAdminDeskData()" style="padding: 6px 12px; font-size: 0.78rem; background: rgba(8, 10, 18, 0.7); border: 1px solid var(--border-subtle); border-radius: 8px; color: white; cursor: pointer; outline: none; width: auto;">
-                        <option value="newest">Newest Joined</option>
-                        <option value="oldest">Oldest Joined</option>
-                        <option value="alphabetical_username">Alphabetical (Username)</option>
-                        <option value="alphabetical_display">Alphabetical (Display Name)</option>
-                    </select>
-                </div>
-                <div id="users-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
-                    <div style="color: var(--muted); font-size: 0.85rem;">Loading...</div>
-                </div>
-            </div>
-            <!-- Terminated Users List -->
-            <div class="card" style="padding: 24px; min-height: 250px;">
-                <h3 style="font-size: 1.15rem; margin-bottom: 15px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
-                    <span class="card-icon-badge" style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--danger);"><i class="fas fa-user-slash"></i></span> Terminated Users (<span id="terminated-count">0</span>)
-                </h3>
-                <div id="terminated-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto;">
-                    <div style="color: var(--muted); font-size: 0.85rem;">Loading...</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- IP Bans Grid -->
-        <div style="display: grid; grid-template-columns: 1fr; gap: 30px; margin-bottom: 40px; align-items: start;">
-            <!-- Banned IPs List -->
-            <div class="card" style="padding: 24px; min-height: 250px;">
-                <h3 style="font-size: 1.15rem; margin-bottom: 15px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px;">
-                    <span class="card-icon-badge" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #ff9f43;"><i class="fas fa-network-wired"></i></span> IP Blacklist Registry (<span id="ip-ban-count">0</span>)
-                </h3>
-                <div id="ip-bans-list-container" style="display: flex; flex-direction: column; gap: 10px; max-height: 380px; overflow-y: auto;">
-                    <div style="color: var(--muted); font-size: 0.85rem;">Loading...</div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- AI Credit Management Modal -->
+    <div id="ai-credit-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(0, 0, 0, 0.84); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: rgba(14, 16, 26, 0.96); backdrop-filter: blur(25px) saturate(200%); -webkit-backdrop-filter: blur(25px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: var(--radius-lg); width: 100%; max-width: 520px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(245, 158, 11, 0.15); overflow: hidden; animation: card-appear 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;">
+            <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; background: rgba(245, 158, 11, 0.08);">
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <span class="card-icon-badge" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; width: 34px; height: 34px; font-size: 0.95rem;">
+                        <i class="fas fa-coins"></i>
+                    </span>
+                    <h3 id="ai-credit-modal-title" style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff;">Server AI Credit Override</h3>
+                </div>
+                <button onclick="closeCreditModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; padding: 4px 8px; line-height: 1; transition: var(--transition-smooth);" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
+            </div>
+            <div style="padding: 24px;">
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px;">
+                    <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em;">Target Server</div>
+                    <div id="ai-credit-modal-target" style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-top: 4px; word-break: break-all;">--</div>
+                </div>
+                <div id="ai-credit-modal-desc" style="font-size: 0.82rem; line-height: 1.5; color: #fbbf24; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.22); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 18px;">
+                </div>
+                <div class="form-group" style="margin-bottom: 16px;">
+                    <label id="ai-credit-modal-input-label" style="font-weight: 700; font-size: 0.78rem; margin-bottom: 8px; display: block; color: #fff;">
+                        Credit Amount
+                    </label>
+                    <input type="number" id="ai-credit-modal-input" min="1" step="50" style="width: 100%; box-sizing: border-box; background: rgba(8, 10, 18, 0.75); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; color: #fff; font-family: inherit; font-size: 1.05rem; font-weight: 700; outline: none; transition: var(--transition-smooth);" onfocus="this.style.borderColor='#fbbf24'; this.style.boxShadow='0 0 0 3px rgba(245, 158, 11, 0.2)';" onblur="this.style.borderColor='var(--border-subtle)'; this.style.boxShadow='none';">
+                </div>
+                <div style="margin-bottom: 22px;">
+                    <div style="font-size: 0.72rem; color: var(--muted); margin-bottom: 6px; font-weight: 600;">Quick Presets:</div>
+                    <div id="ai-credit-modal-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: flex-end; align-items: center;">
+                    <button onclick="closeCreditModal()" class="logout" style="padding: 10px 20px; font-size: 0.85rem; border-color: var(--border-subtle); color: var(--text-muted); cursor: pointer;">Cancel</button>
+                    <button id="ai-credit-modal-submit-btn" onclick="submitCreditModal()" class="btn-action" style="padding: 10px 24px; font-size: 0.88rem; font-weight: 700; width: auto; background: linear-gradient(135deg, #fbbf24, #d97706); color: #000; cursor: pointer; box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);">
+                        Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Script Engine with Tab Navigation & Complete API Methods -->
     <script>
+        // Tab switcher
+        window.switchOwnerTab = function(tabId) {
+            document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+            document.querySelectorAll('.side-nav-link').forEach(l => l.classList.remove('active'));
+
+            const targetView = document.getElementById('sec-' + tabId);
+            if (targetView) targetView.classList.add('active');
+
+            const btn = document.querySelector(`button[onclick="switchOwnerTab('${tabId}')"]`);
+            if (btn) btn.classList.add('active');
+
+            try {
+                window.location.hash = tabId;
+            } catch (e) {}
+
+            // Trigger tab specific loads if needed
+            if (tabId === 'insite') {
+                if (typeof fetchInsiteVerifications === 'function') fetchInsiteVerifications();
+            } else if (tabId === 'ai') {
+                if (typeof loadAiCreditsDesk === 'function') loadAiCreditsDesk();
+                if (typeof loadAiStats === 'function') loadAiStats();
+            } else if (tabId === 'servers') {
+                if (typeof renderLists === 'function') renderLists();
+            }
+        };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const hash = window.location.hash ? window.location.hash.slice(1) : '';
+            if (hash && document.getElementById('sec-' + hash)) {
+                switchOwnerTab(hash);
+            }
+        });
+
+        
         window.getApiBaseUrl = function() {
             const host = window.location.hostname;
 
@@ -3294,82 +3296,7 @@
 
         window.performLogout = performLogout;
 
+    
     </script>
-
-    <!-- Server Revocation Reason Modal -->
-    <div id="revoke-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(0, 0, 0, 0.82); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: rgba(14, 16, 26, 0.96); backdrop-filter: blur(25px) saturate(200%); -webkit-backdrop-filter: blur(25px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: var(--radius-lg); width: 100%; max-width: 540px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(244, 63, 94, 0.12); overflow: hidden; animation: card-appear 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;">
-            <div id="revoke-modal-header" style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; background: rgba(244, 63, 94, 0.08);">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span class="card-icon-badge" style="background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: #f43f5e; width: 34px; height: 34px; font-size: 0.95rem;">
-                        <i id="revoke-modal-icon" class="fas fa-triangle-exclamation"></i>
-                    </span>
-                    <h3 id="revoke-modal-title" style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff;">Server Revocation</h3>
-                </div>
-                <button onclick="closeRevokeModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; padding: 4px 8px; line-height: 1; transition: var(--transition-smooth);" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
-            </div>
-            <div style="padding: 24px;">
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 18px;">
-                    <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em;">Target Server</div>
-                    <div id="revoke-modal-target" style="font-size: 0.98rem; font-weight: 700; color: #fff; margin-top: 4px; word-break: break-all;">--</div>
-                </div>
-                <div id="revoke-modal-warning" style="font-size: 0.84rem; line-height: 1.6; color: #f59e0b; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: var(--radius-sm); padding: 14px; margin-bottom: 18px;">
-                </div>
-                <div class="form-group" style="margin-bottom: 20px;">
-                    <label style="display: flex; justify-content: space-between; font-weight: 700; font-size: 0.78rem; margin-bottom: 8px;">
-                        <span>Reason for Revocation <span style="color: #f43f5e;">*</span></span>
-                        <span id="revoke-char-count" style="color: var(--text-muted); font-size: 0.75rem;">0 / 500</span>
-                    </label>
-                    <textarea id="revoke-reason-input" rows="4" maxlength="500" placeholder="State why this server is being revoked. Nora will send this directly in an official DM embed to the server owner before departing..." oninput="updateRevokeCharCount()" style="width: 100%; box-sizing: border-box; background: rgba(8, 10, 18, 0.75); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; color: #fff; font-family: inherit; font-size: 0.9rem; outline: none; line-height: 1.5; transition: var(--transition-smooth);" onfocus="this.style.borderColor='#f43f5e'; this.style.boxShadow='0 0 0 3px rgba(244, 63, 94, 0.2)';" onblur="this.style.borderColor='var(--border-subtle)'; this.style.boxShadow='none';"></textarea>
-                </div>
-                <div style="display: flex; gap: 12px; justify-content: flex-end; align-items: center;">
-                    <button onclick="closeRevokeModal()" class="logout" style="padding: 10px 20px; font-size: 0.85rem; border-color: var(--border-subtle); color: var(--text-muted); cursor: pointer;">Cancel</button>
-                    <button id="revoke-modal-submit-btn" onclick="submitServerRevoke()" class="btn-action" style="padding: 10px 24px; font-size: 0.88rem; font-weight: 700; width: auto; background: linear-gradient(135deg, #f43f5e, #e11d48); color: #fff; cursor: pointer; box-shadow: 0 4px 16px rgba(244, 63, 94, 0.4);">
-                        Confirm Revocation
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- AI Credit Management Modal -->
-    <div id="ai-credit-modal" style="display: none; position: fixed; inset: 0; z-index: 99999; background: rgba(0, 0, 0, 0.84); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: rgba(14, 16, 26, 0.96); backdrop-filter: blur(25px) saturate(200%); -webkit-backdrop-filter: blur(25px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: var(--radius-lg); width: 100%; max-width: 520px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.9), 0 0 40px rgba(245, 158, 11, 0.15); overflow: hidden; animation: card-appear 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;">
-            <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-subtle); display: flex; align-items: center; justify-content: space-between; background: rgba(245, 158, 11, 0.08);">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <span class="card-icon-badge" style="background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #fbbf24; width: 34px; height: 34px; font-size: 0.95rem;">
-                        <i class="fas fa-coins"></i>
-                    </span>
-                    <h3 id="ai-credit-modal-title" style="margin: 0; font-size: 1.1rem; font-weight: 800; color: #fff;">Server AI Credit Override</h3>
-                </div>
-                <button onclick="closeCreditModal()" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; padding: 4px 8px; line-height: 1; transition: var(--transition-smooth);" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
-            </div>
-            <div style="padding: 24px;">
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px;">
-                    <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.06em;">Target Server</div>
-                    <div id="ai-credit-modal-target" style="font-size: 0.95rem; font-weight: 700; color: #fff; margin-top: 4px; word-break: break-all;">--</div>
-                </div>
-                <div id="ai-credit-modal-desc" style="font-size: 0.82rem; line-height: 1.5; color: #fbbf24; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.22); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 18px;">
-                </div>
-                <div class="form-group" style="margin-bottom: 16px;">
-                    <label id="ai-credit-modal-input-label" style="font-weight: 700; font-size: 0.78rem; margin-bottom: 8px; display: block; color: #fff;">
-                        Credit Amount
-                    </label>
-                    <input type="number" id="ai-credit-modal-input" min="1" step="50" style="width: 100%; box-sizing: border-box; background: rgba(8, 10, 18, 0.75); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 12px; color: #fff; font-family: inherit; font-size: 1.05rem; font-weight: 700; outline: none; transition: var(--transition-smooth);" onfocus="this.style.borderColor='#fbbf24'; this.style.boxShadow='0 0 0 3px rgba(245, 158, 11, 0.2)';" onblur="this.style.borderColor='var(--border-subtle)'; this.style.boxShadow='none';">
-                </div>
-                <div style="margin-bottom: 22px;">
-                    <div style="font-size: 0.72rem; color: var(--muted); margin-bottom: 6px; font-weight: 600;">Quick Presets:</div>
-                    <div id="ai-credit-modal-chips" style="display: flex; gap: 6px; flex-wrap: wrap;">
-                    </div>
-                </div>
-                <div style="display: flex; gap: 12px; justify-content: flex-end; align-items: center;">
-                    <button onclick="closeCreditModal()" class="logout" style="padding: 10px 20px; font-size: 0.85rem; border-color: var(--border-subtle); color: var(--text-muted); cursor: pointer;">Cancel</button>
-                    <button id="ai-credit-modal-submit-btn" onclick="submitCreditModal()" class="btn-action" style="padding: 10px 24px; font-size: 0.88rem; font-weight: 700; width: auto; background: linear-gradient(135deg, #fbbf24, #d97706); color: #000; cursor: pointer; box-shadow: 0 4px 16px rgba(245, 158, 11, 0.35);">
-                        Apply
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
 </body>
 </html>

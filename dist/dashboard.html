@@ -4199,6 +4199,25 @@
                     }
                 });
 
+                    // Fallback for profile, user preferences, and any dynamic inputs outside previousSettings
+                if (window.unsavedChangeHistory && window.unsavedChangeHistory.length > 0) {
+                    const existingFieldIds = new Set(diffs.map(d => d.fieldId));
+                    window.unsavedChangeHistory.forEach(fieldId => {
+                        if (!fieldId || existingFieldIds.has(fieldId)) return;
+                        const el = document.getElementById(fieldId) || document.querySelector('[name="' + fieldId + '"]');
+                        if (!el) return;
+                        const label = typeof formatSettingKeyLabel === 'function' ? formatSettingKeyLabel(fieldId, el) : (el.title || el.placeholder || fieldId);
+                        const newStr = el.type === 'checkbox' ? (el.checked ? 'Enabled' : 'Disabled') : (el.value ? String(el.value).slice(0, 24) : 'Updated');
+                        diffs.push({
+                            fieldId: fieldId,
+                            key: fieldId,
+                            label: label,
+                            oldStr: 'Unsaved',
+                            newStr: newStr
+                        });
+                    });
+                }
+
                 return diffs;
             };
 
@@ -4329,6 +4348,32 @@
                     };
                     configContainer.addEventListener('input', handleConfigEdit);
                     configContainer.addEventListener('change', handleConfigEdit);
+
+            document.addEventListener('input', (e) => {
+                const target = e.target;
+                if (!target || !target.tagName) return;
+                const tag = target.tagName.toUpperCase();
+                if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') {
+                    if (target.dataset && target.dataset.noTrack) return;
+                    if (target.id && (target.id.includes('search') || target.id.includes('filter'))) return;
+                    if (typeof window.markFormDirty === 'function') {
+                        window.markFormDirty(target.id || target.name || 'field');
+                    }
+                }
+            });
+            document.addEventListener('change', (e) => {
+                const target = e.target;
+                if (!target || !target.tagName) return;
+                const tag = target.tagName.toUpperCase();
+                if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA') {
+                    if (target.dataset && target.dataset.noTrack) return;
+                    if (target.id && (target.id.includes('search') || target.id.includes('filter'))) return;
+                    if (typeof window.markFormDirty === 'function') {
+                        window.markFormDirty(target.id || target.name || 'field');
+                    }
+                }
+            });
+
                 }
             });
         </script>
@@ -10130,17 +10175,6 @@
                                     </div>
                                     <p style="font-size: 0.76rem; color: var(--muted); margin: 0; line-height: 1.4;">Require linking a verified Roblox account and sync custom group rank roles.</p>
                                 </div>
-
-                                <div id="verify-method-insite-card" class="verify-method-card" data-method="insite" onclick="selectVerificationMethod('insite')" style="cursor: pointer; padding: 16px; border-radius: 12px; border: 1px solid rgba(88, 101, 242, 0.35); background: rgba(88, 101, 242, 0.05); transition: all 0.2s;">
-                                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
-                                        <div style="display: flex; align-items: center; gap: 10px;">
-                                            <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(88, 101, 242, 0.25); display: flex; align-items: center; justify-content: center; color: #818cf8; font-size: 1rem;"><i class="fas fa-user-shield"></i></div>
-                                            <div style="font-weight: 800; color: #fff; font-size: 0.9rem;">In-Site Security Pass</div>
-                                        </div>
-                                        <span style="font-size: 0.65rem; background: rgba(88, 101, 242, 0.2); color: #818cf8; border: 1px solid rgba(88, 101, 242, 0.4); padding: 2px 7px; border-radius: 4px; font-weight: 700;">MILO & NORA EXCLUSIVE</span>
-                                    </div>
-                                    <p style="font-size: 0.76rem; color: var(--muted); margin: 0; line-height: 1.4;">Redirects members to the encrypted portal on vaztinix.dev to log IPs, detect VPNs/Tor, and auto-ban evasion alts.</p>
-                                </div>
                             </div>
                         </div>
 
@@ -10238,32 +10272,6 @@
                                         <input type="text" id="setting-verifyBtnEmoji" placeholder="🔒" oninput="updateVerifyLivePreview()" style="width: 100%; box-sizing: border-box; text-align: center; font-size: 0.85rem;">
                                     </div>
                                 </div>
-
-                                <!-- In-Site Security Pass Customizer (Dynamic Display) -->
-                                <div id="verify-insite-extra-controls" style="display: none; background: rgba(88, 101, 242, 0.05); border: 1px solid rgba(88, 101, 242, 0.2); border-radius: 12px; padding: 14px; margin-top: 4px; flex-direction: column; gap: 12px;">
-                                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                                        <div>
-                                            <div style="font-size: 0.82rem; font-weight: 700; color: #fff;">Secondary Help Button ("Why In-Site?")</div>
-                                            <div style="font-size: 0.72rem; color: var(--muted);">Display explanation button alongside the primary verification button</div>
-                                        </div>
-                                        <label class="switch small"><input type="checkbox" id="setting-verifyInsiteShowHelpBtn" checked onchange="updateVerifyLivePreview()"><span class="slider"></span></label>
-                                    </div>
-                                    <div style="display: grid; grid-template-columns: 1fr 0.4fr; gap: 10px;">
-                                        <div class="input-group" style="margin-bottom: 0;">
-                                            <label style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">Help Button Label</label>
-                                            <input type="text" id="setting-verifyInsiteHelpLabel" placeholder="Why In-Site?" oninput="updateVerifyLivePreview()" style="width: 100%; box-sizing: border-box; font-size: 0.82rem;">
-                                        </div>
-                                        <div class="input-group" style="margin-bottom: 0;">
-                                            <label style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">Emoji</label>
-                                            <input type="text" id="setting-verifyInsiteHelpEmoji" placeholder="❓" oninput="updateVerifyLivePreview()" style="width: 100%; box-sizing: border-box; text-align: center; font-size: 0.82rem;">
-                                        </div>
-                                    </div>
-                                    <div class="input-group" style="margin-bottom: 0;">
-                                        <label style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">Custom "Why In-Site?" Explanation Body (Optional)</label>
-                                        <textarea id="setting-verifyInsiteHelpDesc" rows="2" placeholder="Leave blank to use Nora's default explanation of advanced security..." style="width: 100%; box-sizing: border-box; resize: vertical; font-size: 0.8rem;"></textarea>
-                                    </div>
-                                </div>
-
                                 <button type="button" class="config-btn primary" onclick="triggerAction('spawn_verify', this)" style="width: 100%; padding: 12px; font-weight: 800; font-size: 0.88rem; background: #10b981; color: #000; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); margin-top: 4px;">
                                     <i class="fas fa-paper-plane" style="margin-right: 6px;"></i> Deploy Panel to Channel
                                 </button>
@@ -14066,6 +14074,146 @@
 
         let authOverlay = null;
         let viewServers, viewConfig, viewPrefs, viewNotifications, viewProfile;
+        
+        // ========================================================
+        // IN-SITE GATEKEEPER SUITE (Hoisted Helpers & Live Preview)
+        // ========================================================
+        window.updateInsiteLivePreview = function() {
+            try {
+                const titleInput = document.getElementById('setting-insiteVerifyEmbedTitle');
+                const descInput = document.getElementById('setting-insiteVerifyEmbedDesc');
+                const colorInput = document.getElementById('setting-insiteVerifyEmbedColor');
+                const btnLabelInput = document.getElementById('setting-insiteVerifyBtnLabel');
+                const btnEmojiInput = document.getElementById('setting-insiteVerifyBtnEmoji');
+                const showHelpToggle = document.getElementById('setting-insiteShowHelpBtn');
+                const helpLabelInput = document.getElementById('setting-insiteHelpLabel');
+                const helpEmojiInput = document.getElementById('setting-insiteHelpEmoji');
+
+                const titleEl = document.getElementById('insite-preview-title');
+                const descEl = document.getElementById('insite-preview-desc');
+                const embedEl = document.getElementById('insite-preview-embed');
+                const btnLabelEl = document.getElementById('insite-preview-primary-label');
+                const btnEmojiEl = document.getElementById('insite-preview-primary-emoji');
+                const helpBtnEl = document.getElementById('insite-preview-help-btn');
+                const helpLabelEl = document.getElementById('insite-preview-help-label');
+                const helpEmojiEl = document.getElementById('insite-preview-help-emoji');
+
+                if (titleEl) titleEl.textContent = (titleInput && titleInput.value.trim()) ? titleInput.value : 'Community Gatekeeper • In-Site Security Pass';
+                if (descEl) descEl.textContent = (descInput && descInput.value.trim()) ? descInput.value : 'To safeguard our community with an advanced way to secure servers across all communities, server access requires completing the Nora In-Site Security Pass.\n\nClick the button below to generate your private session pass.';
+                if (embedEl && colorInput && colorInput.value) embedEl.style.borderLeftColor = colorInput.value;
+                if (btnLabelEl) btnLabelEl.textContent = (btnLabelInput && btnLabelInput.value.trim()) ? btnLabelInput.value : 'Start In-Site Verification';
+                if (btnEmojiEl) btnEmojiEl.textContent = (btnEmojiInput && btnEmojiInput.value.trim()) ? btnEmojiInput.value : '🛡️';
+
+                if (helpBtnEl) {
+                    const showHelp = showHelpToggle ? showHelpToggle.checked : true;
+                    helpBtnEl.style.display = showHelp ? 'flex' : 'none';
+                }
+                if (helpLabelEl) helpLabelEl.textContent = (helpLabelInput && helpLabelInput.value.trim()) ? helpLabelInput.value : 'Why In-Site?';
+                if (helpEmojiEl) helpEmojiEl.textContent = (helpEmojiInput && helpEmojiInput.value.trim()) ? helpEmojiInput.value : '❓';
+            } catch (e) {
+                console.warn('[In-Site Live Preview Sync]:', e.message);
+            }
+        };
+
+        window.syncInsiteChannelWithVerify = function(val) {
+            const vChan = document.getElementById('setting-verifyChannelId');
+            if (vChan && val) {
+                vChan.value = val;
+            }
+            if (typeof markFormDirty === 'function') markFormDirty('setting-insiteVerifyChannelId');
+        };
+
+        window.triggerInsiteDeploy = async function(btn) {
+            if (!currentServerId) {
+                showToast('Please select a server first.', 'warning');
+                return;
+            }
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deploying...';
+            }
+
+            try {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const t = sessionStorage.getItem('discord_token');
+                const channelSelect = document.getElementById('setting-insiteVerifyChannelId') || document.getElementById('setting-verifyChannelId');
+                const channelId = channelSelect ? channelSelect.value : null;
+
+                if (!channelId) {
+                    showToast('Please select a Gatekeeper Spawn Channel before deploying.', 'warning');
+                    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+                    return;
+                }
+
+                if (typeof saveSettings === 'function') {
+                    await saveSettings();
+                }
+
+                const res = await fetch(`${apiBase}/api/guilds/${currentServerId}/actions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${t}`
+                    },
+                    body: JSON.stringify({ action: 'spawn_verify', targetChannelId: channelId })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast('✅ In-Site Security Gatekeeper panel successfully deployed!', 'success');
+                } else {
+                    showToast(data.error || 'Failed to deploy security panel.', 'error');
+                }
+            } catch (err) {
+                showToast('Network error deploying In-Site security panel.', 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            }
+        };
+
+        window.fetchInsiteLogs = async function() {
+            if (!currentServerId) return;
+            const container = document.getElementById('insite-verify-log-container');
+            if (!container) return;
+
+            try {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const t = sessionStorage.getItem('discord_token');
+                const res = await fetch(`${apiBase}/api/guilds/${currentServerId}/verification-logs?limit=25`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const logs = Array.isArray(data) ? data : (data.logs || []);
+                    if (logs.length === 0) {
+                        container.innerHTML = '<div style="text-align: center; padding: 24px 16px; color: var(--muted); font-size: 0.85rem;"><i class="fas fa-user-shield" style="font-size: 1.8rem; margin-bottom: 8px; opacity: 0.4; display: block;"></i>No member verification sessions recorded yet.</div>';
+                    } else {
+                        container.innerHTML = logs.map(l => {
+                            const statusColor = (l.status === 'success' || l.status === 'passed') ? '#10b981' : (l.status === 'flagged' ? '#f59e0b' : '#f43f5e');
+                            const statusLabel = l.status ? l.status.toUpperCase() : 'VERIFIED';
+                            const userLabel = l.username || l.userId || 'Unknown Member';
+                            return `<div style="padding: 10px 14px; border-radius: 10px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 0.82rem;">
+                                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; flex-shrink: 0;"></span>
+                                    <div style="min-width: 0;">
+                                        <div style="font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(userLabel)}</div>
+                                        <div style="font-size: 0.72rem; color: var(--muted);">${escapeHtml(l.method || 'In-Site Gatekeeper')} • ${new Date(l.createdAt || Date.now()).toLocaleTimeString()}</div>
+                                    </div>
+                                </div>
+                                <span style="font-size: 0.7rem; font-weight: 700; color: ${statusColor}; background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">${statusLabel}</span>
+                            </div>`;
+                        }).join('');
+                    }
+                }
+            } catch (err) {
+                console.warn('[Fetch In-Site Logs Fault]:', err.message);
+            }
+        };
+
         let currentServerId = null;
         let currentServerName = "";
         let currentServerIsPremium = false;
@@ -18412,10 +18560,7 @@
             if (insiteHelpEmojiEl && insiteHelpEmojiEl.value) payload.verifyInsiteHelpEmoji = insiteHelpEmojiEl.value;
             const insiteHelpDescEl = document.getElementById('setting-insiteHelpDesc');
             if (insiteHelpDescEl && insiteHelpDescEl.value) payload.verifyInsiteHelpDesc = insiteHelpDescEl.value;
-                if (insiteHelpDescEl) insiteHelpDescEl.value = s.verifyInsiteHelpDesc || '';
-
-                if (typeof updateInsiteLivePreview === 'function') updateInsiteLivePreview();
-                if (typeof fetchInsiteLogs === 'function') fetchInsiteLogs();
+                
 
                 KEYS.forEach(k => {
                 const el = document.getElementById('setting-' + k);
@@ -18632,9 +18777,38 @@
             }
         }
 
-        window.saveCurrentTabSettings = function() {
-            saveSettings();
+        
+        window.saveCurrentTabSettings = async function() {
+            let saved = false;
+            try {
+                if (document.body.classList.contains('in-config')) {
+                    if (typeof saveSettings === 'function') {
+                        await saveSettings();
+                        saved = true;
+                    }
+                }
+                const profileView = document.getElementById('view-profile');
+                const settingsView = document.getElementById('view-settings');
+                const isProfileActive = (profileView && profileView.style.display !== 'none') || (settingsView && settingsView.style.display !== 'none');
+                const hasUserPrefDiffs = (window.unsavedChangeHistory || []).some(id => id && (id.startsWith('user-pref-') || id.startsWith('pref-')));
+                
+                if (isProfileActive || hasUserPrefDiffs) {
+                    if (typeof saveUserProfile === 'function') {
+                        await saveUserProfile(false);
+                        saved = true;
+                    }
+                }
+                if (!saved && typeof saveSettings === 'function') {
+                    await saveSettings();
+                    saved = true;
+                }
+                window.markFormClean();
+                showToast('All changes saved successfully.', 'success');
+            } catch (e) {
+                showToast('Error saving changes: ' + (e.message || 'Unknown fault'), 'error');
+            }
         };
+
 
         window.revertUnsavedChanges = function() {
             const unsavedBar = document.getElementById('unsaved-changes-bar');
@@ -20116,7 +20290,7 @@
         // ==========================================
         // ONE-TIME 7-DAY FREE TRIAL SYSTEM & ANNOUNCEMENT
         // ==========================================
-        window.claimFreePremiumTrial = async function(event) {
+        window.claimFreePremiumTrial = async function(event) { showToast("Universal free trials have ended. Nora Premium is active for all early adopters & subscribers.", "info"); return;
             if (event) event.stopPropagation();
             const btn = event?.currentTarget || event?.target;
             const originalContent = btn ? btn.innerHTML : '';
@@ -20204,7 +20378,7 @@
             }
         };
 
-        window.renderPremiumTrialAnnouncement = function() {
+        window.renderPremiumTrialAnnouncement = function() { return;
             // Check if user is logged in
             if (!window.currentUser || !window.currentUser.id) return;
             // Check if trial already claimed
@@ -20283,7 +20457,7 @@
             }
         };
 
-        window.checkAndTriggerTrialAnnouncement = function() {
+        window.checkAndTriggerTrialAnnouncement = function() { return;
             try {
                 if (window.currentUser && !window.currentUser.freeTrialClaimed && !window.currentUser.prefs?.freeTrialClaimed) {
                     window.renderPremiumTrialAnnouncement();
@@ -25247,7 +25421,7 @@
                     origUpdateUnsaved.apply(this, arguments);
                     const floating = ensureFloatingDraftBanner();
                     const diffs = typeof window.computeFormDiffs === 'function' ? window.computeFormDiffs() : [];
-                    if (!diffs || diffs.length === 0 || !document.body.classList.contains('in-config')) {
+                    if (!diffs || diffs.length === 0) {
                         floating.classList.remove('is-visible');
                         return;
                     }
@@ -29812,10 +29986,7 @@
                     if (insiteHelpEmojiEl) insiteHelpEmojiEl.value = s.verifyInsiteHelpEmoji || '❓';
 
                     const insiteHelpDescEl = document.getElementById('setting-insiteHelpDesc');
-                    if (insiteHelpDescEl) insiteHelpDescEl.value = s.verifyInsiteHelpDesc || '';
-
-                    if (typeof updateInsiteLivePreview === 'function') updateInsiteLivePreview();
-                    if (typeof fetchInsiteLogs === 'function') fetchInsiteLogs();
+                    
                 } catch (e) {
                     console.warn('[In-Site Settings Populate Fault]:', e.message);
                 }
