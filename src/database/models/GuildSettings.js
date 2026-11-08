@@ -539,6 +539,39 @@ const GuildSettings = sequelize.define('GuildSettings', {
         allowNull: true,
         defaultValue: null
     },
+    aiEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    aiChannelId: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+        defaultValue: null
+    },
+    aiIgnoredRoles: {
+        type: DataTypes.TEXT,
+        defaultValue: '[]'
+    },
+    aiCommandExecutionEnabled: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
+    aiPersonality: {
+        type: DataTypes.TEXT,
+        defaultValue: 'dynamic'
+    },
+    aiNsfwFilterAction: {
+        type: DataTypes.TEXT,
+        defaultValue: 'delete_mute'
+    },
+    aiNsfwMuteDurationMinutes: {
+        type: DataTypes.INTEGER,
+        defaultValue: 15
+    },
+    aiSelfHarmIntervention: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true
+    },
     aiAutoRespondEnabled: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
@@ -992,6 +1025,10 @@ const GuildSettings = sequelize.define('GuildSettings', {
         type: DataTypes.TEXT,
         allowNull: true,
         defaultValue: null
+    },
+    levelUpDisablePing: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: false
     },
     levelingPfpEnabled: {
         type: DataTypes.BOOLEAN,

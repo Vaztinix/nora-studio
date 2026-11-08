@@ -308,8 +308,9 @@ async function handleReactionAdd(reaction, user) {
     if (!reaction.message.guild) return;
     const guild = reaction.message.guild;
 
-    const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
-    if (!settings || !settings.starboardEnabled || !settings.starboardChannelId) return;
+    const settings = await settingsCache.get(guild.id) || await GuildSettings.findOne({ where: { guildId: guild.id } });
+    const isStarboardActive = Boolean(settings?.starboardChannelId) && settings?.starboardEnabled !== false;
+    if (!settings || !isStarboardActive || !settings.starboardChannelId) return;
 
     // Check ignored channels
     let ignoredChannels = [];
@@ -597,8 +598,9 @@ async function handleReactionRemove(reaction, user) {
     if (!reaction.message.guild) return;
     const guild = reaction.message.guild;
 
-    const settings = await GuildSettings.findOne({ where: { guildId: guild.id } });
-    if (!settings || !settings.starboardEnabled || !settings.starboardChannelId) return;
+    const settings = await settingsCache.get(guild.id) || await GuildSettings.findOne({ where: { guildId: guild.id } });
+    const isStarboardActive = Boolean(settings?.starboardChannelId) && settings?.starboardEnabled !== false;
+    if (!settings || !isStarboardActive || !settings.starboardChannelId) return;
 
     const triggerEmoji = settings.starboardEmoji || '⭐';
     const emojiName = reaction.emoji.id ? null : reaction.emoji.name;

@@ -287,7 +287,17 @@ module.exports = {
         try {
             const settingsCache = require('../utils/settingsCache');
             const guildSettings = await settingsCache.get(message.guild.id);
-            if (guildSettings && guildSettings.moderationEnabled !== false && guildSettings.autoModActive !== false) {
+            const hasAnyAutoModRule = Boolean(
+                guildSettings?.automodProfanity || guildSettings?.automodSexual ||
+                guildSettings?.automodSlurs || guildSettings?.automodSpam ||
+                guildSettings?.automodMentions || guildSettings?.automodScam ||
+                guildSettings?.automodInvites || guildSettings?.automodLinks ||
+                guildSettings?.automodCaps || guildSettings?.automodZalgo ||
+                guildSettings?.automodSelfPromo || guildSettings?.automodHateSpeech ||
+                guildSettings?.spamDetectionEnabled
+            );
+            const isAutoModActive = guildSettings && guildSettings.moderationEnabled !== false && (guildSettings.autoModActive === true || hasAnyAutoModRule);
+            if (isAutoModActive) {
                 const { assessMessageThreatContext } = require('../bot/engines/moderation');
                 const threat = await assessMessageThreatContext(guildSettings, message);
 

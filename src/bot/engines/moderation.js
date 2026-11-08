@@ -115,7 +115,16 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
 
     // Master toggles
     const isModerationEnabled = guildConfig.moderationEnabled !== false;
-    const isAutoModActive = guildConfig.autoModActive !== false;
+    const hasAnyRuleEnabled = Boolean(
+        guildConfig.automodProfanity || guildConfig.automodSexual ||
+        guildConfig.automodSlurs || guildConfig.automodSpam ||
+        guildConfig.automodMentions || guildConfig.automodScam ||
+        guildConfig.automodInvites || guildConfig.automodLinks ||
+        guildConfig.automodCaps || guildConfig.automodZalgo ||
+        guildConfig.automodSelfPromo || guildConfig.automodHateSpeech ||
+        guildConfig.spamDetectionEnabled
+    );
+    const isAutoModActive = guildConfig.autoModActive === true || (guildConfig.autoModActive !== false && hasAnyRuleEnabled) || hasAnyRuleEnabled;
     if (!isModerationEnabled || !isAutoModActive) {
         return { actionRequired: false };
     }

@@ -8,7 +8,7 @@
   <a href="https://vaztinix.dev"><img src="https://img.shields.io/badge/Website-vaztinix.dev-7C3AED?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website" /></a>
   <a href="https://top.gg/user/593420060990005248"><img src="https://img.shields.io/badge/Top.gg-Approved_Bot-FF3366?style=for-the-badge&logo=top.gg&logoColor=white" alt="Top.gg" /></a>
   <a href="https://discord.gg/m9WPYV287q"><img src="https://img.shields.io/badge/Discord-Join_Community-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord" /></a>
-  <a href="https://github.com/Vaztinix/nora-studio"><img src="https://img.shields.io/badge/Version-4.0_Production-10B981?style=for-the-badge&logo=github&logoColor=white" alt="Version" /></a>
+  <a href="https://github.com/Vaztinix/nora-studio"><img src="https://img.shields.io/badge/Version-4.5.0_Production-10B981?style=for-the-badge&logo=github&logoColor=white" alt="Version" /></a>
   <a href="#-the-1-top-privacy-bot-choice-for-discord"><img src="https://img.shields.io/badge/Privacy-Zero--Access%20Verified-00B4D8?style=for-the-badge&logo=shield&logoColor=white" alt="Privacy" /></a>
   <a href="https://www.botboard.gg/bots/nora?ref=badge"><img src="https://www.botboard.gg/api/badge/nora?type=servers" alt="BotBoard" /></a>
 </p>
@@ -84,6 +84,53 @@ Behind Nora is **Nora Studio**, a passionate collective of developers, community
 | **Mr. Void** | `thevoid_8095` | **Partner** — Official partner of Nora Studio. |
 | **boris10106** | `boris10106` | **Team Member & Contributor** — Server integration testing and feature verification. |
 | **yunex0** | `yunex0` | **Team Member & Contributor** — Telemetry validation, community support, and bug reporting. |
+
+---
+
+## ⚙️ Interactive Server Setup (`/setup`)
+
+Nora features a comprehensive, Discord-native `/setup` command suite enabling server administrators to configure every subsystem in seconds with interactive UI components (Buttons, Select Menus, Modals) and zero friction.
+
+### 📋 Setup Subcommands & Modules
+
+| Subcommand | Purpose & Capabilities |
+| :--- | :--- |
+| `/setup dashboard` | Opens the main interactive control center with quick-navigation menus across all server systems. |
+| `/setup automod` | Configures Discord Native AutoMod & Nora Real-Time Threat Filters: **Direct Profanity**, **Sexual Content**, **Slurs**, **Hate Speech**, **Self-Promotion**, **Scam & Phishing Links**, **Discord Invites**, **External Links**, **Excessive Caps**, **Zalgo Spam**, **Text Message Spam**, **Hardcore Media**, **Mention Spam Limits**, and **Immune Roles**. Includes a 1-click **Sync All to Discord** button. |
+| `/setup welcomer` | Configures customized welcome cards, join notifications, and goodbye cards across Image, Embed, and Text modes. |
+| `/setup autorole` | Configures multi-role assignment upon member join (Up to 3 roles for free servers, up to 5 roles for Nora Plus servers). |
+| `/setup leveling` | Configures chat and voice XP rewards, level-up celebration cards, multiplier roles, and milestone role awards. |
+| `/setup logging` | Configures multi-stream server audit logging across Members, Messages, Voice, Moderation, Verification, and Tickets. |
+| `/setup games` | Configures collaborative server games: Sequential Counting, Starboard, One Word Story, Guess the Number, WordBomb, and Trivia. |
+| `/setup afk` | Configures the server AFK system, automatic `[AFK]` nickname prefixing, anti-ping notifications with auto-cleanup, and AFK roles. |
+| `/setup ticket` | Configures private staff support tickets, category routing, support roles, interactive ticket panels, and **Download Server Ticketing History** archive export. |
+| `/setup verify` | Configures server verification challenge types: **1-Click Button**, **Anti-Bot CAPTCHA**, **Reaction Emoji**, **Roblox Account Linking**, and the **In-Site Security Pass**. |
+| `/setup roblox` | Configures Roblox Open Cloud account linking, group rank binding, and automated rank-to-role synchronization. |
+| `/setup security` | Configures the **Verification Threat Gatekeeper**, 11-factor client telemetry, dynamic risk scoring, online threat intel, ban evasion matching, and auto-quarantine/auto-ban (Risk Score >= 70). |
+| `/setup starboard` | Configures reaction thresholds (⭐), custom emojis, dynamic tier colors, milestone role rewards, and private channel ignore filters. |
+| `/setup onewordstory`| Configures collaborative One Word Story channel, milestone story archives, and continuous auto-start setting. |
+| `/setup counting` | Configures sequential counting streaks, arithmetic expression parser (`:`, `÷`, `/`, `-`, `^`), top counter dynamic role awards, and fail thresholds. |
+| `/setup ai` | Configures Gemini AI conversational intelligence, model selection (`gemini-3.5-flash-lite`, `gemini-flash-lite`), auto-respond channels, and system prompts. |
+| `/setup moderation` | Configures autonomous Nora moderation actions, mod log routing, and direct message penalty notices. |
+| `/setup adaptiveslowmode` | Configures automatic chat velocity pacing with intelligent surge detection and smooth decay. |
+
+---
+
+## 🎁 Weekly Rewards & Perk Inventory
+
+To incentivize daily engagement and community voting, Nora includes a gamified **Weekly Rewards** and **Perk Inventory** engine:
+
+- 🗓️ **7-Day Progressive Voting Streak on Top.gg**:
+  - **Day 1**: +250 Server XP Voucher
+  - **Day 2**: 5 Free AI Prompt Credits
+  - **Day 3**: 3 Tries with My TV Entertainment
+  - **Day 4**: +500 Server XP Voucher
+  - **Day 5**: 10 Free AI Prompt Credits
+  - **Day 6**: 5 My TV Tries + 1,000 XP Voucher
+  - **Day 7**: 3-Day Nora Premium Pass
+- 🔒 **Active Vote Verification Gate**: Nora verifies real-time active vote status on [Top.gg](https://top.gg/bot/1375943730951098549/vote) before granting claims. Unverified attempts are blocked with direct vote links.
+- 🌐 **Server Allocation**: After claiming, members choose which server receives their Server XP Vouchers and perk boosts.
+- 🎒 **Personal Perk Inventory**: Users inspect their claimed one-time items, track consumable passes, and view perk trading compatibility.
 
 ---
 

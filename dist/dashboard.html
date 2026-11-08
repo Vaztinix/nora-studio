@@ -31,18 +31,17 @@
 
             sessionStorage.getItem = function(key) {
                 if (key === 'discord_token') {
-                    const time = localStorage.getItem('discord_token_time');
-                    const val = localStorage.getItem('discord_token_val');
-                    if (time && val) {
-                        if (Date.now() - parseInt(time, 10) < ONE_WEEK_MS) {
-                            if (!originalGetItem.call(sessionStorage, key)) {
-                                originalSetItem.call(sessionStorage, key, val);
-                            }
-                            return val;
-                        } else {
-                            localStorage.removeItem('discord_token_val');
-                            localStorage.removeItem('discord_token_time');
-                        }
+                    const sessionVal = originalGetItem.call(sessionStorage, key);
+                    if (sessionVal) return sessionVal;
+
+                    const val = localStorage.getItem('discord_token_val') || 
+                                localStorage.getItem('discord_token') || 
+                                localStorage.getItem('nora_discord_token') || 
+                                localStorage.getItem('nora_admin_token') ||
+                                localStorage.getItem('token');
+                    if (val) {
+                        try { originalSetItem.call(sessionStorage, key, val); } catch(_) {}
+                        return val;
                     }
                 }
                 return originalGetItem.call(sessionStorage, key);
@@ -14735,8 +14734,20 @@
                 if (earlyToken) {
                     sessionStorage.setItem('discord_token', earlyToken);
                     localStorage.setItem('discord_token', earlyToken);
+                    localStorage.setItem('discord_token_val', earlyToken);
                     localStorage.setItem('nora_discord_token', earlyToken);
                 }
+            }
+            const syncTok = sessionStorage.getItem('discord_token') || 
+                            localStorage.getItem('discord_token') || 
+                            localStorage.getItem('discord_token_val') || 
+                            localStorage.getItem('nora_discord_token') || 
+                            localStorage.getItem('nora_admin_token');
+            if (syncTok) {
+                try { sessionStorage.setItem('discord_token', syncTok); } catch (_) {}
+                try { localStorage.setItem('discord_token', syncTok); } catch (_) {}
+                try { localStorage.setItem('discord_token_val', syncTok); } catch (_) {}
+                try { localStorage.setItem('nora_discord_token', syncTok); } catch (_) {}
             }
         } catch (e) {
             console.warn('[Token Parse Notice]:', e);
@@ -19448,7 +19459,7 @@
                 saveBtn.disabled = true;
             }
 
-            const t = sessionStorage.getItem('discord_token');
+            const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('discord_token_val') || localStorage.getItem('nora_discord_token');
             logToTerminal(`Attempting to save settings for ${currentServerId}`, 'SAVE_START', payload);
             try {
                 const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/settings`, {
@@ -30690,7 +30701,7 @@
 
             if (hasStaleCache) {
                 // Render stale data immediately (no spinner)
-                _applySettings(s);
+                _applySettings(s, true);
                 fetchApplications();
                 // Background revalidation if stale
                 const entry = window.dashboardCache.settings.get(cacheKey);
@@ -30704,7 +30715,7 @@
                     }).then(freshData => {
                         logToTerminal(`Background refresh settings for ${currentServerId}`, 'FETCH_SUCCESS', freshData);
                         window.dashboardCache.settings.set(cacheKey, { timestamp: Date.now(), data: freshData });
-                        _applySettings(freshData);
+                        _applySettings(freshData, true);
                     }).catch(e => console.warn('Background settings refresh failed:', e));
                 }
                 return;
@@ -30712,7 +30723,7 @@
 
             // No cache — show spinner
             toggleLoading(true);
-            const t = sessionStorage.getItem('discord_token');
+            const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('discord_token_val') || localStorage.getItem('nora_discord_token');
             try {
                 const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/settings`, {
                     headers: { 'Authorization': `Bearer ${t}` }
@@ -30927,9 +30938,9 @@
             }
         }
 
-        async function _applySettings(s) {
-            // Guard: Never overwrite user inputs if there are unsaved draft changes being worked on
-            if (window.hasUnsavedChanges || (typeof isUserEditing === 'function' && isUserEditing())) {
+        async function _applySettings(s, force = false) {
+            // Guard: Never overwrite user inputs ONLY if force is not requested AND user explicitly made unsaved changes
+            if (!force && window.hasUnsavedChanges && (typeof isUserEditing === 'function' && isUserEditing())) {
                 console.log('[Draft Protection] Skipping background settings overwrite because user has unsaved draft changes.');
                 return;
             }

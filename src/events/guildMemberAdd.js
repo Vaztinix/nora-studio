@@ -304,7 +304,7 @@ module.exports = {
             }
 
             // 3. --- Welcome Announcement (Welcomer Module) ---
-            const isWelcomerActive = settings.welcomerEnabled === true || settings.welcomerEnabled === 1 || settings.welcomerEnabled === 'true' || settings.welcomerEnabled === '1';
+            const isWelcomerActive = (settings.welcomerEnabled === true || settings.welcomerEnabled === 1 || settings.welcomerEnabled === 'true' || settings.welcomerEnabled === '1' || (Boolean(settings.welcomeChannelId) && settings.welcomerEnabled !== false));
             const welcomeTemplate = settings.welcomeMessage || settings.logJoinMessage;
             const welcomeDesc = welcomeTemplate ? formatMessage(welcomeTemplate, member) : `Welcome, <@${member.id}>! We're glad you're here!`;
             const welcomeFormat = settings.welcomeType || 'image';

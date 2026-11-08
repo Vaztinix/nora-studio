@@ -307,39 +307,45 @@ module.exports = {
             // ==========================================
             if (viewName === 'view_automod') {
                 const on = (v) => v ? '**Blocked**' : '**Allowed**';
-                embed.setTitle('Discord Native AutoMod Rules')
-                    .setDescription('Enforced directly by **Discord\'s native AutoMod engine** for instant, zero-latency protection.')
+                embed.setTitle('Discord Native AutoMod Rules & Chat Defense')
+                    .setDescription('Enforced directly by **Discord\'s native AutoMod engine** & Nora\'s real-time threat filter for instant, zero-latency server protection.')
                     .addFields(
-                        { name: 'Profanity Filter', value: on(settings.automodProfanity), inline: true },
+                        { name: 'Direct Profanity', value: on(settings.automodProfanity), inline: true },
                         { name: 'Sexual Content', value: on(settings.automodSexual), inline: true },
                         { name: 'Slurs & Hate Speech', value: on(settings.automodSlurs), inline: true },
-                        { name: 'Scam & Phishing Links', value: on(settings.automodScam), inline: true },
+                        { name: 'Hate Speech Filter', value: on(settings.automodHateSpeech), inline: true },
+                        { name: 'Self-Promotion', value: on(settings.automodSelfPromo), inline: true },
+                        { name: 'Scam & Phishing', value: on(settings.automodScam), inline: true },
+                        { name: 'Discord Invites', value: on(settings.automodInvites), inline: true },
+                        { name: 'External Links', value: on(settings.automodLinks), inline: true },
+                        { name: 'Excessive Caps', value: on(settings.automodCaps), inline: true },
+                        { name: 'Zalgo Text Spam', value: on(settings.automodZalgo), inline: true },
                         { name: 'Text Message Spam', value: on(settings.automodSpam), inline: true },
-                        { name: 'Hardcore Media Filter', value: on(settings.automodHardcore), inline: true },
+                        { name: 'Hardcore Media', value: on(settings.automodHardcore), inline: true },
                         { name: 'Mention Spam Limit', value: settings.automodMentions > 0 ? `**Max ${settings.automodMentions}**` : '**Off**', inline: true },
                         { name: 'Immune Roles', value: (() => { try { const r = JSON.parse(settings.automodImmuneRoles || '[]'); return r.length ? r.map(id => `<@&${id}>`).join(', ') : '*None*'; } catch { return '*None*'; } })(), inline: true }
                     );
 
                 const rowA = new ActionRowBuilder().addComponents(
                     new ButtonBuilder().setCustomId('action_automod_profanity').setLabel('Profanity').setStyle(settings.automodProfanity ? ButtonStyle.Success : ButtonStyle.Secondary),
-                    new ButtonBuilder().setCustomId('action_automod_sexual').setLabel('Sexual Content').setStyle(settings.automodSexual ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_automod_sexual').setLabel('Sexual').setStyle(settings.automodSexual ? ButtonStyle.Success : ButtonStyle.Secondary),
                     new ButtonBuilder().setCustomId('action_automod_slurs').setLabel('Slurs').setStyle(settings.automodSlurs ? ButtonStyle.Success : ButtonStyle.Secondary),
-                    new ButtonBuilder().setCustomId('action_automod_scam').setLabel('Scam Links').setStyle(settings.automodScam ? ButtonStyle.Success : ButtonStyle.Secondary)
+                    new ButtonBuilder().setCustomId('action_automod_hatespeech').setLabel('Hate Speech').setStyle(settings.automodHateSpeech ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_automod_selfpromo').setLabel('Self Promo').setStyle(settings.automodSelfPromo ? ButtonStyle.Success : ButtonStyle.Secondary)
                 );
 
                 const rowB = new ActionRowBuilder().addComponents(
-                    new ButtonBuilder().setCustomId('action_automod_spam').setLabel('Text Spam').setStyle(settings.automodSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
-                    new ButtonBuilder().setCustomId('action_automod_hardcore').setLabel('Hardcore Media').setStyle(settings.automodHardcore ? ButtonStyle.Success : ButtonStyle.Secondary)
+                    new ButtonBuilder().setCustomId('action_automod_scam').setLabel('Scam Links').setStyle(settings.automodScam ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_automod_invites').setLabel('Invites').setStyle(settings.automodInvites ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_automod_links').setLabel('Links').setStyle(settings.automodLinks ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_automod_caps').setLabel('Caps').setStyle(settings.automodCaps ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_automod_zalgo').setLabel('Zalgo').setStyle(settings.automodZalgo ? ButtonStyle.Success : ButtonStyle.Secondary)
                 );
 
                 const rowC = new ActionRowBuilder().addComponents(
-                    new StringSelectMenuBuilder().setCustomId('action_automod_mentions').setPlaceholder('Mention Spam Limit...').addOptions([
-                        { label: 'Off (No limit)', value: '0', default: settings.automodMentions === 0 },
-                        { label: '3 Mentions max', value: '3', default: settings.automodMentions === 3 },
-                        { label: '5 Mentions max', value: '5', default: settings.automodMentions === 5 },
-                        { label: '10 Mentions max', value: '10', default: settings.automodMentions === 10 },
-                        { label: '15 Mentions max', value: '15', default: settings.automodMentions === 15 }
-                    ])
+                    new ButtonBuilder().setCustomId('action_automod_spam').setLabel('Text Spam').setStyle(settings.automodSpam ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_automod_hardcore').setLabel('Hardcore Media').setStyle(settings.automodHardcore ? ButtonStyle.Success : ButtonStyle.Secondary),
+                    new ButtonBuilder().setCustomId('action_automod_sync_all').setLabel('⚡ Sync All to Discord').setStyle(ButtonStyle.Primary)
                 );
 
                 const rowD = new ActionRowBuilder().addComponents(
@@ -1387,6 +1393,13 @@ module.exports = {
                 if (i.customId === 'action_automod_profanity') { settings.automodProfanity = !settings.automodProfanity; update = true; sync = 'profanity'; }
                 if (i.customId === 'action_automod_sexual') { settings.automodSexual = !settings.automodSexual; update = true; sync = 'profanity'; }
                 if (i.customId === 'action_automod_slurs') { settings.automodSlurs = !settings.automodSlurs; update = true; sync = 'profanity'; }
+                if (i.customId === 'action_automod_hatespeech') { settings.automodHateSpeech = !settings.automodHateSpeech; update = true; sync = 'profanity'; }
+                if (i.customId === 'action_automod_selfpromo') { settings.automodSelfPromo = !settings.automodSelfPromo; update = true; sync = 'all'; }
+                if (i.customId === 'action_automod_invites') { settings.automodInvites = !settings.automodInvites; update = true; sync = 'all'; }
+                if (i.customId === 'action_automod_links') { settings.automodLinks = !settings.automodLinks; update = true; sync = 'all'; }
+                if (i.customId === 'action_automod_caps') { settings.automodCaps = !settings.automodCaps; update = true; sync = 'all'; }
+                if (i.customId === 'action_automod_zalgo') { settings.automodZalgo = !settings.automodZalgo; update = true; sync = 'all'; }
+                if (i.customId === 'action_automod_sync_all') { update = true; sync = 'all'; }
                 if (i.customId === 'action_automod_scam') { settings.automodScam = !settings.automodScam; update = true; sync = 'scam'; }
                 if (i.customId === 'action_automod_spam') { settings.automodSpam = !settings.automodSpam; update = true; sync = 'spam'; }
                 if (i.customId === 'action_automod_hardcore') { settings.automodHardcore = !settings.automodHardcore; update = true; sync = 'hardcore'; }

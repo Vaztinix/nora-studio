@@ -1312,7 +1312,20 @@
         const fragment = new URLSearchParams(window.location.hash.slice(1));
         const accessToken = fragment.get('access_token');
         
-        let token = localStorage.getItem('nora_admin_token');
+        function getAdminAuthToken() {
+            let t = getAdminAuthToken() ||
+                    sessionStorage.getItem('discord_token') ||
+                    localStorage.getItem('discord_token') ||
+                    localStorage.getItem('discord_token_val') ||
+                    localStorage.getItem('nora_discord_token') ||
+                    '';
+            if (t && !getAdminAuthToken()) {
+                try { localStorage.setItem('nora_admin_token', t); } catch(e) {}
+            }
+            return t;
+        }
+        window.getAdminAuthToken = getAdminAuthToken;
+        let token = getAdminAuthToken();
 
         if (accessToken) {
             localStorage.setItem('nora_admin_token', accessToken);
@@ -1323,8 +1336,18 @@
         }
 
         window.handleAdminLogin = function() {
+            const existing = getAdminAuthToken();
+            if (existing) {
+                verifyToken(existing);
+                return;
+            }
             const client_id = window.__NORA_CLIENT_ID__ || '1375943730951098549';
-            const redirect_uri = encodeURIComponent(window.location.origin + window.location.pathname);
+            const cleanPath = (window.location.pathname || '/owner').replace(/\/+$/, '') || '/owner';
+            const redirect_uri = encodeURIComponent(
+                (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.port === '3000')
+                    ? `${window.location.origin}${cleanPath}`
+                    : `https://vaztinix.dev${cleanPath}`
+            );
             window.location.href = `https://discord.com/oauth2/authorize?client_id=${client_id}&response_type=token&redirect_uri=${redirect_uri}&scope=identify`;
         };
 
@@ -1480,7 +1503,7 @@
             if (!guildsContainer && !usersContainer) return;
 
             try {
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
                 const res = await fetch(`${apiBase}/api/admin/early-adopters`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
@@ -1609,7 +1632,7 @@
 
         async function managePremiumEx(action, type, id) {
             if (!id) return;
-            const authToken = localStorage.getItem('nora_admin_token');
+            const authToken = getAdminAuthToken();
             const apiBase = window.getApiBaseUrl();
             try {
                 const endpoint = action === 'grant' ? '/api/admin/premium/grant' : '/api/admin/premium/revoke';
@@ -1638,7 +1661,7 @@
         // Auto-refresh every 5 minutes (300,000ms)
         if (!window._ownerAutoRefreshInterval) {
             window._ownerAutoRefreshInterval = setInterval(() => {
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 if (authToken) {
                     console.log('[Owner Operations] Auto-updating telemetry & directories (5m interval)...');
                     loadAdminDeskData();
@@ -1696,7 +1719,7 @@
             const container = document.getElementById('insite-verifications-container');
             if (!container) return;
             try {
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/insite-verifications`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
@@ -1736,7 +1759,7 @@
             }
 
             try {
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/insite-verifications/revoke-role`, {
                     method: 'POST',
@@ -1985,7 +2008,7 @@
             }
 
             try {
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/insite-verifications/ban-alt`, {
                     method: 'POST',
@@ -2013,7 +2036,7 @@
         }
 
         async function loadAdminDeskData() {
-            const authToken = localStorage.getItem('nora_admin_token');
+            const authToken = getAdminAuthToken();
             const apiBase = window.getApiBaseUrl();
             
             // ⚡ Instant Telemetry & UI Render: Show Overview & Health immediately without blocking!
@@ -2197,7 +2220,7 @@
         async function loadSystemDiagnostics() {
             try {
                 const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const res = await fetch(`${apiBase}/api/admin/system-diagnostics`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
@@ -2291,7 +2314,7 @@
         async function forceShardPresenceReload() {
             try {
                 const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const res = await fetch(`${apiBase}/api/admin/shard-reload-presence`, {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${authToken}` }
@@ -2488,7 +2511,6 @@
                     }).join('');
                 }
             }
-        }
 
             // Filter IP Bans
             const filteredIpBans = ipBans.filter(b => 
@@ -2619,7 +2641,7 @@
 
             try {
                 const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const res = await fetch(`${apiBase}${endpoint}`, {
                     method: 'POST',
                     headers: {
@@ -2745,7 +2767,7 @@
 
             try {
                 const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const res = await fetch(`${apiBase}/api/admin/un-perm-revoke-server`, {
                     method: 'POST',
                     headers: {
@@ -2849,7 +2871,7 @@
 
             try {
                 const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const res = await fetch(`${apiBase}/api/admin/status-flags`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
@@ -2899,7 +2921,7 @@
 
             try {
                 const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const res = await fetch(`${apiBase}/api/admin/status-flags`, {
                     method: 'POST',
                     headers: {
@@ -2926,7 +2948,7 @@
 
             try {
                 const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const res = await fetch(`${apiBase}/api/admin/status-flags/${id}/resolve`, {
                     method: 'POST',
                     headers: {
@@ -2950,7 +2972,7 @@
 
             try {
                 const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const res = await fetch(`${apiBase}/api/admin/status-flags/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${authToken}` }
@@ -2994,7 +3016,7 @@
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}`
+                        'Authorization': `Bearer ${getAdminAuthToken()}`
                     },
                     body: JSON.stringify({ action, userId, reason, tempDurationHours })
                 });
@@ -3016,7 +3038,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}`
+                        'Authorization': `Bearer ${getAdminAuthToken()}`
                     },
                     body: JSON.stringify({ ipAddress })
                 });
@@ -3037,7 +3059,7 @@
             try {
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/ai-stats`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}` }
+                    headers: { 'Authorization': `Bearer ${getAdminAuthToken()}` }
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -3067,7 +3089,7 @@
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/ai-reset-cooldowns`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}` }
+                    headers: { 'Authorization': `Bearer ${getAdminAuthToken()}` }
                 });
                 const data = await res.json();
                 alert(data.message || 'Cooldowns flushed.');
@@ -3084,7 +3106,7 @@
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/ai-test-ping`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}` }
+                    headers: { 'Authorization': `Bearer ${getAdminAuthToken()}` }
                 });
                 const data = await res.json();
                 if (resEl) {
@@ -3110,7 +3132,7 @@
             try {
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/entitlement-bindings`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}` }
+                    headers: { 'Authorization': `Bearer ${getAdminAuthToken()}` }
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -3151,7 +3173,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}`
+                        'Authorization': `Bearer ${getAdminAuthToken()}`
                     },
                     body: JSON.stringify({ userId })
                 });
@@ -3191,7 +3213,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}`
+                        'Authorization': `Bearer ${getAdminAuthToken()}`
                     },
                     body: JSON.stringify({ type, id, durationMs })
                 });
@@ -3240,7 +3262,7 @@
             try {
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/site-alerts`, {
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}` }
+                    headers: { 'Authorization': `Bearer ${getAdminAuthToken()}` }
                 });
                 if (res.ok) {
                     const data = await res.json();
@@ -3349,7 +3371,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}`
+                        'Authorization': `Bearer ${getAdminAuthToken()}`
                     },
                     body: JSON.stringify({ title, message, type, linkUrl, isActive: true })
                 });
@@ -3378,7 +3400,7 @@
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/site-alert/${id}`, {
                     method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}` }
+                    headers: { 'Authorization': `Bearer ${getAdminAuthToken()}` }
                 });
                 const data = await res.json();
                 alert(data.message || 'Alert deleted.');
@@ -3406,7 +3428,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}`
+                        'Authorization': `Bearer ${getAdminAuthToken()}`
                     },
                     body: JSON.stringify({ title, content, type: 'special', targetUserId: targetUserId || null })
                 });
@@ -3431,7 +3453,7 @@
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/telemetry-sync`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}` }
+                    headers: { 'Authorization': `Bearer ${getAdminAuthToken()}` }
                 });
                 const data = await res.json();
                 if (feedback) {
@@ -3453,7 +3475,7 @@
                 const apiBase = window.getApiBaseUrl();
                 const res = await fetch(`${apiBase}/api/admin/clear-cache`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}` }
+                    headers: { 'Authorization': `Bearer ${getAdminAuthToken()}` }
                 });
                 const data = await res.json();
                 if (feedback) feedback.textContent = `✅ ${data.message}`;
@@ -3469,7 +3491,7 @@
     
 
         async function performLogout() {
-            const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('nora_auth_token') || localStorage.getItem('nora_admin_token');
+            const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('nora_auth_token') || getAdminAuthToken();
 
             try { sessionStorage.clear(); } catch(e) {}
             try {
@@ -3537,7 +3559,7 @@
 
         async function loadAiCreditsDesk() {
             const container = document.getElementById('ai-credits-list-container');
-            const authToken = localStorage.getItem('nora_admin_token');
+            const authToken = getAdminAuthToken();
             if (!authToken) return;
 
             try {
@@ -3816,7 +3838,7 @@
 
             try {
                 const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const res = await fetch(`${apiBase}${endpoint}`, {
                     method: 'POST',
                     headers: {
@@ -3848,7 +3870,7 @@
 
             try {
                 const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const res = await fetch(`${apiBase}/api/admin/ai-credits/reset`, {
                     method: 'POST',
                     headers: {
@@ -3875,7 +3897,7 @@
 
             try {
                 const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const res = await fetch(`${apiBase}/api/admin/ai-credits/toggle-ai`, {
                     method: 'POST',
                     headers: {
@@ -3901,7 +3923,7 @@
 
             try {
                 const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
+                const authToken = getAdminAuthToken();
                 const res = await fetch(`${apiBase}/api/admin/ai-credits/rollover-all`, {
                     method: 'POST',
                     headers: {
