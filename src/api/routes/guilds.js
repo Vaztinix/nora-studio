@@ -4292,7 +4292,7 @@ router.get('/insite-logs', async (req, res) => {
  * GET /api/guilds/:guildId/tickets/export
  * Download complete server ticketing history (all tickets, ids, openers, assigned staff, status, notes, questionnaire).
  */
-router.get('/:guildId/tickets/export', async (req, res) => {
+router.get(['/tickets/export', '/:guildId/tickets/export'], async (req, res) => {
     try {
         const { guildId } = req.params;
         const client = req.app.get('discordClient') || global.discordClient;
@@ -4408,10 +4408,6 @@ router.get('/:guildId/tickets/export', async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
-module.exports = router;
-
-
 
 /**
  * GET /api/guilds/:guildId/security-logs
@@ -4541,17 +4537,25 @@ router.get('/verification-logs', async (req, res) => {
                 if (hasVerifiedRole || linkedRoblox) {
                     seenUserIds.add(member.id);
 
-                    // Compute risk score based on account age and indicators
+                    // Dynamically evaluate authentic risk score (0 = Clean, scales based on threat signals)
                     const accountAgeMs = Date.now() - member.user.createdTimestamp;
                     const accountAgeDays = Math.floor(accountAgeMs / 86400000);
-                    let riskScore = 5;
+                    let riskScore = 0;
                     let riskLevel = 'Low';
                     const evidencePoints = [];
 
-                    if (accountAgeDays < 7) {
+                    if (accountAgeDays < 1) {
+                        riskScore += 50;
+                        evidencePoints.push(`🚨 Account Age: Created less than 24h ago (${accountAgeDays}d). High bot/alt probability [+50].`);
+                    } else if (accountAgeDays < 3) {
                         riskScore += 35;
-                        riskLevel = 'Medium';
-                        evidencePoints.push(`⚠️ Account Age: Created only ${accountAgeDays} days ago (< 7 days).`);
+                        evidencePoints.push(`⚠️ Account Age: Created only ${accountAgeDays} days ago (< 3 days) [+35].`);
+                    } else if (accountAgeDays < 7) {
+                        riskScore += 20;
+                        evidencePoints.push(`⚠️ Account Age: Created only ${accountAgeDays} days ago (< 7 days) [+20].`);
+                    } else if (accountAgeDays < 30) {
+                        riskScore += 10;
+                        evidencePoints.push(`ℹ️ Account Age: Fresh account created ${accountAgeDays} days ago (< 30 days) [+10].`);
                     } else {
                         const months = Math.max(1, Math.floor(accountAgeDays / 30));
                         evidencePoints.push(`✅ Account Age: Established account created ${months} months ago.`);
@@ -4559,10 +4563,21 @@ router.get('/verification-logs', async (req, res) => {
 
                     if (!member.user.avatar) {
                         riskScore += 15;
-                        evidencePoints.push('⚠️ Profile Picture: Default Discord avatar (No custom avatar uploaded).');
+                        evidencePoints.push('⚠️ Profile Picture: Default Discord avatar (No custom avatar uploaded) [+15].');
                     } else {
                         evidencePoints.push('✅ Profile Picture: Custom avatar hash verified and indexed.');
                     }
+
+                    // Check join velocity against account creation
+                    if (member.joinedTimestamp && (member.joinedTimestamp - member.user.createdTimestamp) < 15 * 60 * 1000) {
+                        riskScore += 30;
+                        evidencePoints.push('🚨 Join Velocity: Joined guild immediately after account creation (< 15 mins) [+30].');
+                    }
+
+                    if (riskScore >= 70) riskLevel = 'Critical';
+                    else if (riskScore >= 40) riskLevel = 'High';
+                    else if (riskScore >= 15) riskLevel = 'Medium';
+                    else riskLevel = 'Low';
 
                     let method = '1-Click Button';
                     if (linkedRoblox) {

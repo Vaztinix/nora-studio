@@ -5623,16 +5623,31 @@
                 if (streakBadge) streakBadge.textContent = `Streak: ${data.currentStreak || 0}/7 Days`;
 
                 if (claimBtn) {
-                    claimBtn.disabled = !data.canClaim;
-                    claimBtn.style.opacity = data.canClaim ? '1' : '0.5';
-                    claimBtn.innerHTML = data.canClaim ? '<i class="fas fa-gift"></i> Claim Reward' : '<i class="fas fa-clock"></i> Claimed Today';
+                    if (!data.canClaimTime) {
+                        claimBtn.disabled = true;
+                        claimBtn.style.opacity = '0.5';
+                        claimBtn.innerHTML = '<i class="fas fa-clock"></i> Claimed Today';
+                        claimBtn.onclick = null;
+                    } else if (!data.hasVotedNow) {
+                        claimBtn.disabled = false;
+                        claimBtn.style.opacity = '1';
+                        claimBtn.innerHTML = '<i class="fas fa-vote-yea"></i> Vote on Top.gg to Unlock';
+                        claimBtn.onclick = () => window.open(data.voteUrl || 'https://top.gg/bot/1375943730951098549/vote', '_blank');
+                    } else {
+                        claimBtn.disabled = false;
+                        claimBtn.style.opacity = '1';
+                        claimBtn.innerHTML = `<i class="fas fa-gift"></i> Claim Day ${data.nextDay} Reward`;
+                        claimBtn.onclick = claimDailyReward;
+                    }
                 }
 
                 if (timerText) {
-                    if (data.canClaim) {
-                        timerText.innerHTML = '<span style="color: #4ade80; font-weight: 700;">✅ Daily Vote Reward ready to claim!</span>';
-                    } else {
+                    if (!data.canClaimTime) {
                         timerText.innerHTML = '<span style="color: var(--muted);">Next reward available in ~' + (20 - (data.hoursSinceLastClaim || 0)) + 'h</span>';
+                    } else if (!data.hasVotedNow) {
+                        timerText.innerHTML = '<span style="color: #f59e0b; font-weight: 700;">⚠️ Active Top.gg vote required! Vote on Top.gg to unlock Day ' + data.nextDay + ' reward.</span>';
+                    } else {
+                        timerText.innerHTML = '<span style="color: #4ade80; font-weight: 700;">✅ Top.gg vote verified! Day ' + data.nextDay + ' Reward ready to claim!</span>';
                     }
                 }
 
@@ -6688,7 +6703,7 @@
                                     <span id="rewards-claim-timer-text">Ready to vote and claim today's reward!</span>
                                 </div>
                                 <div style="display: flex; gap: 8px;">
-                                    <a href="https://top.gg/user/593420060990005248" target="_blank" rel="noopener noreferrer" class="btn-outline" style="padding: 7px 14px; font-size: 0.8rem; font-weight: 600; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+                                    <a href="https://top.gg/bot/1375943730951098549/vote" target="_blank" rel="noopener noreferrer" class="btn-outline" style="padding: 7px 14px; font-size: 0.8rem; font-weight: 600; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
                                         <i class="fas fa-arrow-up-right-from-square"></i> Vote on Top.gg
                                     </a>
                                     <button type="button" id="btn-claim-daily-reward" onclick="claimDailyReward()" class="btn-primary" style="padding: 7px 16px; font-size: 0.8rem; font-weight: 700; border-radius: 8px; background: linear-gradient(135deg, #a855f7, #6366f1); border: none; color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 6px;">

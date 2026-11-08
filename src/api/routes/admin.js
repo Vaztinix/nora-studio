@@ -1051,6 +1051,9 @@ router.post('/site-alert', requireOwner, async (req, res) => {
             authorId: req.user.id,
             isActive: isActive !== undefined ? !!isActive : true
         });
+        if (typeof global.broadcastRealtimeAnnouncement === 'function') {
+            global.broadcastRealtimeAnnouncement(alert);
+        }
         res.json({ success: true, alert });
     } catch (e) {
         res.status(500).json({ error: e.message });
@@ -1103,6 +1106,13 @@ router.post('/broadcast-notification', requireOwner, async (req, res) => {
 
         if (records.length > 0) {
             await Notification.bulkCreate(records);
+        }
+        if (typeof global.broadcastRealtimeAnnouncement === 'function') {
+            global.broadcastRealtimeAnnouncement({
+                title,
+                message: content,
+                type: type || 'announcement'
+            });
         }
 
         res.json({ success: true, count: records.length, message: `Broadcast sent to ${records.length} user dashboard inboxes.` });
@@ -1547,6 +1557,77 @@ router.post('/insite-verifications/revoke-role', requireOwner, async (req, res) 
         res.json({ success: true, message: `Successfully revoked verification role from ${member.user.tag}` });
     } catch (e) {
         res.status(500).json({ error: e.message });
+    }
+});
+
+
+// GET /api/admin/early-adopters - Fetch 50 early adopter guilds and 100 early adopter users
+router.get('/early-adopters', requireOwner, async (req, res) => {
+    try {
+        const sequelize = require('../../database/db');
+        const GuildSettings = require('../../database/models/GuildSettings');
+        const { Op } = require('sequelize');
+
+        // 1. First 50 Guilds
+        const earlyGuildsRows = await GuildSettings.findAll({
+            where: {
+                guildId: { [Op.ne]: null }
+            },
+            order: [['createdAt', 'ASC']],
+            limit: 50
+        });
+
+        const guilds = [];
+        for (const g of earlyGuildsRows) {
+            const liveGuild = (req.client && req.client.guilds && req.client.guilds.cache) ? req.client.guilds.cache.get(g.guildId) : null;
+            guilds.push({
+                id: g.guildId,
+                name: liveGuild ? liveGuild.name : (g.guildName || `Server (${g.guildId})`),
+                icon: liveGuild ? (liveGuild.iconURL({ dynamic: true }) || '/nora.png') : '/nora.png',
+                memberCount: liveGuild ? liveGuild.memberCount : 0,
+                ownerId: liveGuild ? liveGuild.ownerId : null,
+                joinedAt: g.createdAt,
+                isEarlyAdopter: true,
+                tierTag: 'PREMIUM (EARLY ADOPTER)'
+            });
+        }
+
+        // 2. First 100 Users
+        const [earlyUsersRows] = await sequelize.query(`
+            SELECT userId, MIN(createdAt) as joinedAt FROM (
+                SELECT userId, createdAt FROM UserPrefs
+                UNION ALL 
+                SELECT userId, createdAt FROM UserLevels
+            )
+            WHERE userId IS NOT NULL AND userId != ''
+            GROUP BY userId
+            ORDER BY joinedAt ASC
+            LIMIT 100;
+        `).catch(() => [[]]);
+
+        const users = [];
+        for (const u of earlyUsersRows) {
+            const liveUser = (req.client && req.client.users && req.client.users.cache) ? req.client.users.cache.get(u.userId) : null;
+            users.push({
+                userId: u.userId,
+                username: liveUser ? (liveUser.tag || liveUser.username) : `User (${u.userId})`,
+                avatar: liveUser ? liveUser.displayAvatarURL({ dynamic: true, size: 64 }) : `https://cdn.discordapp.com/embed/avatars/0.png`,
+                joinedAt: u.joinedAt,
+                isEarlyAdopter: true,
+                tierTag: 'PREMIUM (EARLY ADOPTER)'
+            });
+        }
+
+        res.json({
+            success: true,
+            guildsCount: guilds.length,
+            usersCount: users.length,
+            guilds,
+            users
+        });
+    } catch (e) {
+        console.error('Error fetching early adopters:', e);
+        res.status(500).json({ success: false, error: e.message });
     }
 });
 

@@ -258,17 +258,28 @@ async function performSecurityBackgroundCheck(member, settings, context = {}, me
     // 🚨 ACTION: Handle Flagged Member
     // ─────────────────────────────────────────────────────────────────────────
     if (evidence.length > 0) {
-        const enforcementAction = settings?.verifyActionOnFlagged || 'deny'; // 'deny', 'kick', 'ban'
-        console.log(`[SecurityCheck] 🚨 FLAGGED MEMBER: ${user.tag} (${user.id}) in guild ${guild.name} (${guild.id}) - Action: ${enforcementAction.toUpperCase()} - Reasons: ${reasons.join(', ')}`);
+        let calculatedRisk = 0;
+        if (reasons.some(r => r.includes('Ban') || r.includes('Evasion'))) calculatedRisk += 85;
+        if (reasons.some(r => r.includes('Raid'))) calculatedRisk += 75;
+        if (reasons.some(r => r.includes('Threat'))) calculatedRisk += 70;
+        calculatedRisk = Math.max(calculatedRisk, 75); // Flagged accounts exceed the 70 critical threshold
 
-        // Execute automated punitive action if configured by server admin
+        const configuredAction = settings?.verifyActionOnFlagged || 'deny';
+        // Rule directive: Anything with a risk of 70 or higher should be kicked/banned
+        let effectiveAction = configuredAction;
+        if (calculatedRisk >= 70 && effectiveAction === 'deny') {
+            effectiveAction = (calculatedRisk >= 85 && guild.members.me.permissions.has(PermissionFlagsBits.BanMembers)) ? 'ban' : (member.kickable ? 'kick' : 'deny');
+        }
+
+        console.log(`[SecurityCheck] 🚨 FLAGGED MEMBER: ${user.tag} (${user.id}) in guild ${guild.name} (${guild.id}) - Risk: ${calculatedRisk}/100 - Action: ${effectiveAction.toUpperCase()} - Reasons: ${reasons.join(', ')}`);
+
         let actionStatusNote = '• **Verification Roles Denied (Quarantined)**';
-        if (enforcementAction === 'kick' && member.kickable) {
-            await member.kick('Nora Security: Flagged by automated verification check').catch(() => {});
-            actionStatusNote = '• **Account Kicked from Server**';
-        } else if (enforcementAction === 'ban' && guild.members.me.permissions.has(PermissionFlagsBits.BanMembers)) {
-            await member.ban({ reason: 'Nora Security: Flagged by automated verification check (Ban Evasion / Threat match)' }).catch(() => {});
-            actionStatusNote = '• **Account Permanently Banned from Server**';
+        if (effectiveAction === 'ban' && guild.members.me.permissions.has(PermissionFlagsBits.BanMembers)) {
+            await member.ban({ reason: `[Nora Auto-Defense] Critical Risk Score (${calculatedRisk}/100): ${reasons.join(', ')}` }).catch(() => {});
+            actionStatusNote = '• **Account Automatically Banned (Critical Risk Score >= 70)**';
+        } else if (effectiveAction === 'kick' && member.kickable) {
+            await member.kick(`[Nora Auto-Defense] High Risk Score (${calculatedRisk}/100): ${reasons.join(', ')}`).catch(() => {});
+            actionStatusNote = '• **Account Automatically Kicked (High Risk Score >= 70)**';
         }
 
         // 1. Send Direct Message to Flagged Member

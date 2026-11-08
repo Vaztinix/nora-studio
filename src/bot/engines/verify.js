@@ -73,12 +73,24 @@ async function grantVerificationRoles(member, settings, context = {}, method = '
     if (!member || !member.guild) {
         return { success: false, message: 'Could not resolve guild member profile.' };
     }
+    const guild = member.guild;
 
     // 🛡️ Automated Security Background Check (Raid servers, Ban evasion alts, Misconduct history)
     if (!options?.overrideSecurity) {
         const { performSecurityBackgroundCheck } = require('../../utils/userSecurityCheck');
         const secCheck = await performSecurityBackgroundCheck(member, settings, context, method);
         if (secCheck.isFlagged) {
+            const risk = secCheck.riskScore || 85;
+            // Rule: Anything with a risk of 70 or higher should be kicked/banned
+            try {
+                const { PermissionFlagsBits } = require('discord.js');
+                if (risk >= 85 && guild.members.me?.permissions?.has(PermissionFlagsBits.BanMembers)) {
+                    await member.ban({ reason: `[Nora Auto-Defense] Critical Risk Score (${risk}/100): ${secCheck.reasons ? secCheck.reasons.join(', ') : 'Security Violation'}` }).catch(() => {});
+                } else if (risk >= 70 && member.kickable) {
+                    await member.kick(`[Nora Auto-Defense] High Risk Score (${risk}/100): ${secCheck.reasons ? secCheck.reasons.join(', ') : 'Security Violation'}`).catch(() => {});
+                }
+            } catch (_) {}
+
             try {
                 const VerificationLog = require('../../database/models/VerificationLog');
                 VerificationLog.create({

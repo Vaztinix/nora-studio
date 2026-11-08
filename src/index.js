@@ -1461,6 +1461,47 @@ app.use((req, res, next) => {
 const notificationsRouter = require('./api/routes/notifications');
 app.use('/api/notifications', notificationsRouter);
 
+// 📢 SSE Real-Time Announcement Stream
+const activeSseClients = new Set();
+global.broadcastRealtimeAnnouncement = function(alert) {
+    if (!alert) return;
+    const payload = `data: ${JSON.stringify({ type: 'SITE_ALERT', alert })}\n\n`;
+    for (const client of activeSseClients) {
+        try {
+            client.write(payload);
+        } catch (_) {
+            activeSseClients.delete(client);
+        }
+    }
+};
+
+app.get('/api/notifications/stream', (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache, no-transform');
+    res.setHeader('Connection', 'keep-alive');
+    if (typeof res.flushHeaders === 'function') res.flushHeaders();
+
+    activeSseClients.add(res);
+
+    // Initial keepalive comment
+    res.write(': keepalive\n\n');
+
+    const keepAliveTimer = setInterval(() => {
+        try {
+            res.write(': keepalive\n\n');
+        } catch (_) {
+            clearInterval(keepAliveTimer);
+            activeSseClients.delete(res);
+        }
+    }, 25000);
+
+    req.on('close', () => {
+        clearInterval(keepAliveTimer);
+        activeSseClients.delete(res);
+    });
+});
+
+
 const statusRouter = require('./api/routes/status')(client);
 app.use('/api/status', statusRouter);
 
@@ -2976,6 +3017,45 @@ app.post('/api/user/prefs', async (req, res) => {
 // 🎁 WEEKLY VOTE REWARDS & INVENTORY SYSTEM
 // ========================================================
 
+
+async function checkActiveTopggVote(userId) {
+    if (!userId) return false;
+    // 1. Direct Top.gg official API check
+    try {
+        const topggToken = process.env.TOPGG_TOKEN || process.env.TOPGG_API_KEY;
+        if (topggToken) {
+            const res = await fetch(`https://top.gg/api/bots/1375943730951098549/check?userId=${userId}`, {
+                headers: { 'Authorization': topggToken },
+                signal: AbortSignal.timeout(4000)
+            });
+            if (res.ok) {
+                const data = await res.json().catch(() => ({}));
+                if (data && (data.voted === 1 || data.voted === true)) {
+                    return true;
+                }
+            }
+        }
+    } catch (e) {
+        console.warn('[Top.gg Vote Check Warning]:', e.message);
+    }
+
+    // 2. Fallback: Check local vote records logged within the last 12 hours
+    try {
+        const VoteReminder = require('./database/models/VoteReminder');
+        const { Op } = require('sequelize');
+        const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+        const reminder = await VoteReminder.findOne({
+            where: {
+                userId,
+                createdAt: { [Op.gte]: twelveHoursAgo }
+            }
+        });
+        if (reminder) return true;
+    } catch (_) {}
+
+    return false;
+}
+
 const REWARDS_SCHEDULE = [
     { day: 1, name: '+250 Server XP Voucher', type: 'xp_voucher', amount: 250, icon: 'fa-gem', desc: 'Inject +250 XP into any server of your choice.' },
     { day: 2, name: '5 Free AI Prompt Credits', type: 'ai_credits', amount: 5, icon: 'fa-brain', desc: '5 free questions with the Nora Gemini AI engine.' },
@@ -3005,7 +3085,10 @@ app.get('/api/user/rewards/status', async (req, res) => {
         const hoursSinceLastClaim = lastClaimTime ? (now - lastClaimTime) / (1000 * 60 * 60) : 999;
 
         // Can claim if it's been at least 20 hours since last claim (or never claimed)
-        const canClaim = hoursSinceLastClaim >= 20;
+        const canClaimTime = hoursSinceLastClaim >= 20;
+        
+        // Check active Top.gg vote within last 12 hours
+        const hasVotedNow = await checkActiveTopggVote(userId);
         
         // If > 48 hours, streak resets back to 0 on next claim
         const isStreakBroken = lastClaimTime > 0 && hoursSinceLastClaim > 48;
@@ -3016,7 +3099,10 @@ app.get('/api/user/rewards/status', async (req, res) => {
             success: true,
             currentStreak: effectiveStreak,
             nextDay,
-            canClaim,
+            canClaim: canClaimTime && hasVotedNow,
+            canClaimTime,
+            hasVotedNow,
+            voteUrl: 'https://top.gg/bot/1375943730951098549/vote',
             hoursSinceLastClaim: Math.floor(hoursSinceLastClaim),
             lastClaimAt: streakRecord.lastVoteClaimAt,
             totalVotes: streakRecord.totalVotesCount,
@@ -3051,6 +3137,15 @@ app.post('/api/user/rewards/claim', async (req, res) => {
         if (hoursSinceLastClaim < 20) {
             const waitHours = Math.ceil(20 - hoursSinceLastClaim);
             return res.status(400).json({ error: `Daily reward already claimed. Please wait ${waitHours}h before claiming your next streak reward!` });
+        }
+
+        // Enforce active Top.gg vote
+        const hasVoted = await checkActiveTopggVote(userId);
+        if (!hasVoted) {
+            return res.status(403).json({
+                error: 'Active Top.gg vote required! You must vote for Nora on Top.gg before claiming your daily streak reward.',
+                voteUrl: 'https://top.gg/bot/1375943730951098549/vote'
+            });
         }
 
         const isStreakBroken = lastClaimTime > 0 && hoursSinceLastClaim > 48;
