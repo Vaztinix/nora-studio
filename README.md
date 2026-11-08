@@ -87,11 +87,14 @@ Behind Nora is **Nora Studio**, a passionate collective of developers, community
 
 ---
 
-## ⚡ Recent Updates & Key Feature Modules (Version 4.0 Release)
+## ⚡ Recent Updates & Key Feature Modules (Version 4.5.0 Release)
 
 | Module | Version | Highlights & Capabilities |
 | :--- | :---: | :--- |
-| **In-Site Security Pass & Zero-Trust Verification** | `v4.2` | Advanced high-security gatekeeper evaluating 28 composite hardware, software & network signals. Automatically rejects VPNs/proxies, correlates alts against server ban registries to automatically ban evaders, and provides fully customizable Embeds V2 presets with unified community redirects. |
+| **Discord Components V2 Standardization** | `v4.5.0` | Full-stack Discord Components V2 Containers (`flags: 32768`, type: 17) active across all commands, setup views, and interactions. Includes global prototype defenses resolving legacy embed conflicts (`DiscordAPIError[50035]`). |
+| **Owner Operations Suite (`/owner`) Redesign** | `v4.5.0` | Comprehensive docs-style redesign matching `/index.html` and `/docs`, featuring real-time Connected Server & User Directories, Shard Gateway diagnostics, dynamic alt risk auto-ban (score >= 70), and 5-minute auto-refresh. |
+| **Real-Time Global Announcements (SSE)** | `v4.5.0` | Instant Server-Sent Events (SSE) live broadcast stream pushing updates to all open dashboards in real-time without requiring refreshes, accompanied by mobile replay triggers. |
+| **In-Site Security Pass & Zero-Trust Verification** | `v4.5.0` | Advanced high-security gatekeeper evaluating 31 composite hardware, software & network signals. Automatically rejects VPNs/proxies, correlates alts against server ban registries to automatically ban evaders, and provides fully customizable Embeds V2 presets with unified community redirects. |
 | **Wick-Style Anti-Nuke Staff Quarantine** | `v4.3` | Protects servers against rogue moderators or compromised staff accounts by monitoring destructive action velocity (mass channel/role deletion, mass ban/kick within 15s). Automatically strips dangerous admin permissions, assigns a Quarantine containment role, applies a 1-hour timeout, logs an audit case, and dispatches urgent DM alerts to the Server Owner. |
 | **Weekly Vote Rewards & User Consumable Inventory** | `v4.3` | 7-day progressive vote streak game on Top.gg awarding XP vouchers, free AI credits, My TV entertainment passes, and 3-Day Nora Premium passes. Includes personal consumable Inventory desk with single-server redemption picker and upcoming perk trading preparation. |
 | **Interactive Party Games: Word Bomb & Trivia Quiz** | `v4.3` | Built-in interactive party games (`/wordbomb` & `/trivia`) for text and voice hangout channels with syllable countdown timers, Discord button selection, multi-category question banks, and leveling XP rewards. |

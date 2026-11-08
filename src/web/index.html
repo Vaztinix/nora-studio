@@ -1474,9 +1474,11 @@
         <section class="hero-section" id="hero">
             <div class="container">
                 <div class="hero-content">
-                    <div class="hero-announcement-pill" id="hero-announcement">
-                        <i class="fab fa-discord"></i> Built for Discord Communities • 101+ Servers
-                    </div>
+                    <a href="https://github.com/Vaztinix/nora-studio/releases/tag/v4.5.0" target="_blank" rel="noopener" class="hero-announcement-pill" id="hero-announcement" style="text-decoration: none; cursor: pointer;">
+                        <span class="badge" style="background: rgba(99, 102, 241, 0.25); color: #818cf8; padding: 2px 8px; border-radius: 9999px; font-weight: 700; font-size: 0.72rem; margin-right: 6px; border: 1px solid rgba(99, 102, 241, 0.4);">v4.5.0 RELEASE</span>
+                        <span>Discord Components V2, In-Site Gatekeeper & Data Sovereignty</span>
+                        <i class="fas fa-arrow-right" style="margin-left: 6px; font-size: 0.7rem; opacity: 0.7;"></i>
+                    </a>
                     
                     <h1 class="hero-heading">
                         The Complete Discord Bot for <span class="hero-highlight">Your Server</span>
@@ -1501,7 +1503,7 @@
                             <span class="stat-label">Active Servers</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value" id="stat-members">14,273+</span>
+                            <span class="stat-value" id="stat-members">14,272+</span>
                             <span class="stat-label">Total Members</span>
                         </div>
                         <div class="stat-item">
@@ -1509,7 +1511,7 @@
                             <span class="stat-label">Commands</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value" id="stat-ping">38ms</span>
+                            <span class="stat-value" id="stat-ping">40ms</span>
                             <span class="stat-label">Gateway Ping</span>
                         </div>
                     </div>
@@ -1833,6 +1835,7 @@
                 <div class="footer-col">
                     <h5>Resources</h5>
                     <ul>
+                        <li><a href="https://github.com/Vaztinix/nora-studio/releases" target="_blank" rel="noopener">GitHub Releases (v4.5.0)</a></li>
                         <li><a href="/docs">Documentation</a></li>
                         <li><a href="/docs#verification">Roblox Verification</a></li>
                         <li><a href="/docs#starboard">Starboard Engine</a></li>
@@ -1881,7 +1884,7 @@
                 if (data.serverCount) {
                     const countFormatted = Number(data.serverCount).toLocaleString();
                     if (statServers) statServers.innerText = `${countFormatted}+`;
-                    if (heroAnnouncement) heroAnnouncement.innerHTML = `<i class="fab fa-discord"></i> Built for Discord Communities • ${countFormatted}+ Servers`;
+                    // Keep release badge visible on hero pill
                     if (headerBadge) headerBadge.innerText = `${countFormatted} Servers Online`;
                 }
                 if (data.memberCount) {
