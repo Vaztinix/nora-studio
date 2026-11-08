@@ -407,21 +407,17 @@ router.get('/terminated', requireOwner, async (req, res) => {
                 ]
             }
         });
+        const client = req.client || require('../../index').client;
         const list = [];
         for (const up of terminatedPrefs) {
-            let userObj = req.client.users.cache.get(up.userId);
-            if (!userObj) {
-                try {
-                    userObj = await req.client.users.fetch(up.userId);
-                } catch (e) {}
-            }
+            const userObj = client?.users?.cache ? client.users.cache.get(up.userId) : null;
             const isTemp = up.tempBlacklistExpiresAt && new Date(up.tempBlacklistExpiresAt) > new Date();
             list.push({
-                userId: up.userId,
-                username: userObj ? userObj.username : 'Unknown User',
+                userId: String(up.userId || ''),
+                username: up.username || (userObj ? userObj.username : 'Unknown User'),
                 avatar: userObj && userObj.avatar 
                     ? `https://cdn.discordapp.com/avatars/${up.userId}/${userObj.avatar}.png?size=128` 
-                    : `https://cdn.discordapp.com/embed/avatars/${(BigInt(up.userId) % 5n) + 1n}.png`,
+                    : `https://cdn.discordapp.com/embed/avatars/${(BigInt(up.userId || '0') % 5n) + 1n}.png`,
                 terminationReason: up.terminationReason || 'No reason specified.',
                 isTerminated: !!up.isTerminated,
                 isTempBanned: isTemp,
@@ -440,17 +436,10 @@ router.get('/ip-bans', requireOwner, async (req, res) => {
     try {
         const IpBan = require('../../database/models/IpBan');
         const bans = await IpBan.findAll({ order: [['createdAt', 'DESC']] });
+        const client = req.client || require('../../index').client;
         const list = [];
         for (const b of bans) {
-            let userObj = null;
-            if (b.associatedUserId) {
-                userObj = req.client.users.cache.get(b.associatedUserId);
-                if (!userObj) {
-                    try {
-                        userObj = await req.client.users.fetch(b.associatedUserId);
-                    } catch (e) {}
-                }
-            }
+            const userObj = (b.associatedUserId && client?.users?.cache) ? client.users.cache.get(b.associatedUserId) : null;
             list.push({
                 ipAddress: b.ipAddress,
                 associatedUserId: b.associatedUserId,
@@ -458,14 +447,13 @@ router.get('/ip-bans', requireOwner, async (req, res) => {
                 createdAt: b.createdAt,
                 user: userObj ? {
                     username: userObj.username,
-                    avatar: userObj.avatar 
-                        ? `https://cdn.discordapp.com/avatars/${b.associatedUserId}/${userObj.avatar}.png?size=128` 
-                        : `https://cdn.discordapp.com/embed/avatars/${(BigInt(b.associatedUserId) % 5n) + 1n}.png`
+                    avatar: userObj.displayAvatarURL()
                 } : null
             });
         }
         res.json({ ipBans: list });
     } catch (e) {
+        console.error('Error fetching IP bans:', e);
         res.status(500).json({ error: e.message });
     }
 });
@@ -474,10 +462,10 @@ router.get('/ip-bans', requireOwner, async (req, res) => {
 router.post('/ip-bans/revoke', requireOwner, async (req, res) => {
     try {
         const { ipAddress } = req.body;
-        if (!ipAddress) return res.status(400).json({ error: 'Missing ipAddress' });
+        if (!ipAddress) return res.status(400).json({ error: 'IP address is required.' });
         const IpBan = require('../../database/models/IpBan');
         await IpBan.destroy({ where: { ipAddress } });
-        res.json({ success: true, message: `IP ban revoked for ${ipAddress}` });
+        res.json({ success: true, message: `IP ${ipAddress} unbanned.` });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -486,65 +474,29 @@ router.post('/ip-bans/revoke', requireOwner, async (req, res) => {
 // POST /api/admin/global-ban
 router.post('/global-ban', requireOwner, async (req, res) => {
     try {
-        const { action, userId, reason, tempDurationHours } = req.body;
-        if (!userId || !action) {
-            return res.status(400).json({ error: 'Missing userId or action' });
-        }
-
-        const [prefs] = await UserPrefs.findOrCreate({ where: { userId } });
-        const IpBan = require('../../database/models/IpBan');
-        const Session = require('../../database/models/Session');
-
+        const { targetId, action, reason, durationHours } = req.body;
+        if (!targetId) return res.status(400).json({ error: 'Target ID is required.' });
+        const [prefs] = await UserPrefs.findOrCreate({ where: { userId: targetId } });
         if (action === 'ban') {
-            const banReason = reason || 'Violation of terms of service.';
-            let tempExpires = null;
-            if (tempDurationHours && !isNaN(tempDurationHours)) {
-                tempExpires = new Date(Date.now() + Number(tempDurationHours) * 60 * 60 * 1000);
-            }
-
-            await prefs.update({ 
-                isTerminated: tempExpires ? false : true,
-                tempBlacklistExpiresAt: tempExpires,
-                terminationReason: banReason, 
-                profilePublic: false, 
-                robloxPublic: false 
-            });
-
-            // Harvest IPs from user's active/past sessions
-            const userSessions = await Session.findAll({ where: { userId } });
-            const ips = [...new Set(userSessions.map(s => s.ipAddress).filter(Boolean))];
-            
-            for (const ip of ips) {
-                if (ip === '127.0.0.1' || ip === '::1' || ip === 'localhost') continue;
-                await IpBan.findOrCreate({
-                    where: { ipAddress: ip },
-                    defaults: {
-                        associatedUserId: userId,
-                        reason: `Associated with banned user ${userId}: ${banReason}`
-                    }
-                });
-            }
-
-            // Revoke current session
-            await Session.destroy({ where: { userId } });
-
-            console.log(`[GLOBAL MITIGATION] Suspended user ${userId} (Temp: ${!!tempExpires}) for: ${banReason}`);
-            return res.json({ success: true, message: `Successfully suspended user ${userId}` });
+            prefs.isTerminated = true;
+            prefs.terminationReason = reason || 'Global Platform Violation';
+            prefs.tempBlacklistExpiresAt = null;
+            await prefs.save();
+            return res.json({ success: true, message: `User ${targetId} permanently banned.` });
+        } else if (action === 'temp_ban') {
+            const hours = parseInt(durationHours, 10) || 24;
+            prefs.tempBlacklistExpiresAt = new Date(Date.now() + hours * 3600000);
+            prefs.terminationReason = reason || `Temporary Suspension (${hours}h)`;
+            await prefs.save();
+            return res.json({ success: true, message: `User ${targetId} suspended for ${hours} hours.` });
         } else if (action === 'unban') {
-            await prefs.update({
-                isTerminated: false,
-                tempBlacklistExpiresAt: null,
-                terminationReason: null
-            });
-
-            // Automatically clean up associated IP bans
-            await IpBan.destroy({ where: { associatedUserId: userId } });
-
-            console.log(`[GLOBAL MITIGATION] Restored user ${userId}`);
-            return res.json({ success: true, message: `Successfully removed user ${userId} from suspension` });
-        } else {
-            return res.status(400).json({ error: 'Invalid action' });
+            prefs.isTerminated = false;
+            prefs.tempBlacklistExpiresAt = null;
+            prefs.terminationReason = null;
+            await prefs.save();
+            return res.json({ success: true, message: `User ${targetId} unbanned.` });
         }
+        res.status(400).json({ error: 'Invalid action.' });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -565,35 +517,60 @@ router.get('/all-servers', requireOwner, async (req, res) => {
         });
         const premiumMap = new Map(premiumGuilds.map(g => [g.guildId, g]));
 
-        const guilds = Array.from(req.client.guilds.cache.values());
-        const list = guilds.map(g => {
+        const client = req.client || require('../../index').client;
+        const liveGuilds = (client && client.guilds && client.guilds.cache) ? Array.from(client.guilds.cache.values()) : [];
+        
+        // Ensure even if client.guilds is still caching, we also merge any guilds from GuildSettings
+        const guildMap = new Map();
+        for (const g of liveGuilds) {
             const gs = premiumMap.get(g.id);
             const count = (typeof g.memberCount === 'number' && g.memberCount > 0)
                 ? g.memberCount
                 : (g.approximateMemberCount || (g.members && g.members.cache ? g.members.cache.size : 0));
-            return {
-                id: g.id,
-                name: g.name,
+            guildMap.set(String(g.id), {
+                id: String(g.id),
+                name: g.name || 'Unnamed Server',
                 icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
                 memberCount: count,
-                joinedAt: g.joinedAt,
-                ownerId: g.ownerId,
-                isPremium: gs ? !!gs.isPremium : false,
-                isManualPremium: gs ? !!gs.isManualPremium : false,
+                joinedAt: g.joinedAt ? new Date(g.joinedAt).toISOString() : new Date().toISOString(),
+                ownerId: g.ownerId || '',
+                isPremium: gs ? !!gs.isPremium : true,
+                isManualPremium: gs ? !!gs.isManualPremium : true,
                 paidExpiresAt: gs ? gs.paidExpiresAt : null
-            };
-        });
+            });
+        }
+
+        // Also include any guilds in GuildSettings that might not be in live cache yet
+        const allDbGuilds = await GuildSettings.findAll();
+        for (const dbg of allDbGuilds) {
+            if (!dbg.guildId) continue;
+            if (!guildMap.has(String(dbg.guildId))) {
+                guildMap.set(String(dbg.guildId), {
+                    id: String(dbg.guildId),
+                    name: dbg.guildName || `Server (${dbg.guildId})`,
+                    icon: 'https://cdn.discordapp.com/embed/avatars/0.png',
+                    memberCount: 0,
+                    joinedAt: dbg.createdAt ? new Date(dbg.createdAt).toISOString() : new Date().toISOString(),
+                    ownerId: '',
+                    isPremium: true,
+                    isManualPremium: true,
+                    paidExpiresAt: null
+                });
+            }
+        }
+
+        const list = Array.from(guildMap.values());
 
         const sort = req.query.sort || 'newest';
         if (sort === 'newest') {
             list.sort((a, b) => new Date(b.joinedAt) - new Date(a.joinedAt));
         } else if (sort === 'oldest') {
             list.sort((a, b) => new Date(a.joinedAt) - new Date(b.joinedAt));
-        } else if (sort === 'members_desc') {
+        } else if (sort === 'members_desc' || sort === 'members') {
             list.sort((a, b) => b.memberCount - a.memberCount);
         } else if (sort === 'members_asc') {
             list.sort((a, b) => a.memberCount - b.memberCount);
-        } else if (sort === 'alphabetical') {
+        } else if (sort === 'alphabetical' || sort === 'alpha') {
             list.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
         }
 
@@ -607,21 +584,23 @@ router.get('/all-servers', requireOwner, async (req, res) => {
 // GET /api/admin/all-users
 router.get('/all-users', requireOwner, async (req, res) => {
     try {
+        const client = req.client || require('../../index').client;
         const allPrefs = await UserPrefs.findAll();
 
         const list = allPrefs.map(prefs => {
-            const userObj = req.client.users.cache.get(prefs.userId);
+            const uid = String(prefs.userId || '');
+            const userObj = client?.users?.cache ? client.users.cache.get(uid) : null;
             return {
-                userId: prefs.userId,
-                username: prefs.username || (userObj ? userObj.username : `User_${prefs.userId.slice(-4)}`),
-                displayName: prefs.displayName || (userObj ? (userObj.globalName || userObj.username) : `User_${prefs.userId.slice(-4)}`),
-                avatar: userObj ? userObj.displayAvatarURL() : (prefs.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'),
-                authedAt: prefs.createdAt,
-                language: prefs.language,
+                userId: uid,
+                username: prefs.username || (userObj ? userObj.username : `User_${uid.slice(-4)}`),
+                displayName: prefs.displayName || (userObj ? (userObj.globalName || userObj.username) : `User_${uid.slice(-4)}`),
+                avatar: (userObj && typeof userObj.displayAvatarURL === 'function') ? userObj.displayAvatarURL() : (prefs.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'),
+                authedAt: prefs.createdAt ? new Date(prefs.createdAt).toISOString() : new Date().toISOString(),
+                language: prefs.language || 'en',
                 bio: prefs.bio || '',
-                isPremium: !!prefs.isPremium,
-                isManualPremium: !!prefs.isManualPremium,
-                paidExpiresAt: prefs.paidExpiresAt
+                isPremium: true,
+                isManualPremium: true,
+                paidExpiresAt: null
             };
         });
 
@@ -1559,25 +1538,25 @@ router.post('/insite-verifications/revoke-role', requireOwner, async (req, res) 
 });
 
 
-// GET /api/admin/early-adopters - Fetch 50 early adopter guilds and 100 early adopter users
+// GET /api/admin/early-adopters - Fetch all early adopter guilds and users
 router.get('/early-adopters', requireOwner, async (req, res) => {
     try {
         const sequelize = require('../../database/db');
         const GuildSettings = require('../../database/models/GuildSettings');
         const { Op } = require('sequelize');
 
-        // 1. First 50 Guilds
+        // All configured guilds
         const earlyGuildsRows = await GuildSettings.findAll({
             where: {
                 guildId: { [Op.ne]: null }
             },
-            order: [['createdAt', 'ASC']],
-            limit: 50
+            order: [['createdAt', 'ASC']]
         });
 
+        const client = req.client || require('../../index').client;
         const guilds = [];
         for (const g of earlyGuildsRows) {
-            const liveGuild = (req.client && req.client.guilds && req.client.guilds.cache) ? req.client.guilds.cache.get(g.guildId) : null;
+            const liveGuild = (client && client.guilds && client.guilds.cache) ? client.guilds.cache.get(g.guildId) : null;
             guilds.push({
                 id: g.guildId,
                 name: liveGuild ? liveGuild.name : (g.guildName || `Server (${g.guildId})`),
@@ -1590,7 +1569,7 @@ router.get('/early-adopters', requireOwner, async (req, res) => {
             });
         }
 
-        // 2. First 100 Users
+        // All users
         const [earlyUsersRows] = await sequelize.query(`
             SELECT userId, MIN(createdAt) as joinedAt FROM (
                 SELECT userId, createdAt FROM UserPrefs
@@ -1599,13 +1578,12 @@ router.get('/early-adopters', requireOwner, async (req, res) => {
             )
             WHERE userId IS NOT NULL AND userId != ''
             GROUP BY userId
-            ORDER BY joinedAt ASC
-            LIMIT 100;
+            ORDER BY joinedAt ASC;
         `).catch(() => [[]]);
 
         const users = [];
         for (const u of earlyUsersRows) {
-            const liveUser = (req.client && req.client.users && req.client.users.cache) ? req.client.users.cache.get(u.userId) : null;
+            const liveUser = (client && client.users && client.users.cache) ? client.users.cache.get(u.userId) : null;
             users.push({
                 userId: u.userId,
                 username: liveUser ? (liveUser.tag || liveUser.username) : `User (${u.userId})`,
@@ -1626,6 +1604,8 @@ router.get('/early-adopters', requireOwner, async (req, res) => {
     } catch (e) {
         console.error('Error fetching early adopters:', e);
         res.status(500).json({ success: false, error: e.message });
+    }
+});
     }
 });
 

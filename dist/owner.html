@@ -1385,6 +1385,14 @@
                     throw new Error(errMsg);
                 }
 
+                // Immediately capture active servers from verify response
+                try {
+                    const verifyData = await res.json();
+                    if (verifyData && Array.isArray(verifyData.guilds)) {
+                        activeServers = verifyData.guilds;
+                    }
+                } catch (_) {}
+
                 // Reveal workspace
                 document.getElementById('lock-screen').style.display = 'none';
                 const workspace = document.getElementById('admin-workspace');
@@ -2101,16 +2109,16 @@
                 const searchBox = document.getElementById('insite-search-input');
                 if (searchBox) searchBox.value = query;
                 renderInsiteVerificationsTable();
-            } else if (tabId === 'sec-servers') {
-                const searchBox = document.getElementById('search-input');
-                if (searchBox) searchBox.value = query;
+            } else if (tabId === 'sec-servers' || tabId === 'sec-users' || tabId === 'sec-health') {
                 renderLists();
+            } else if (tabId === 'sec-early') {
+                if (typeof filterEarlyAdopters === 'function') filterEarlyAdopters(query);
             } else if (tabId === 'sec-incidents') {
                 const searchBox = document.getElementById('incidents-search-input');
                 if (searchBox) searchBox.value = query;
-                filterIncidentsList();
+                if (typeof filterIncidentsList === 'function') filterIncidentsList();
             } else if (tabId === 'sec-broadcasts') {
-                renderFilteredSiteAlerts(query);
+                if (typeof renderFilteredSiteAlerts === 'function') renderFilteredSiteAlerts(query);
             }
         };
 
@@ -2301,45 +2309,54 @@
             const searchTerm = (searchInput?.value || '').toLowerCase().trim();
             
             // Filter servers
-            const filteredServers = activeServers.filter(s => 
-                s.id.includes(searchTerm) || 
-                s.name.toLowerCase().includes(searchTerm)
-            );
+            const filteredServers = (activeServers || []).filter(s => {
+                if (!s) return false;
+                const id = String(s.id || '');
+                const name = String(s.name || '').toLowerCase();
+                return id.includes(searchTerm) || name.includes(searchTerm);
+            });
             
             // Filter users
-            const filteredUsers = authedUsers.filter(u => 
-                u.userId.includes(searchTerm) || 
-                u.username.toLowerCase().includes(searchTerm)
-            );
+            const filteredUsers = (authedUsers || []).filter(u => {
+                if (!u) return false;
+                const uid = String(u.userId || '');
+                const uname = String(u.username || '').toLowerCase();
+                const dname = String(u.displayName || '').toLowerCase();
+                return uid.includes(searchTerm) || uname.includes(searchTerm) || dname.includes(searchTerm);
+            });
             
             // Filter terminated
-            const filteredTerminated = terminatedUsers.filter(t => 
-                t.userId.includes(searchTerm) || 
-                t.username.toLowerCase().includes(searchTerm) ||
-                (t.terminationReason || '').toLowerCase().includes(searchTerm)
-            );
+            const filteredTerminated = (terminatedUsers || []).filter(t => {
+                if (!t) return false;
+                const uid = String(t.userId || '');
+                const uname = String(t.username || '').toLowerCase();
+                const reason = String(t.terminationReason || '').toLowerCase();
+                return uid.includes(searchTerm) || uname.includes(searchTerm) || reason.includes(searchTerm);
+            });
 
             // Render counts safely
             const elSc = document.getElementById('server-count');
-            if (elSc) elSc.textContent = filteredServers.length;
+            if (elSc) elSc.textContent = (activeServers || []).length;
             const elUc = document.getElementById('user-count');
-            if (elUc) elUc.textContent = filteredUsers.length;
+            if (elUc) elUc.textContent = (authedUsers || []).length;
             const elTc = document.getElementById('terminated-count');
-            if (elTc) elTc.textContent = filteredTerminated.length;
+            if (elTc) elTc.textContent = (terminatedUsers || []).length;
             
             const elAct = document.getElementById('count-active-servers');
-            if (elAct) elAct.textContent = filteredServers.length;
+            if (elAct) elAct.textContent = (activeServers || []).length;
             const elBadgeS = document.getElementById('badge-servers-count');
-            if (elBadgeS) elBadgeS.textContent = filteredServers.length;
+            if (elBadgeS) elBadgeS.textContent = (activeServers || []).length;
             const elBadgeU = document.getElementById('badge-users-count');
-            if (elBadgeU) elBadgeU.textContent = filteredUsers.length;
+            if (elBadgeU) elBadgeU.textContent = (authedUsers || []).length;
             updateSidebarBadges();
 
             // Render servers
             const serversContainer = document.getElementById('servers-list-container');
             if (serversContainer) {
                 if (filteredServers.length === 0) {
-                    serversContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">No servers match search.</div>';
+                    serversContainer.innerHTML = (activeServers && activeServers.length > 0)
+                        ? '<div style="color: var(--muted); font-size: 0.85rem; padding: 14px 0; text-align: center;">No servers match search filter.</div>'
+                        : '<div style="color: var(--muted); font-size: 0.85rem; padding: 14px 0; text-align: center;"><i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i> Loading servers...</div>';
                 } else {
                     serversContainer.innerHTML = filteredServers.map(s => {
                         const premiumStatus = s.isManualPremium 
@@ -2356,7 +2373,7 @@
                         <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                                    <img src="${s.icon}" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.onerror=null; this.src='/nora.png';">
+                                    <img src="${s.icon || '/nora.png'}" style="width: 32px; height: 32px; border-radius: 6px;" onerror="this.onerror=null; this.src='/nora.png';">
                                     <div style="min-width: 0;">
                                         <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;">
                                             ${String(s.name || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')} ${premiumStatus}
@@ -2376,8 +2393,8 @@
                             </div>
                             ${expiryInfo}
                             <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 2px;">
-                                <span>👥 ${s.memberCount.toLocaleString()} members</span>
-                                <span>📅 Added: ${new Date(s.joinedAt).toLocaleDateString()}</span>
+                                <span>👥 ${(s.memberCount || 0).toLocaleString()} members</span>
+                                <span>📅 Added: ${s.joinedAt ? new Date(s.joinedAt).toLocaleDateString() : 'N/A'}</span>
                             </div>
                         </div>
                         `;
@@ -2389,7 +2406,9 @@
             const usersContainer = document.getElementById('users-list-container');
             if (usersContainer) {
                 if (filteredUsers.length === 0) {
-                    usersContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">No users match search.</div>';
+                    usersContainer.innerHTML = (authedUsers && authedUsers.length > 0)
+                        ? '<div style="color: var(--muted); font-size: 0.85rem; padding: 14px 0; text-align: center;">No users match search filter.</div>'
+                        : '<div style="color: var(--muted); font-size: 0.85rem; padding: 14px 0; text-align: center;"><i class="fas fa-spinner fa-spin" style="margin-right: 6px;"></i> Loading users...</div>';
                 } else {
                     usersContainer.innerHTML = filteredUsers.map(u => {
                         const premiumStatus = u.isManualPremium 
@@ -2406,10 +2425,10 @@
                         <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border);">
                             <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                                    <img src="${u.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='/nora.png';">
+                                    <img src="${u.avatar || '/nora.png'}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='/nora.png';">
                                     <div style="min-width: 0;">
                                         <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;">
-                                            ${u.username} ${premiumStatus}
+                                            ${String(u.username || 'User').replace(/</g, '&lt;').replace(/>/g, '&gt;')} ${premiumStatus}
                                         </div>
                                         <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${u.userId}</div>
                                     </div>
@@ -2422,8 +2441,8 @@
                             </div>
                             ${expiryInfo}
                             <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--muted); border-top: 1px dashed var(--border); padding-top: 6px; margin-top: 2px;">
-                                <span>🌐 Lang: ${u.language.toUpperCase()}</span>
-                                <span>📅 Authed: ${new Date(u.authedAt).toLocaleDateString()}</span>
+                                <span>🌐 Lang: ${String(u.language || 'en').toUpperCase()}</span>
+                                <span>📅 Authed: ${u.authedAt ? new Date(u.authedAt).toLocaleDateString() : 'N/A'}</span>
                             </div>
                         </div>
                         `;
@@ -2450,10 +2469,10 @@
                         <div style="display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 8px; border: 1px solid rgba(248,81,73,0.15);">
                             <div style="display: flex; align-items: center; justify-content: space-between; min-width: 0; gap: 10px;">
                                 <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
-                                    <img src="${t.avatar}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='/nora.png';">
+                                    <img src="${t.avatar || '/nora.png'}" style="width: 32px; height: 32px; border-radius: 50%;" onerror="this.onerror=null; this.src='/nora.png';">
                                     <div style="min-width: 0;">
                                         <div style="font-weight: 600; font-size: 0.85rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 5px;">
-                                            ${t.username} ${statusBadge}
+                                            ${String(t.username || 'User').replace(/</g, '&lt;').replace(/>/g, '&gt;')} ${statusBadge}
                                         </div>
                                         <div style="font-size: 0.75rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">ID: ${t.userId}</div>
                                     </div>
@@ -2461,7 +2480,7 @@
                                 <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; border-color: rgba(46,160,67,0.3); color: var(--success); flex-shrink: 0;" onclick="manageTermination('unban', '${t.userId}')">Restore</button>
                             </div>
                             <div style="font-size: 0.75rem; background: rgba(0,0,0,0.3); padding: 6px 8px; border-radius: 4px; color: #ff9e9e; border-left: 2px solid var(--danger); word-break: break-all;">
-                                <strong>Reason:</strong> ${t.terminationReason}
+                                <strong>Reason:</strong> ${String(t.terminationReason || 'No reason specified').replace(/</g, '&lt;').replace(/>/g, '&gt;')}
                             </div>
                             ${expiryText}
                         </div>
@@ -2469,6 +2488,7 @@
                     }).join('');
                 }
             }
+        }
 
             // Filter IP Bans
             const filteredIpBans = ipBans.filter(b => 
@@ -2626,74 +2646,63 @@
 
         function switchServerTab(tab) {
             currentServerTab = tab;
-            const activeBtn = document.getElementById('tab-active-servers');
-            const revokedBtn = document.getElementById('tab-revoked-servers');
+            const activeBtn = document.getElementById('tab-btn-active-servers') || document.getElementById('tab-active-servers');
+            const revokedBtn = document.getElementById('tab-btn-revoked-servers') || document.getElementById('tab-revoked-servers');
             const activeContainer = document.getElementById('servers-list-container');
             const revokedContainer = document.getElementById('revoked-servers-list-container');
             const sortWrapper = document.getElementById('servers-sort-wrapper');
 
             if (tab === 'active') {
-                activeBtn.style.background = 'rgba(88, 101, 242, 0.2)';
-                activeBtn.style.borderColor = '#5865F2';
-                activeBtn.style.color = '#fff';
-                activeBtn.style.fontWeight = '700';
-
-                revokedBtn.style.background = 'transparent';
-                revokedBtn.style.borderColor = 'rgba(244, 63, 94, 0.3)';
-                revokedBtn.style.color = 'var(--muted)';
-                revokedBtn.style.fontWeight = 'normal';
-
-                activeContainer.style.display = 'flex';
-                revokedContainer.style.display = 'none';
-                if (sortWrapper) sortWrapper.style.display = 'flex';
-            } else {
-                revokedBtn.style.background = 'rgba(244, 63, 94, 0.2)';
-                revokedBtn.style.borderColor = '#f43f5e';
-                revokedBtn.style.color = '#fff';
-                revokedBtn.style.fontWeight = '700';
-
-                activeBtn.style.background = 'transparent';
-                activeBtn.style.borderColor = 'rgba(88, 101, 242, 0.3)';
-                activeBtn.style.color = 'var(--muted)';
-                activeBtn.style.fontWeight = 'normal';
-
-                activeContainer.style.display = 'none';
-                revokedContainer.style.display = 'flex';
-                if (sortWrapper) sortWrapper.style.display = 'none';
-                loadBlacklistedServers();
-            }
-        }
-
-        async function loadBlacklistedServers() {
-            try {
-                const apiBase = window.getApiBaseUrl();
-                const authToken = localStorage.getItem('nora_admin_token');
-                const res = await fetch(`${apiBase}/api/admin/blacklisted-servers`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                if (res.ok) {
-                    const data = await res.json();
-                    blacklistedServers = data.blacklisted || [];
-                    renderRevokedServers();
+                if (activeBtn) {
+                    activeBtn.style.background = 'rgba(88, 101, 242, 0.2)';
+                    activeBtn.style.borderColor = '#5865F2';
+                    activeBtn.style.color = '#fff';
+                    activeBtn.style.fontWeight = '700';
                 }
-            } catch (e) {
-                console.error('Failed to load blacklisted servers:', e);
+                if (revokedBtn) {
+                    revokedBtn.style.background = 'transparent';
+                    revokedBtn.style.borderColor = 'rgba(244, 63, 94, 0.3)';
+                    revokedBtn.style.color = 'var(--muted)';
+                    revokedBtn.style.fontWeight = 'normal';
+                }
+                if (activeContainer) activeContainer.style.display = 'flex';
+                if (revokedContainer) revokedContainer.style.display = 'none';
+                if (sortWrapper) sortWrapper.style.display = 'flex';
+                renderLists();
+            } else {
+                if (revokedBtn) {
+                    revokedBtn.style.background = 'rgba(244, 63, 94, 0.2)';
+                    revokedBtn.style.borderColor = '#f43f5e';
+                    revokedBtn.style.color = '#fff';
+                    revokedBtn.style.fontWeight = '700';
+                }
+                if (activeBtn) {
+                    activeBtn.style.background = 'transparent';
+                    activeBtn.style.borderColor = 'rgba(88, 101, 242, 0.3)';
+                    activeBtn.style.color = 'var(--muted)';
+                    activeBtn.style.fontWeight = 'normal';
+                }
+                if (activeContainer) activeContainer.style.display = 'none';
+                if (revokedContainer) revokedContainer.style.display = 'flex';
+                if (sortWrapper) sortWrapper.style.display = 'none';
+                renderRevokedServers();
             }
         }
 
         function renderRevokedServers() {
-            const searchTerm = (document.getElementById('search-input')?.value || '').toLowerCase();
-            const countEl = document.getElementById('revoked-server-count');
+            const searchInput = document.getElementById('global-admin-search') || document.getElementById('search-input');
+            const searchTerm = (searchInput?.value || '').toLowerCase().trim();
+            const countEl = document.getElementById('count-revoked-servers') || document.getElementById('revoked-server-count');
             const container = document.getElementById('revoked-servers-list-container');
             if (!container) return;
 
-            const filtered = blacklistedServers.filter(b => 
-                (b.guildId || '').includes(searchTerm) ||
-                (b.guildName || '').toLowerCase().includes(searchTerm) ||
-                (b.reason || '').toLowerCase().includes(searchTerm)
+            const filtered = (blacklistedServers || []).filter(b => 
+                (String(b.guildId || '')).includes(searchTerm) ||
+                (String(b.guildName || '')).toLowerCase().includes(searchTerm) ||
+                (String(b.reason || '')).toLowerCase().includes(searchTerm)
             );
 
-            if (countEl) countEl.textContent = filtered.length;
+            if (countEl) countEl.textContent = (blacklistedServers || []).length;
 
             if (filtered.length === 0) {
                 container.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 14px 0; text-align: center;">No permanently revoked servers found.</div>';

@@ -247,71 +247,55 @@ module.exports = {
             // 1. Revoke all free trials platform-wide
             await sequelize.query('UPDATE UserPrefs SET freeTrialClaimed = 0, freeTrialExpiresAt = NULL;').catch(() => {});
 
-            // 2. First 50 Servers
-            const [earlyGuilds] = await sequelize.query(`
-                SELECT guildId FROM GuildSettings 
-                WHERE guildId IS NOT NULL AND guildId != ''
-                ORDER BY createdAt ASC 
-                LIMIT 50;
+            // 2. Grant permanent Lifetime Nora Premium to ALL configured servers in GuildSettings
+            await sequelize.query(`
+                UPDATE GuildSettings 
+                SET isPremium = 1, isManualPremium = 1, paidExpiresAt = NULL 
+                WHERE guildId IS NOT NULL AND guildId != '';
+            `).catch(() => {});
+
+            try {
+                const settingsCache = require('./settingsCache');
+                const [allGuilds] = await sequelize.query(`SELECT guildId FROM GuildSettings;`).catch(() => [[]]);
+                for (const g of allGuilds) {
+                    const s = settingsCache.cache ? settingsCache.cache.get(g.guildId) : null;
+                    if (s) {
+                        s.isPremium = true;
+                        s.isManualPremium = true;
+                        s.paidExpiresAt = null;
+                    }
+                }
+            } catch (e) {}
+
+            // 3. Grant permanent Lifetime Nora Premium to ALL users in UserPrefs
+            await sequelize.query(`
+                UPDATE UserPrefs 
+                SET isPremium = 1, isManualPremium = 1, paidExpiresAt = NULL, freeTrialClaimed = 0, freeTrialExpiresAt = NULL 
+                WHERE userId IS NOT NULL AND userId != '';
+            `).catch(() => {});
+
+            // 4. Ensure any users who have leveled up in UserLevels also have UserPrefs with Nora Premium
+            const [levelUsers] = await sequelize.query(`
+                SELECT DISTINCT userId, MIN(createdAt) as joinedAt FROM UserLevels
+                WHERE userId NOT IN (SELECT userId FROM UserPrefs)
+                AND userId IS NOT NULL AND userId != ''
+                GROUP BY userId;
             `).catch(() => [[]]);
 
-            if (earlyGuilds && earlyGuilds.length > 0) {
-                const guildIds = earlyGuilds.map(g => "'" + g.guildId + "'").join(',');
-                await sequelize.query(`
-                    UPDATE GuildSettings 
-                    SET isPremium = 1, isManualPremium = 1, paidExpiresAt = NULL 
-                    WHERE guildId IN (${guildIds});
-                `).catch(() => {});
-
-                try {
-                    const settingsCache = require('./settingsCache');
-                    for (const g of earlyGuilds) {
-                        const s = settingsCache.cache ? settingsCache.cache.get(g.guildId) : null;
-                        if (s) {
-                            s.isPremium = true;
-                            s.isManualPremium = true;
-                            s.paidExpiresAt = null;
-                        }
-                    }
-                } catch (e) {}
-            }
-
-            // 3. First 100 Users
-            const [earlyUsers] = await sequelize.query(`
-                SELECT userId, MIN(createdAt) as joinedAt FROM (
-                    SELECT userId, createdAt FROM UserPrefs
-                    UNION ALL 
-                    SELECT userId, createdAt FROM UserLevels
-                )
-                WHERE userId IS NOT NULL AND userId != ''
-                GROUP BY userId
-                ORDER BY joinedAt ASC
-                LIMIT 100;
-            `).catch(() => [[]]);
-
-            if (earlyUsers && earlyUsers.length > 0) {
-                const nowIso = new Date().toISOString();
-                for (const u of earlyUsers) {
-                    const [existing] = await sequelize.query(`SELECT userId FROM UserPrefs WHERE userId = '${u.userId}' LIMIT 1;`).catch(() => [[]]);
-                    if (existing && existing.length > 0) {
-                        await sequelize.query(`
-                            UPDATE UserPrefs 
-                            SET isPremium = 1, isManualPremium = 1, paidExpiresAt = NULL, freeTrialClaimed = 0, freeTrialExpiresAt = NULL 
-                            WHERE userId = '${u.userId}';
-                        `).catch(() => {});
-                    } else {
-                        await sequelize.query(`
-                            INSERT INTO UserPrefs (userId, isPremium, isManualPremium, paidExpiresAt, createdAt, updatedAt)
-                            VALUES ('${u.userId}', 1, 1, NULL, '${u.joinedAt || nowIso}', '${nowIso}');
-                        `).catch(() => {});
-                    }
+            const nowIso = new Date().toISOString();
+            if (levelUsers && levelUsers.length > 0) {
+                for (const u of levelUsers) {
+                    await sequelize.query(`
+                        INSERT INTO UserPrefs (userId, isPremium, isManualPremium, paidExpiresAt, createdAt, updatedAt)
+                        VALUES ('${u.userId}', 1, 1, NULL, '${u.joinedAt || nowIso}', '${nowIso}');
+                    `).catch(() => {});
                 }
             }
 
-            console.log('[Premium System] Verified Early Adopter Grants: 50 Guilds & 100 Users permanently entitled to Nora Premium. Free trials revoked.');
-            return { guildsCount: earlyGuilds ? earlyGuilds.length : 0, usersCount: earlyUsers ? earlyUsers.length : 0 };
+            console.log('[Premium System] Verified Lifetime Nora Premium applied to all members and all servers.');
+            return { success: true };
         } catch (err) {
-            console.error('[Premium System] Failed to apply early adopter premium:', err.message);
+            console.error('[Premium System] Failed to apply premium:', err.message);
             return null;
         }
     }
