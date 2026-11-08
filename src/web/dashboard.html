@@ -13990,10 +13990,12 @@
             const isTelemetryUrl = typeof input === 'string' && (input.includes('/api/logs') || input.includes('/api/health'));
             let controller = null;
             let timeoutId = null;
+            const customTimeoutMs = (init && typeof init.timeout === 'number') ? init.timeout : FETCH_TIMEOUT_MS;
             if (!isTelemetryUrl) {
                 controller = new AbortController();
-                timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
-                init = { ...(init || {}), signal: controller.signal };
+                timeoutId = setTimeout(() => controller.abort(new Error(`Request timed out after ${Math.round(customTimeoutMs / 1000)}s`)), customTimeoutMs);
+                const { timeout: _omitTimeout, ...restInit } = (init || {});
+                init = { ...restInit, signal: controller.signal };
             }
 
             try {
@@ -17191,7 +17193,7 @@
                     const radio = document.querySelector('input[name="userRankCardThemeMode"][value="' + mode + '"]');
                     if (radio) radio.checked = true;
 
-                    if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI();
+                    if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI(false);
                     if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();
                     if (typeof updateLiveRankCardPreview === 'function') updateLiveRankCardPreview();
                 }
@@ -17211,7 +17213,7 @@
             if (typeof syncLiveProfileCardPreview === 'function') syncLiveProfileCardPreview();
         };
 
-        window.toggleUserRankCardThemeModeUI = function(shouldAutoSave = true) {
+        window.toggleUserRankCardThemeModeUI = function(shouldAutoSave = false) {
             const mode = document.querySelector('input[name="userRankCardThemeMode"]:checked')?.value || 'preset';
             const colorSec = document.getElementById('user-rankcard-color-picker-section');
             const imageSec = document.getElementById('user-rankcard-image-upload-section');
@@ -19308,6 +19310,10 @@
 
         async function saveSettings() {
             if (!checkThrottling()) return;
+            if (!window.currentSettings && (!window.dashboardCache?.settings?.has(currentServerId))) {
+                showToast('Settings are still loading for this server. Please wait a moment before saving.', 'warning');
+                return;
+            }
             const payload = {};
             // In-Site Gatekeeper settings collectors
             const insiteEnabledEl = document.getElementById('setting-insiteVerificationEnabled');
@@ -23486,16 +23492,16 @@
             }
             if (!currentServerId) return;
             try {
-                // Fetch channels, roles and emojis first with resilient allSettled
+                // Phase 1: Fetch channels, roles, and settings immediately so dropdowns & toggles populate right away
                 await Promise.allSettled([
                     fetchChannels(),
                     fetchRoles(),
-                    fetchServerEmojis()
+                    fetchSettings(force)
                 ]);
                 
-                // Fetch settings, feeds, autoresponders, applications, members, and analytics in parallel
-                await Promise.allSettled([
-                    fetchSettings(force),
+                // Phase 2: Load remaining modules in parallel without blocking settings
+                Promise.allSettled([
+                    fetchServerEmojis(),
                     fetchContentFeeds(),
                     fetchAutoresponders(),
                     fetchApplications(),
@@ -30696,19 +30702,20 @@
         }
 
         async function fetchSettings(force = false) {
-            // Explicitly clear / reset all inputs and command checkboxes to prevent cross-server leaks
-            KEYS.forEach(k => {
-                const el = document.getElementById('setting-' + k);
-                if (!el) return;
-                if (el.type === 'checkbox') el.checked = false;
-                else if (el.type === 'color') el.value = '#5865F2';
-                else el.value = '';
-            });
-            const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps', 'say', 'reactionrole', 'autoresponder', 'youtube'];
-            allCmds.forEach(c => {
-                const el = document.getElementById('cmd-' + c);
-                if (el) el.checked = false;
-            });
+            const resetSettingsDomForCleanApply = () => {
+                KEYS.forEach(k => {
+                    const el = document.getElementById('setting-' + k);
+                    if (!el) return;
+                    if (el.type === 'checkbox') el.checked = false;
+                    else if (el.type === 'color') el.value = '#5865F2';
+                    else el.value = '';
+                });
+                const allCmds = ['ask', 'mycard', 'help', 'info', 'invite', 'translate', 'vote', 'leaderboard', 'rank', 'guess', 'announce', 'poll', 'ban', 'tempban', 'kick', 'mute', 'unmute', 'deafen', 'undeafen', 'purge', 'slowmode', 'channel', 'warn', 'role', 'user', 'setlevel', 'setup', 'verify', 'nora-admin', 'rps', 'say', 'reactionrole', 'autoresponder', 'youtube'];
+                allCmds.forEach(c => {
+                    const el = document.getElementById('cmd-' + c);
+                    if (el) el.checked = false;
+                });
+            };
 
             const cacheKey = currentServerId;
             const now = Date.now();
@@ -30725,15 +30732,17 @@
                 // Render stale data immediately (no spinner)
                 window.currentSettings = s;
                 window.previousSettings = s;
+                resetSettingsDomForCleanApply();
                 await fetchGuildChannelsAndRoles(currentServerId, s);
                 await _applySettings(s, true);
                 fetchApplications();
                 // Background revalidation if stale
                 const entry = window.dashboardCache.settings.get(cacheKey);
                 if (force || now - entry.timestamp >= CACHE_TTL) {
-                    const t = sessionStorage.getItem('discord_token');
+                    const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('discord_token_val') || localStorage.getItem('nora_discord_token');
                     fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/settings`, {
-                        headers: { 'Authorization': `Bearer ${t}` }
+                        headers: { 'Authorization': `Bearer ${t}` },
+                        timeout: 25000
                     }).then(res => {
                         if (!res.ok) throw new Error(`Server returned ${res.status}`);
                         return res.json();
@@ -30751,7 +30760,8 @@
             const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('discord_token_val') || localStorage.getItem('nora_discord_token');
             try {
                 const res = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + `/api/guilds/${currentServerId}/settings`, {
-                    headers: { 'Authorization': `Bearer ${t}` }
+                    headers: { 'Authorization': `Bearer ${t}` },
+                    timeout: 25000
                 });
                 if (!res.ok) throw new Error(`Server returned ${res.status}: ${res.statusText}`);
                 
@@ -30770,6 +30780,7 @@
             // Fetch server channels and roles for dropdowns BEFORE applying settings so <select> options exist!
             window.currentSettings = s;
             window.previousSettings = s;
+            resetSettingsDomForCleanApply();
             await fetchGuildChannelsAndRoles(currentServerId, s);
             await _applySettings(s, true);
             fetchApplications();
@@ -30779,15 +30790,20 @@
         async function fetchGuildChannelsAndRoles(guildId, sParam = null) {
             if (!guildId) return;
             const s = sParam || window.currentSettings || window.previousSettings || {};
-            const t = sessionStorage.getItem('discord_token');
+            const t = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('discord_token_val') || localStorage.getItem('nora_discord_token');
             const headers = { 'Authorization': `Bearer ${t}` };
             const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
 
             try {
+                const cachedCh = (window.dashboardCache && window.dashboardCache.channels && window.dashboardCache.channels.has(guildId))
+                    ? window.dashboardCache.channels.get(guildId).data : null;
+                const cachedRl = (window.dashboardCache && window.dashboardCache.roles && window.dashboardCache.roles.has(guildId))
+                    ? window.dashboardCache.roles.get(guildId).data : null;
+
                 const [chRes, rlRes, slowRes] = await Promise.all([
-                    fetch(`${apiBase}/api/guilds/${guildId}/channels`, { headers }).then(r => r.ok ? r.json() : []).catch(() => []),
-                    fetch(`${apiBase}/api/guilds/${guildId}/roles`, { headers }).then(r => r.ok ? r.json() : []).catch(() => []),
-                    fetch(`${apiBase}/api/guilds/${guildId}/adaptive-slowmode/status`, { headers }).then(r => r.ok ? r.json() : null).catch(() => null)
+                    Array.isArray(cachedCh) && cachedCh.length > 0 ? Promise.resolve(cachedCh) : fetch(`${apiBase}/api/guilds/${guildId}/channels`, { headers, timeout: 15000 }).then(r => r.ok ? r.json() : []).catch(() => []),
+                    Array.isArray(cachedRl) && cachedRl.length > 0 ? Promise.resolve(cachedRl) : fetch(`${apiBase}/api/guilds/${guildId}/roles`, { headers, timeout: 15000 }).then(r => r.ok ? r.json() : []).catch(() => []),
+                    fetch(`${apiBase}/api/guilds/${guildId}/adaptive-slowmode/status`, { headers, timeout: 10000 }).then(r => r.ok ? r.json() : null).catch(() => null)
                 ]);
 
                 if (slowRes && slowRes.status && typeof window.updateLiveAdaptiveSlowmode === 'function') {
@@ -31269,51 +31285,53 @@
                     topggAuthInput.value = 'nora_' + Math.random().toString(36).substring(2, 15);
                 }
 
-                                // Fetch Top.gg Connections and populate asset dropdown
-                let guildConns = [];
-                try {
-                    const token = (typeof t !== 'undefined' && t) ? t : (sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token') || '');
-                    const connRes = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/topgg/connections', {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    if (connRes.ok) {
-                        const connData = await connRes.json();
-                        const allConns = connData.connections || [];
-                        guildConns = allConns.filter(c => c.guildId === currentServerId);
-                    }
-                } catch (connErr) {
-                    /* silent topgg notice */
-                }
-
-                const assetSelectorGroup = document.getElementById('topgg-asset-selector-group');
-                const assetSelect = document.getElementById('topgg-asset-select');
-                if (assetSelect) {
-                    assetSelect.innerHTML = '';
-                    if (guildConns.length > 0) {
-                        guildConns.forEach(conn => {
-                            const opt = document.createElement('option');
-                            opt.value = conn.targetId;
-                            opt.textContent = `${conn.type === 'bot' ? 'Bot' : 'Server'} (ID: ${conn.targetId})`;
-                            opt.dataset.token = conn.token || '';
-                            opt.dataset.type = conn.type;
-                            assetSelect.appendChild(opt);
+                // Fetch Top.gg Connections in the background and populate asset dropdown without blocking _applySettings
+                (async () => {
+                    let guildConns = [];
+                    try {
+                        const token = (typeof t !== 'undefined' && t) ? t : (sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token') || localStorage.getItem('token') || '');
+                        const connRes = await fetch((typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '') + '/api/user/topgg/connections', {
+                            headers: { 'Authorization': `Bearer ${token}` },
+                            timeout: 10000
                         });
-
-                        // Default select connection matching settings botId or guildId
-                        let matchedConn = guildConns.find(c => c.targetId === s.topggBotId) || guildConns.find(c => c.targetId === currentServerId) || guildConns[0];
-                        if (matchedConn) {
-                            assetSelect.value = matchedConn.targetId;
-                            if (topggAuthInput) topggAuthInput.value = matchedConn.token || '';
-                            const botIdInput = document.getElementById('setting-topggBotId');
-                            if (botIdInput) botIdInput.value = (matchedConn.type === 'bot') ? matchedConn.targetId : '';
+                        if (connRes.ok) {
+                            const connData = await connRes.json();
+                            const allConns = connData.connections || [];
+                            guildConns = allConns.filter(c => c.guildId === currentServerId);
                         }
-                        if (assetSelectorGroup) {
-                            assetSelectorGroup.style.display = guildConns.length > 1 ? 'block' : 'none';
-                        }
-                    } else {
-                        if (assetSelectorGroup) assetSelectorGroup.style.display = 'none';
+                    } catch (connErr) {
+                        /* silent topgg notice */
                     }
-                }
+
+                    const assetSelectorGroup = document.getElementById('topgg-asset-selector-group');
+                    const assetSelect = document.getElementById('topgg-asset-select');
+                    if (assetSelect) {
+                        assetSelect.innerHTML = '';
+                        if (guildConns.length > 0) {
+                            guildConns.forEach(conn => {
+                                const opt = document.createElement('option');
+                                opt.value = conn.targetId;
+                                opt.textContent = `${conn.type === 'bot' ? 'Bot' : 'Server'} (ID: ${conn.targetId})`;
+                                opt.dataset.token = conn.token || '';
+                                opt.dataset.type = conn.type;
+                                assetSelect.appendChild(opt);
+                            });
+
+                            let matchedConn = guildConns.find(c => c.targetId === s.topggBotId) || guildConns.find(c => c.targetId === currentServerId) || guildConns[0];
+                            if (matchedConn) {
+                                assetSelect.value = matchedConn.targetId;
+                                if (topggAuthInput) topggAuthInput.value = matchedConn.token || '';
+                                const botIdInput = document.getElementById('setting-topggBotId');
+                                if (botIdInput) botIdInput.value = (matchedConn.type === 'bot') ? matchedConn.targetId : '';
+                            }
+                            if (assetSelectorGroup) {
+                                assetSelectorGroup.style.display = guildConns.length > 1 ? 'block' : 'none';
+                            }
+                        } else {
+                            if (assetSelectorGroup) assetSelectorGroup.style.display = 'none';
+                        }
+                    }
+                })();
 
                 const unverifiedView = document.getElementById('topgg-unverified-view');
                 const verifiedView = document.getElementById('topgg-verified-view');
@@ -31626,10 +31644,9 @@
             const icon = document.getElementById('reload-config-icon');
             if (icon) icon.classList.add('fa-spin');
             try {
-                if (typeof loadGuildConfig === 'function') {
-                    await loadGuildConfig(currentServerId, true);
-                } else if (typeof fetchServerSettings === 'function') {
-                    await fetchServerSettings(currentServerId, true);
+                window.hasUnsavedChanges = false;
+                if (typeof fetchSettings === 'function') {
+                    await fetchSettings(true);
                 }
                 if (typeof showToast === 'function') showToast('Server settings reloaded successfully', 'success');
             } catch (e) {

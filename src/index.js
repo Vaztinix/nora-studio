@@ -4048,7 +4048,7 @@ app.get('/api/user/guilds', async (req, res) => {
         const GuildSettings = require('./database/models/GuildSettings');
         const settingsRecords = await GuildSettings.findAll({
             where: { guildId: guildIds },
-            attributes: ['guildId', 'isPremium', 'isManualPremium', 'paidExpiresAt', 'expandedTimeMs', 'whitelistedRoles']
+            attributes: ['guildId', 'isPremium', 'isManualPremium', 'paidExpiresAt', 'expandedTimeMs']
         });
         const settingsMap = new Map(settingsRecords.map(s => [s.guildId, s]));
 
