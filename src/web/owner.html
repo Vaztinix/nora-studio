@@ -685,25 +685,52 @@
                     <!-- Host Shard Diagnostic Card -->
                     <div class="glass-panel" style="border-color: rgba(139, 92, 246, 0.3); background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.08) 0%, rgba(15, 17, 26, 0.95) 70%);">
                         <div class="glass-panel-header">
-                            <div class="glass-panel-title" style="color: #c4b5fd;">
-                                <i class="fas fa-satellite-dish"></i> Shard Gateway & Cluster Host Diagnostics
+                            <div>
+                                <div class="glass-panel-title" style="color: #c4b5fd;">
+                                    <i class="fas fa-satellite-dish"></i> Shard Gateway & Cluster Host Diagnostics
+                                </div>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Dynamic Sharding & Pre-2,500 Safe Zone monitoring. Click any shard to inspect and search servers hosted on it.</p>
                             </div>
-                            <button class="btn-action btn-secondary" onclick="forceShardPresenceReload()" style="font-size: 0.78rem; padding: 6px 12px;">
+                            <button id="btn-recalc-shards" class="btn-action btn-secondary" onclick="forceShardPresenceReload(this)" style="font-size: 0.78rem; padding: 6px 12px;">
                                 <i class="fas fa-rotate"></i> Recalculate Shard Status
                             </button>
                         </div>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; font-size: 0.85rem;">
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; font-size: 0.85rem; margin-bottom: 18px;">
                             <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                                <div style="color: var(--text-dim); font-size: 0.74rem;">NODE RUNTIME</div>
-                                <div style="font-weight: 700; color: #fff; margin-top: 2px;">Node.js ${process.version || 'v25.x'}</div>
+                                <div style="color: var(--text-dim); font-size: 0.74rem; font-weight: 700;">NODE RUNTIME</div>
+                                <div id="node-runtime-version" style="font-weight: 700; color: #38bdf8; margin-top: 2px;">Node.js v25.2.1</div>
                             </div>
                             <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                                <div style="color: var(--text-dim); font-size: 0.74rem;">DATABASE ENGINE</div>
+                                <div style="color: var(--text-dim); font-size: 0.74rem; font-weight: 700;">DATABASE ENGINE</div>
                                 <div style="font-weight: 700; color: #fff; margin-top: 2px;">SQLite3 + WAL Mode</div>
                             </div>
                             <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                                <div style="color: var(--text-dim); font-size: 0.74rem;">SECURITY TELEMETRY</div>
+                                <div style="color: var(--text-dim); font-size: 0.74rem; font-weight: 700;">SECURITY TELEMETRY</div>
                                 <div style="font-weight: 700; color: #10b981; margin-top: 2px;">AES-256-GCM + Zero-Access</div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Shard Cards -->
+                        <div id="cluster-shards-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 14px;">
+                            <div style="text-align: center; padding: 20px; color: var(--text-dim);">Loading cluster shards...</div>
+                        </div>
+                    </div>
+
+                    <!-- Shard Server Explorer Drawer / Modal -->
+                    <div id="shard-servers-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(10px); z-index: 999999; align-items: center; justify-content: center; padding: 20px;">
+                        <div style="background: #111422; border: 1px solid rgba(139, 92, 246, 0.4); border-radius: 16px; width: 100%; max-width: 680px; max-height: 85vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.8);">
+                            <div style="padding: 18px 22px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between;">
+                                <div>
+                                    <h3 id="shard-modal-title" style="margin: 0; color: #fff; font-size: 1.1rem; font-weight: 800;">Shard Servers</h3>
+                                    <p id="shard-modal-subtitle" style="margin: 3px 0 0; color: var(--text-muted); font-size: 0.78rem;">Listing servers routed to this cluster shard</p>
+                                </div>
+                                <button onclick="closeShardModal()" style="background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15); color: #fff; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center;">✕</button>
+                            </div>
+                            <div style="padding: 14px 22px; border-bottom: 1px solid rgba(255,255,255,0.06); background: rgba(0,0,0,0.2);">
+                                <input type="text" id="shard-server-search" placeholder="Search servers on this shard by name or Guild ID..." oninput="filterShardServersList()" style="width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.12); color: #fff; padding: 9px 14px; border-radius: 8px; font-size: 0.85rem;">
+                            </div>
+                            <div id="shard-servers-list-container" style="padding: 16px 22px; overflow-y: auto; flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                                <!-- Servers injected dynamically -->
                             </div>
                         </div>
                     </div>
@@ -871,6 +898,10 @@
                                 <div class="glass-panel-title"><i class="fas fa-bullhorn" style="color: #f43f5e;"></i> Incident Flags & Service Component Status</div>
                                 <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Publish live degradation or outage notices to <code>/status</code>, the main site, and dashboard banners.</p>
                             </div>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <input type="text" id="incidents-search-input" placeholder="Search incidents & history..." oninput="filterIncidentsList()" style="background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); color: #fff; padding: 6px 12px; border-radius: 8px; font-size: 0.8rem;">
+                                <button class="btn-action btn-secondary" onclick="loadStatusFlags(this)" style="font-size: 0.76rem; padding: 6px 12px;"><i class="fas fa-rotate"></i> Refresh</button>
+                            </div>
                         </div>
 
                         <!-- Create Incident Form -->
@@ -1002,7 +1033,10 @@
                                     <label>Action Link URL (Optional)</label>
                                     <input type="text" id="site-alert-url" placeholder="https://vaztinix.dev/docs" oninput="previewSiteAlertBubble()">
                                 </div>
-                                <button class="btn-action" style="width: 100%; margin-top: 8px;" onclick="publishSiteAlert()"><i class="fas fa-paper-plane"></i> Publish Site Alert</button>
+                                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                    <button id="btn-publish-site-alert" class="btn-action" style="flex: 1;" onclick="publishSiteAlert(this)"><i class="fas fa-paper-plane"></i> Publish Site Alert</button>
+                                    <button class="btn-action btn-secondary" onclick="spawnFloatingBubbleTest()" style="padding: 0 16px;" title="Spawn live floating alert banner for preview"><i class="fas fa-eye"></i> Test Bubble</button>
+                                </div>
                             </div>
 
                             <!-- Live Alert Preview -->
@@ -1401,6 +1435,7 @@
                     const data = await res.json();
                     insiteVerifications = data.verifications || [];
                     renderInsiteVerificationsTable();
+                    updateSidebarBadges();
                 } else {
                     container.innerHTML = '<div style="color: #f87171; padding: 20px; font-size: 0.85rem;">Failed to fetch verification stream (HTTP ' + res.status + ')</div>';
                 }
@@ -1421,8 +1456,15 @@
             });
         }
 
-        async function revokeInsiteRole(guildId, userId, username) {
+        async function revokeInsiteRole(guildId, userId, username, btn) {
             if (!confirm(`Revoke verified role from ${username || userId} (${userId})?`)) return;
+
+            const originalHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Revoking...';
+            }
+
             try {
                 const authToken = localStorage.getItem('nora_admin_token');
                 const apiBase = window.getApiBaseUrl();
@@ -1441,6 +1483,15 @@
                 } else {
                     alert('Failed to revoke role: ' + (data.error || 'Unknown error'));
                 }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            }
+        }
             } catch (e) {
                 alert('Error: ' + e.message);
             }
@@ -1577,16 +1628,16 @@
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                 ${statusBadge}
-                                <span style="font-size: 0.75rem; font-weight: 800; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; color: ${v.riskScore > 50 ? '#f87171' : '#34d399'};">
+                                <span style="font-size: 0.75rem; font-weight: 800; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 4px 8px; border-radius: 4px; color: ${(v.riskScore || 0) === 0 ? '#10b981' : ((v.riskScore || 0) > 40 ? '#ef4444' : '#f59e0b')};">
                                     Risk: ${v.riskScore || 0}/100
                                 </span>
-                                <button onclick="banFlaggedAlt('${v.guildId}', '${v.userId}', '${v.username}')" class="btn-action btn-danger" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 6px;">
+                                <button onclick="banFlaggedAlt('${v.guildId}', '${v.userId}', '${v.username}', this)" class="btn-action btn-danger" style="padding: 6px 12px; font-size: 0.75rem; border-radius: 6px;">
                                     <i class="fas fa-ban"></i> Ban Alt
                                 </button>
-                                <button onclick="revokeInsiteRole('${v.guildId}', '${v.userId}', '${v.username}')" class="btn-action" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; border-color: rgba(245,158,11,0.4); color: #fbbf24;">
+                                <button onclick="revokeInsiteRole('${v.guildId}', '${v.userId}', '${v.username}', this)" class="btn-action" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; border-color: rgba(245,158,11,0.4); color: #fbbf24;">
                                     <i class="fas fa-user-minus"></i> Revoke Role
                                 </button>
-                                <button onclick="copyForensicsJson('${v.id}')" class="btn-action" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px;" title="Copy unredacted JSON forensics">
+                                <button onclick="copyForensicsJson('${v.id}', this)" class="btn-action" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px;" title="Copy unredacted JSON forensics">
                                     <i class="fas fa-code"></i> Forensics
                                 </button>
                                 <a href="https://discord.com/users/${v.userId}" target="_blank" class="btn-action" style="padding: 6px 10px; font-size: 0.75rem; border-radius: 6px; text-decoration: none;" title="Open Discord Profile">
@@ -1655,10 +1706,44 @@
             container.innerHTML = output;
         }
 
-        async function banFlaggedAlt(guildId, userId, username) {
+        async function banFlaggedAlt(guildId, userId, username, btn) {
             if (!confirm(`Are you sure you want to permanently ban ${username || userId} (${userId}) from this server?`)) {
                 return;
             }
+
+            const originalHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Banning...';
+            }
+
+            try {
+                const authToken = localStorage.getItem('nora_admin_token');
+                const apiBase = window.getApiBaseUrl();
+                const res = await fetch(`${apiBase}/api/admin/insite-verifications/ban-alt`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ guildId, userId, reason: '[Nora Owner Desk] Banned for ban evasion / alt abuse' })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message || 'Alt successfully banned.');
+                    fetchInsiteVerifications();
+                } else {
+                    alert('Failed to ban alt: ' + (data.error || 'Unknown error'));
+                }
+            } catch (e) {
+                alert('Error: ' + e.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
+            }
+        }
             try {
                 const authToken = localStorage.getItem('nora_admin_token');
                 const apiBase = window.getApiBaseUrl();
@@ -1727,11 +1812,137 @@
                 loadBlacklistedServers();
                 loadStatusFlags();
                 loadAiCreditsDesk();
+                fetchInsiteVerifications();
+                loadSystemDiagnostics();
+                updateSidebarBadges();
             } catch (e) {
                 console.error("Failed to load admin desk data:", e);
             }
         }
 
+
+        
+        // Centralized Sidebar Badges Syncer
+        function updateSidebarBadges() {
+            try {
+                if (typeof activeServers !== 'undefined') {
+                    const el = document.getElementById('badge-servers-count');
+                    if (el) el.textContent = activeServers.length;
+                }
+                if (typeof authedUsers !== 'undefined') {
+                    const el = document.getElementById('badge-users-count');
+                    if (el) el.textContent = authedUsers.length;
+                }
+                if (typeof insiteVerifications !== 'undefined') {
+                    const el = document.getElementById('badge-insite-count');
+                    if (el) el.textContent = insiteVerifications.length;
+                }
+                if (typeof statusFlags !== 'undefined') {
+                    const el = document.getElementById('badge-flags-count');
+                    if (el) el.textContent = statusFlags.length;
+                }
+                if (typeof siteAlertsList !== 'undefined') {
+                    const el = document.getElementById('badge-alerts-count');
+                    if (el) el.textContent = siteAlertsList.length;
+                }
+            } catch (_) {}
+        }
+
+        // Global Admin Search Functionality
+        window.filterGlobalAdmin = function() {
+            const query = (document.getElementById('global-admin-search')?.value || '').toLowerCase().trim();
+            const activeTab = document.querySelector('.tab-view.active');
+            if (!activeTab) return;
+            const tabId = activeTab.id;
+
+            if (tabId === 'sec-insite') {
+                const searchBox = document.getElementById('insite-search-input');
+                if (searchBox) searchBox.value = query;
+                renderInsiteVerificationsTable();
+            } else if (tabId === 'sec-servers') {
+                const searchBox = document.getElementById('search-input');
+                if (searchBox) searchBox.value = query;
+                renderLists();
+            } else if (tabId === 'sec-incidents') {
+                const searchBox = document.getElementById('incidents-search-input');
+                if (searchBox) searchBox.value = query;
+                filterIncidentsList();
+            } else if (tabId === 'sec-broadcasts') {
+                renderFilteredSiteAlerts(query);
+            }
+        };
+
+        // Shard Explorer System
+        window.currentClusterShards = [];
+        window.activeShardExplorerId = null;
+
+        window.openShardServersModal = function(shardId) {
+            window.activeShardExplorerId = shardId;
+            const shard = (window.currentClusterShards || []).find(s => s.id === shardId);
+            const modal = document.getElementById('shard-servers-modal');
+            const titleEl = document.getElementById('shard-modal-title');
+            const subTitleEl = document.getElementById('shard-modal-subtitle');
+            const searchInput = document.getElementById('shard-server-search');
+
+            if (!modal || !shard) return;
+            titleEl.textContent = `Shard #${shard.id} Servers (${shard.guilds || 0})`;
+            subTitleEl.textContent = `Health: ${shard.healthScore}/100 • Ping: ${shard.pingMs}ms • Safe Limit: ${shard.safeCapacityLimit || 2200}`;
+            if (searchInput) searchInput.value = '';
+
+            renderShardServersList(shard.guildsList || []);
+            modal.style.display = 'flex';
+        };
+
+        window.closeShardModal = function() {
+            const modal = document.getElementById('shard-servers-modal');
+            if (modal) modal.style.display = 'none';
+        };
+
+        window.filterShardServersList = function() {
+            const shard = (window.currentClusterShards || []).find(s => s.id === window.activeShardExplorerId);
+            if (!shard) return;
+            const query = (document.getElementById('shard-server-search')?.value || '').toLowerCase().trim();
+            const servers = (shard.guildsList || []).filter(g => 
+                (g.name || '').toLowerCase().includes(query) || (g.id || '').includes(query)
+            );
+            renderShardServersList(servers);
+        };
+
+        function renderShardServersList(servers) {
+            const container = document.getElementById('shard-servers-list-container');
+            if (!container) return;
+
+            if (!servers || servers.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-dim); text-align: center; padding: 24px; font-size: 0.85rem;">No servers found on this shard matching your query.</div>';
+                return;
+            }
+
+            container.innerHTML = servers.map(s => {
+                const iconHtml = s.icon 
+                    ? `<img src="${s.icon}" style="width: 38px; height: 38px; border-radius: 10px; object-fit: cover;" onerror="this.outerHTML='<div style=\'width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,0.08);display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;\'>${(s.name||'S')[0]}</div>';">`
+                    : `<div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(139, 92, 246, 0.2); border: 1px solid rgba(139, 92, 246, 0.4); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #c4b5fd;">${(s.name || 'S')[0]}</div>`;
+
+                return `
+                    <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+                            ${iconHtml}
+                            <div style="min-width: 0;">
+                                <div style="font-weight: 700; font-size: 0.88rem; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${s.name || 'Unknown Server'}</div>
+                                <div style="font-size: 0.74rem; color: var(--text-muted); font-family: monospace;">ID: ${s.id}</div>
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                            <span style="font-size: 0.74rem; background: rgba(255,255,255,0.06); padding: 3px 8px; border-radius: 6px; color: #cbd5e1;">
+                                <i class="fas fa-users" style="color: #60a5fa; margin-right: 4px;"></i>${(s.memberCount || 0).toLocaleString()}
+                            </span>
+                            <a href="/dashboard?guild=${s.id}" target="_blank" class="btn-action" style="padding: 4px 8px; font-size: 0.72rem; text-decoration: none;" title="Open in Server Dashboard">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
 
         async function loadSystemDiagnostics() {
             try {
@@ -1748,6 +1959,11 @@
                         if (shardEl) shardEl.textContent = `Shard #${d.shardId} of ${d.totalShards}`;
                         const pingEl = document.getElementById('diag-ping');
                         if (pingEl) pingEl.textContent = `${d.pingMs} ms`;
+                        const sidePingEl = document.getElementById('badge-diag-ping');
+                        if (sidePingEl) sidePingEl.textContent = `${d.pingMs} ms`;
+                        const nodeVerEl = document.getElementById('node-runtime-version');
+                        if (nodeVerEl) nodeVerEl.textContent = `Node.js ${d.nodeVersion || 'v25.2.1'}`;
+
                         const rssEl = document.getElementById('diag-rss');
                         if (rssEl) rssEl.textContent = `${d.rssMb} MB`;
                         const heapEl = document.getElementById('diag-heap');
@@ -1757,6 +1973,63 @@
                             const hrs = Math.floor(d.uptimeSeconds / 3600);
                             const mins = Math.floor((d.uptimeSeconds % 3600) / 60);
                             uptimeEl.textContent = `${hrs}h ${mins}m`;
+                        }
+
+                        // Render Shard Cards
+                        window.currentClusterShards = d.shards || [];
+                        const shardsContainer = document.getElementById('cluster-shards-container');
+                        if (shardsContainer) {
+                            if (!d.shards || d.shards.length === 0) {
+                                shardsContainer.innerHTML = '<div style="color: var(--text-dim); padding: 14px; text-align: center;">1 Active Shard (#0 Primary) • 100% Operational</div>';
+                            } else {
+                                shardsContainer.innerHTML = d.shards.map(shard => {
+                                    const safePct = shard.safeCapacityPct || 0;
+                                    const barColor = safePct > 80 ? '#ef4444' : (safePct > 60 ? '#f59e0b' : '#10b981');
+
+                                    return `
+                                        <div style="background: rgba(0,0,0,0.35); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                                <div style="display: flex; align-items: center; gap: 8px;">
+                                                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px #10b981;"></div>
+                                                    <strong style="color: #fff; font-size: 0.95rem;">${shard.name || `Shard #${shard.id}`}</strong>
+                                                </div>
+                                                <span style="font-size: 0.72rem; padding: 2px 7px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #10b981; border-radius: 999px; font-weight: 700;">
+                                                    ${shard.status || 'READY'}
+                                                </span>
+                                            </div>
+
+                                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; font-size: 0.76rem; text-align: center;">
+                                                <div style="background: rgba(255,255,255,0.03); padding: 6px; border-radius: 6px;">
+                                                    <span style="color: var(--text-muted); display: block;">Latency</span>
+                                                    <strong style="color: #38bdf8;">${shard.pingMs || d.pingMs} ms</strong>
+                                                </div>
+                                                <div style="background: rgba(255,255,255,0.03); padding: 6px; border-radius: 6px;">
+                                                    <span style="color: var(--text-muted); display: block;">Servers</span>
+                                                    <strong style="color: #fff;">${(shard.guilds || 0).toLocaleString()}</strong>
+                                                </div>
+                                                <div style="background: rgba(255,255,255,0.03); padding: 6px; border-radius: 6px;">
+                                                    <span style="color: var(--text-muted); display: block;">Members</span>
+                                                    <strong style="color: #a78bfa;">${(shard.users || 0).toLocaleString()}</strong>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted); margin-bottom: 4px;">
+                                                    <span>Pre-2,500 Safe Zone Allocation</span>
+                                                    <strong style="color: ${barColor};">${safePct}% (${shard.guilds || 0} / ${shard.safeCapacityLimit || 2200})</strong>
+                                                </div>
+                                                <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden;">
+                                                    <div style="width: ${Math.min(100, safePct)}%; height: 100%; background: ${barColor}; border-radius: 999px;"></div>
+                                                </div>
+                                            </div>
+
+                                            <button onclick="openShardServersModal(${shard.id})" class="btn-action" style="width: 100%; padding: 7px; font-size: 0.78rem; margin-top: 4px; display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                                <i class="fas fa-list"></i> View Shard Servers (${shard.guilds || 0})
+                                            </button>
+                                        </div>
+                                    `;
+                                }).join('');
+                            }
                         }
                     }
                 }
@@ -1807,6 +2080,7 @@
             document.getElementById('server-count').textContent = filteredServers.length;
             document.getElementById('user-count').textContent = filteredUsers.length;
             document.getElementById('terminated-count').textContent = filteredTerminated.length;
+            updateSidebarBadges();
 
             // Render servers
             const serversContainer = document.getElementById('servers-list-container');
@@ -2225,10 +2499,84 @@
         // 🚨 OPERATIONAL STATUS FLAGS (vaztinix.dev/status)
         // ==========================================
 
-        async function loadStatusFlags() {
+        window.allIncidentItems = [];
+
+        window.filterIncidentsList = function() {
+            const query = (document.getElementById('incidents-search-input')?.value || document.getElementById('global-admin-search')?.value || '').toLowerCase().trim();
+            const container = document.getElementById('status-flags-container');
+            if (!container) return;
+
+            const filtered = (window.allIncidentItems || []).filter(f => 
+                (f.title || '').toLowerCase().includes(query) ||
+                (f.message || '').toLowerCase().includes(query) ||
+                (f.resolutionNote || '').toLowerCase().includes(query) ||
+                (f.severity || '').toLowerCase().includes(query) ||
+                (f.author || '').toLowerCase().includes(query)
+            );
+
+            if (filtered.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-dim); font-size: 0.85rem; padding: 20px 0; text-align: center;">No status flags or incidents match query.</div>';
+                return;
+            }
+
+            const severityColors = {
+                info: { border: 'rgba(56, 189, 248, 0.3)', bg: 'rgba(56, 189, 248, 0.08)', text: '#38bdf8', icon: 'fa-info-circle' },
+                degraded: { border: 'rgba(245, 158, 11, 0.3)', bg: 'rgba(245, 158, 11, 0.08)', text: '#f59e0b', icon: 'fa-exclamation-triangle' },
+                partial_outage: { border: 'rgba(239, 68, 68, 0.35)', bg: 'rgba(239, 68, 68, 0.08)', text: '#ef4444', icon: 'fa-triangle-exclamation' },
+                major_outage: { border: 'rgba(239, 68, 68, 0.45)', bg: 'rgba(239, 68, 68, 0.12)', text: '#ef4444', icon: 'fa-skull-crossbones' },
+                outage: { border: 'rgba(239, 68, 68, 0.35)', bg: 'rgba(239, 68, 68, 0.08)', text: '#ef4444', icon: 'fa-skull-crossbones' },
+                maintenance: { border: 'rgba(168, 85, 247, 0.3)', bg: 'rgba(168, 85, 247, 0.08)', text: '#c084fc', icon: 'fa-tools' }
+            };
+
+            container.innerHTML = filtered.map(f => {
+                const sc = severityColors[f.severity] || severityColors.info;
+                const statusBadge = f.isResolved
+                    ? `<span style="font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #10b981; font-weight: 700;">RESOLVED</span>`
+                    : `<span style="font-size: 0.68rem; padding: 2px 6px; border-radius: 4px; background: ${sc.bg}; border: 1px solid ${sc.border}; color: ${sc.text}; font-weight: 700;">ACTIVE</span>`;
+
+                const resNoteHtml = f.isResolved && f.resolutionNote
+                    ? `<div style="font-size: 0.72rem; color: #10b981; background: rgba(16,185,129,0.06); padding: 4px 8px; border-radius: 4px; border-left: 2px solid #10b981;"><strong>Resolution:</strong> ${String(f.resolutionNote).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>`
+                    : '';
+
+                return `
+                <div style="background: rgba(0,0,0,0.25); border: 1px solid ${f.isResolved ? 'var(--border-subtle)' : sc.border}; border-radius: 8px; padding: 12px; display: flex; flex-direction: column; gap: 6px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                        <div style="font-weight: 700; font-size: 0.88rem; color: #fff; display: flex; align-items: center; gap: 6px;">
+                            <i class="fas ${sc.icon}" style="color: ${sc.text};"></i>
+                            <span>${String(f.title).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</span>
+                            ${statusBadge}
+                            <span style="font-size: 0.68rem; color: var(--text-muted);">Shard #${f.shardId || 0}</span>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            ${!f.isResolved && f.id ? `
+                                <button class="logout" style="padding: 3px 8px; font-size: 0.68rem; border-color: rgba(16,185,129,0.4); color: #10b981; background: rgba(16,185,129,0.08);" onclick="resolveStatusFlag(${f.id})">Resolve</button>
+                            ` : ''}
+                            ${f.id ? `
+                                <button class="logout" style="padding: 3px 8px; font-size: 0.68rem; color: #f43f5e;" onclick="deleteStatusFlag(${f.id})">Delete</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                    <div style="font-size: 0.78rem; color: #cbd5e1; line-height: 1.4;">${String(f.message).replace(/</g, '&lt;').replace(/>/g, '&gt;')}</div>
+                    ${resNoteHtml}
+                    <div style="display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--text-muted); border-top: 1px dashed var(--border-subtle); padding-top: 4px; margin-top: 2px;">
+                        <span>By: ${f.author || 'Admin'}</span>
+                        <span>${new Date(f.createdAt || f.timestamp).toLocaleString()}</span>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        };
+
+        async function loadStatusFlags(btn) {
             const container = document.getElementById('status-flags-container');
             const countEl = document.getElementById('active-flags-count');
             if (!container) return;
+
+            const originalHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+            }
 
             try {
                 const apiBase = window.getApiBaseUrl();
@@ -2240,13 +2588,35 @@
                 const data = await res.json();
                 statusFlags = data.flags || [];
 
+                // Combine with past incident sector history for complete archive visibility
+                const pastUpdates = (data.pastIncidentUpdates || []).map(u => ({
+                    title: u.title || `Sector: ${u.toSector}`,
+                    message: u.description || 'System status transition recorded by automated sentinel.',
+                    severity: u.severity || 'info',
+                    shardId: 0,
+                    author: 'Nora Sentinel',
+                    isResolved: true,
+                    resolutionNote: 'Automated resolution & health recovery verified.',
+                    createdAt: u.timestamp
+                }));
+
+                window.allIncidentItems = [...statusFlags, ...pastUpdates];
+
                 const activeCount = statusFlags.filter(f => !f.isResolved).length;
                 if (countEl) countEl.textContent = activeCount;
 
-                if (statusFlags.length === 0) {
-                    container.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 12px 0; text-align: center;">No status flags or incidents reported.</div>';
-                    return;
+                filterIncidentsList();
+                updateSidebarBadges();
+            } catch (e) {
+                console.error('Failed to load status flags:', e);
+                if (container) container.innerHTML = `<div style="color: #f43f5e; font-size: 0.8rem;">Error loading status flags: ${e.message}</div>`;
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
                 }
+            }
+        }
 
                 const severityColors = {
                     info: { border: 'rgba(56, 189, 248, 0.3)', bg: 'rgba(56, 189, 248, 0.08)', text: '#38bdf8', icon: 'fa-info-circle' },
@@ -2618,6 +2988,31 @@
         // 📢 SITE ALERTS & BROADCASTS
         // ==========================================
 
+        window.siteAlertsList = [];
+
+        function renderFilteredSiteAlerts(filterQuery = '') {
+            const container = document.getElementById('site-alerts-container');
+            if (!container) return;
+            const alerts = (window.siteAlertsList || []).filter(a => 
+                (a.title || '').toLowerCase().includes(filterQuery) || 
+                (a.message || '').toLowerCase().includes(filterQuery)
+            );
+
+            if (alerts.length === 0) {
+                container.innerHTML = '<div style="color: var(--text-dim); font-size: 0.85rem; padding: 12px 0; text-align: center;">No active banner alerts matching query.</div>';
+            } else {
+                container.innerHTML = alerts.map(a => `
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 10px 14px; gap: 10px;">
+                        <div style="min-width: 0;">
+                            <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">${a.title} <span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.06); text-transform: uppercase;">${a.type}</span></div>
+                            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;">${a.message}</div>
+                        </div>
+                        <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; color: #f43f5e;" onclick="deleteSiteAlert(${a.id})">Delete</button>
+                    </div>
+                `).join('');
+            }
+        }
+
         async function loadSiteAlerts() {
             const container = document.getElementById('site-alerts-container');
             if (!container) return;
@@ -2628,103 +3023,104 @@
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    const alerts = data.alerts || [];
-                    if (alerts.length === 0) {
-                        container.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 10px 0; text-align: center;">No active banner alerts.</div>';
-                    } else {
-                        container.innerHTML = alerts.map(a => `
-                            <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; gap: 10px;">
-                                <div style="min-width: 0;">
-                                    <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">${a.title} <span style="font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,0.06); text-transform: uppercase;">${a.type}</span></div>
-                                    <div style="font-size: 0.78rem; color: var(--muted); margin-top: 2px;">${a.message}</div>
-                                </div>
-                                <button class="logout" style="padding: 4px 8px; font-size: 0.7rem; color: #f43f5e;" onclick="deleteSiteAlert(${a.id})">Delete</button>
-                            </div>
-                        `).join('');
-                    }
+                    window.siteAlertsList = data.alerts || [];
+                    renderFilteredSiteAlerts('');
+                    updateSidebarBadges();
                 }
             } catch (e) {
                 console.error('Failed to load site alerts:', e);
             }
         }
 
+        // Live Site Alert In-Card Preview & Smooth Floating Banner
         function previewSiteAlertBubble() {
-            const title = (document.getElementById('alert-title')?.value || '').trim() || 'NORA SITE ANNOUNCEMENT';
-            const message = (document.getElementById('alert-message')?.value || '').trim() || 'Notice: Communities will not be able to see staff activity or server member counts until we apply for the presence intent.\nMore info coming soon!';
-            const type = document.getElementById('alert-type')?.value || 'announcement';
+            const title = (document.getElementById('site-alert-title')?.value || document.getElementById('alert-title')?.value || '').trim() || 'Nora Studio Announcement';
+            const message = (document.getElementById('site-alert-message')?.value || document.getElementById('alert-message')?.value || '').trim() || 'Your announcement will appear here in real-time.';
+            const type = document.getElementById('site-alert-type')?.value || document.getElementById('alert-type')?.value || 'info';
+
+            const colorMap = {
+                announcement: { hex: '#8B5CF6', rgb: '139, 92, 246', icon: 'fa-bullhorn' },
+                info: { hex: '#3B82F6', rgb: '59, 130, 246', icon: 'fa-info-circle' },
+                success: { hex: '#10B981', rgb: '16, 185, 129', icon: 'fa-check-circle' },
+                warning: { hex: '#F59E0B', rgb: '245, 158, 11', icon: 'fa-exclamation-triangle' },
+                danger: { hex: '#EF4444', rgb: '239, 68, 68', icon: 'fa-triangle-exclamation' }
+            };
+            const theme = colorMap[type] || colorMap.info;
+
+            // 1. Instantly update in-card preview box
+            const previewBox = document.getElementById('site-alert-preview-box');
+            const previewTitle = document.getElementById('preview-alert-title');
+            const previewBody = document.getElementById('preview-alert-body');
+
+            if (previewBox) {
+                previewBox.style.background = `rgba(${theme.rgb}, 0.12)`;
+                previewBox.style.borderColor = `rgba(${theme.rgb}, 0.35)`;
+            }
+            if (previewTitle) {
+                previewTitle.innerHTML = `<i class="fas ${theme.icon}" style="color: ${theme.hex}; margin-right: 6px;"></i>${title}`;
+            }
+            if (previewBody) {
+                previewBody.textContent = message;
+            }
+
+            // 2. Smoothly update existing floating banner without re-animating/reloading on every letter
+            const existingBanner = document.getElementById('site-alert-top-banner');
+            if (existingBanner) {
+                const bannerTitleEl = existingBanner.querySelector('.nora-banner-title-text');
+                const bannerBodyEl = existingBanner.querySelector('.nora-banner-body-text');
+                if (bannerTitleEl) bannerTitleEl.textContent = title;
+                if (bannerBodyEl) bannerBodyEl.textContent = message;
+                existingBanner.style.borderColor = `rgba(${theme.rgb}, 0.42)`;
+            }
+        }
+
+        window.spawnFloatingBubbleTest = function() {
+            const title = (document.getElementById('site-alert-title')?.value || document.getElementById('alert-title')?.value || '').trim() || 'Nora Studio Announcement';
+            const message = (document.getElementById('site-alert-message')?.value || document.getElementById('alert-message')?.value || '').trim() || 'Notice: This is a live preview of your dismissible broadcast alert.';
+            const type = document.getElementById('site-alert-type')?.value || document.getElementById('alert-type')?.value || 'info';
 
             const existing = document.getElementById('site-alert-top-banner');
             if (existing) existing.remove();
 
-            if (!document.getElementById('nora-site-alert-bubble-styles')) {
-                const styleEl = document.createElement('style');
-                styleEl.id = 'nora-site-alert-bubble-styles';
-                styleEl.textContent = `
-                    @keyframes noraBubblePopIn {
-                        0% { opacity: 0; transform: translate(-50%, 28px) scale(0.92); filter: blur(6px); }
-                        65% { opacity: 1; transform: translate(-50%, -3px) scale(1.015); filter: blur(0px); }
-                        100% { opacity: 1; transform: translate(-50%, 0) scale(1); filter: blur(0px); }
-                    }
-                    @keyframes noraWordFadeIn {
-                        0% { opacity: 0; transform: translateY(7px); filter: blur(4px); }
-                        100% { opacity: 1; transform: translateY(0); filter: blur(0px); }
-                    }
-                    @keyframes noraLineFadeIn {
-                        0% { opacity: 0; transform: translateY(8px); }
-                        100% { opacity: 1; transform: translateY(0); }
-                    }
-                    #site-alert-top-banner {
-                        position: fixed; bottom: 26px; left: 50%; transform: translate(-50%, 0); z-index: 999990;
-                        width: calc(100% - 32px); max-width: 660px; border-radius: 22px; padding: 16px 18px;
-                        background: linear-gradient(145deg, rgba(18, 21, 36, 0.86) 0%, rgba(11, 14, 25, 0.92) 100%);
-                        backdrop-filter: blur(22px) saturate(180%); -webkit-backdrop-filter: blur(22px) saturate(180%);
-                        color: #ffffff; animation: noraBubblePopIn 0.52s cubic-bezier(0.16, 1, 0.3, 1) forwards; overflow: hidden;
-                    }
-                    .nora-alert-line { display: block; opacity: 0; animation: noraLineFadeIn 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-                    .nora-alert-line + .nora-alert-line { margin-top: 6px; }
-                    .nora-alert-word { display: inline-block; opacity: 0; margin-right: 0.28em; animation: noraWordFadeIn 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-                `;
-                document.head.appendChild(styleEl);
-            }
-
             const colorMap = {
                 announcement: { hex: '#8B5CF6', rgb: '139, 92, 246', icon: 'fa-bullhorn' },
-                warning: { hex: '#EF4444', rgb: '239, 68, 68', icon: 'fa-exclamation-triangle' },
                 info: { hex: '#3B82F6', rgb: '59, 130, 246', icon: 'fa-info-circle' },
-                success: { hex: '#10B981', rgb: '16, 185, 129', icon: 'fa-check-circle' }
+                success: { hex: '#10B981', rgb: '16, 185, 129', icon: 'fa-check-circle' },
+                warning: { hex: '#F59E0B', rgb: '245, 158, 11', icon: 'fa-exclamation-triangle' },
+                danger: { hex: '#EF4444', rgb: '239, 68, 68', icon: 'fa-triangle-exclamation' }
             };
-            const theme = colorMap[type] || colorMap.announcement;
-            const esc = s => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-            let wordIdx = 0;
-            const animatedHtml = message.split(/\r?\n/).filter(l => l.trim()).map((line, lIdx) => {
-                const words = line.trim().split(/\s+/).map(w => `<span class="nora-alert-word" style="animation-delay:${140 + (wordIdx++ * 36)}ms;">${esc(w)}</span>`).join('');
-                return `<span class="nora-alert-line" style="animation-delay:${120 + lIdx * 90}ms;">${words}</span>`;
-            }).join('');
+            const theme = colorMap[type] || colorMap.info;
 
             const banner = document.createElement('div');
             banner.id = 'site-alert-top-banner';
-            banner.style.border = `1px solid rgba(${theme.rgb}, 0.42)`;
-            banner.style.boxShadow = `0 22px 55px rgba(0, 0, 0, 0.72), 0 0 28px rgba(${theme.rgb}, 0.22)`;
+            banner.style.cssText = `position: fixed; bottom: 26px; left: 50%; transform: translate(-50%, 0); z-index: 999990; width: calc(100% - 32px); max-width: 660px; border-radius: 20px; padding: 16px 18px; background: linear-gradient(145deg, rgba(18, 21, 36, 0.94) 0%, rgba(11, 14, 25, 0.96) 100%); backdrop-filter: blur(22px); border: 1px solid rgba(${theme.rgb}, 0.42); box-shadow: 0 22px 55px rgba(0, 0, 0, 0.72), 0 0 28px rgba(${theme.rgb}, 0.22); color: #fff;`;
             banner.innerHTML = `
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;">
-                    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(${theme.rgb},0.18);border:1px solid rgba(${theme.rgb},0.45);color:#fff;padding:5px 13px;border-radius:999px;font-weight:800;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.65px;">
-                        <span style="width:7px;height:7px;border-radius:50%;background:${theme.hex};box-shadow:0 0 8px ${theme.hex};"></span>
+                    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(${theme.rgb},0.18);border:1px solid rgba(${theme.rgb},0.45);color:#fff;padding:5px 13px;border-radius:999px;font-weight:800;font-size:0.72rem;text-transform:uppercase;">
+                        <span style="width:7px;height:7px;border-radius:50%;background:${theme.hex};"></span>
                         <i class="fas ${theme.icon}"></i>
-                        <span>${esc(title.replace(/^📢\s*/, ''))}</span>
+                        <span class="nora-banner-title-text">${title}</span>
                     </div>
                     <button type="button" onclick="document.getElementById('site-alert-top-banner')?.remove()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.16);color:#fff;border-radius:999px;padding:5px 13px;font-size:0.76rem;font-weight:700;cursor:pointer;">✕ Dismiss</button>
                 </div>
-                <div style="background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.09);border-radius:14px;padding:12px 15px;backdrop-filter:blur(10px);line-height:1.55;font-size:0.9rem;color:rgba(248,250,252,0.96);font-weight:500;">${animatedHtml}</div>
+                <div class="nora-banner-body-text" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;font-size:0.88rem;color:rgba(248,250,252,0.96);line-height:1.5;">${message}</div>
             `;
             document.body.appendChild(banner);
-        }
+        };
 
-        async function publishSiteAlert() {
-            const title = document.getElementById('alert-title').value.trim();
-            const message = document.getElementById('alert-message').value.trim();
-            const type = document.getElementById('alert-type').value;
+        async function publishSiteAlert(btn) {
+            const title = (document.getElementById('site-alert-title')?.value || document.getElementById('alert-title')?.value || '').trim();
+            const message = (document.getElementById('site-alert-message')?.value || document.getElementById('alert-message')?.value || '').trim();
+            const type = document.getElementById('site-alert-type')?.value || document.getElementById('alert-type')?.value || 'info';
+            const linkUrl = (document.getElementById('site-alert-url')?.value || '').trim();
 
             if (!message) return alert('Please enter an alert message.');
+
+            const originalHtml = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Publishing...';
+            }
 
             try {
                 const apiBase = window.getApiBaseUrl();
@@ -2734,16 +3130,24 @@
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${localStorage.getItem('nora_admin_token')}`
                     },
-                    body: JSON.stringify({ title, message, type, isActive: true })
+                    body: JSON.stringify({ title, message, type, linkUrl, isActive: true })
                 });
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Failed to publish alert');
                 alert('Site announcement published successfully!');
-                document.getElementById('alert-title').value = '';
-                document.getElementById('alert-message').value = '';
+                const tEl = document.getElementById('site-alert-title') || document.getElementById('alert-title');
+                const mEl = document.getElementById('site-alert-message') || document.getElementById('alert-message');
+                if (tEl) tEl.value = '';
+                if (mEl) mEl.value = '';
+                previewSiteAlertBubble();
                 loadSiteAlerts();
             } catch (e) {
                 alert('Error publishing alert: ' + e.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
             }
         }
 

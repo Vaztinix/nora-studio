@@ -46,3 +46,4 @@ const UserInventoryItem = sequelize.define('UserInventoryItem', {
 });
 
 module.exports = UserInventoryItem;
+

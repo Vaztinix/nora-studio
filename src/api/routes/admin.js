@@ -949,9 +949,18 @@ router.get('/status-flags', requireOwner, async (req, res) => {
         const StatusFlag = require('../../database/models/StatusFlag');
         const flags = await StatusFlag.findAll({
             order: [['createdAt', 'DESC']],
-            limit: 50
+            limit: 500
         });
-        res.json({ success: true, flags });
+
+        let pastIncidentUpdates = [];
+        try {
+            const statusRoute = require('./status');
+            if (statusRoute && Array.isArray(statusRoute.sectorUpdatesHistory)) {
+                pastIncidentUpdates = statusRoute.sectorUpdatesHistory;
+            }
+        } catch (_) {}
+
+        res.json({ success: true, flags, pastIncidentUpdates });
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
@@ -1455,19 +1464,24 @@ router.get('/system-diagnostics', requireOwner, async (req, res) => {
         const mem = process.memoryUsage();
         const shardId = req.client.shard ? req.client.shard.ids[0] : 0;
         const totalShards = req.client.shard ? req.client.shard.count : 1;
+        const shardManager = require('../../utils/shardManager');
+        const dynamicEval = shardManager.evaluateDynamicShards(req.client, Math.round(req.client.ws.ping) || 28, true, 'READY');
+
         res.json({
             success: true,
             diagnostics: {
                 shardId,
                 totalShards,
-                guildsOnShard: req.client.guilds.cache.size,
+                guildsOnShard: req.client.guilds ? req.client.guilds.cache.size : 0,
                 pingMs: Math.round(req.client.ws.ping) || 0,
                 uptimeSeconds: Math.floor(process.uptime()),
                 nodeVersion: process.version,
                 rssMb: Math.round(mem.rss / 1024 / 1024),
                 heapUsedMb: Math.round(mem.heapUsed / 1024 / 1024),
                 heapTotalMb: Math.round(mem.heapTotal / 1024 / 1024),
-                eventListeners: req.client.eventNames().length
+                eventListeners: req.client.eventNames().length,
+                shards: dynamicEval.shards || [],
+                shardingSummary: dynamicEval.shardingSummary || {}
             }
         });
     } catch (e) {
@@ -1480,32 +1494,11 @@ router.get('/system-diagnostics', requireOwner, async (req, res) => {
 router.get('/insite-verifications', requireOwner, async (req, res) => {
     try {
         const logs = await VerificationLog.findAll({
-            where: {
-                guildId: { [Op.in]: ['1487342521133830174', '1515800329889779954'] }
-            },
             order: [['createdAt', 'DESC']],
-            limit: 100
+            limit: 5000
         });
 
-        const flaggedLogs = await VerificationLog.findAll({
-            where: {
-                [Op.or]: [
-                    { altDetected: true },
-                    { vpnDetected: true },
-                    { riskLevel: { [Op.in]: ['High', 'Critical'] } }
-                ]
-            },
-            order: [['createdAt', 'DESC']],
-            limit: 100
-        });
-
-        const map = new Map();
-        for (const l of [...logs, ...flaggedLogs]) {
-            map.set(l.id, l);
-        }
-
-        const combined = Array.from(map.values()).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        res.json({ success: true, verifications: combined });
+        res.json({ success: true, verifications: logs });
     } catch (e) {
         console.error('Error fetching insite verifications:', e);
         res.status(500).json({ success: false, error: e.message });

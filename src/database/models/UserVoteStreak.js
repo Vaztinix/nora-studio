@@ -25,3 +25,4 @@ const UserVoteStreak = sequelize.define('UserVoteStreak', {
 });
 
 module.exports = UserVoteStreak;
+

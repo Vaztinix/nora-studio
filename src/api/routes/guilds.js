@@ -1522,7 +1522,7 @@ router.post('/action', async (req, res) => {
             }
 
             const { announceAndStartGame } = require('../../events/guessNumberSystem');
-            const state = await announceAndStartGame(resolvedGuild, settings);
+            const state = await announceAndStartGame(resolvedGuild, settings, userTag);
             if (!state) {
                 return res.status(400).json({ error: 'Failed to announce and start game. Please verify Nora has Send Messages and View Channel permissions in the designated channel.' });
             }

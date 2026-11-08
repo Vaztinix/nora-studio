@@ -339,6 +339,9 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             payload.verifyEmbedDesc = String(payload.verifyEmbedDesc).replaceAll('(such as UTTP)', '').replaceAll('UTTP', 'malicious raid networks');
         }
 
+        const oldGuessEnabled = Boolean(settings.guessGameEnabled);
+        const oldGuessChannel = settings.guessNumberChannelId ? String(settings.guessNumberChannelId) : '';
+
         await settings.update(payload);
         settingsCache.invalidate(guildId);
 
@@ -378,27 +381,26 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             });
         }
 
-        // Automatically state that Guess the Number is set up and start the game if configured in the dashboard
+        // Automatically state that Guess the Number is set up ONLY IF it was just enabled or the channel was changed
         const isGuessEnabled = payload.guessGameEnabled !== undefined ? Boolean(payload.guessGameEnabled) : Boolean(settings.guessGameEnabled);
         const targetGuessChannel = payload.guessNumberChannelId !== undefined ? payload.guessNumberChannelId : settings.guessNumberChannelId;
 
-        const guessWasConfiguredOrUpdated = isGuessEnabled && targetGuessChannel && (
-            payload.guessNumberChannelId !== undefined ||
-            payload.guessGameEnabled !== undefined ||
-            payload.guessGameMin !== undefined ||
-            payload.guessGameMax !== undefined ||
-            payload.guessNumberGuessLimit !== undefined
-        );
+        // Strict anti-spam: Only announce when channel changed OR game was explicitly toggled from disabled -> enabled
+        const channelChanged = payload.guessNumberChannelId !== undefined && String(payload.guessNumberChannelId) !== String(oldGuessChannel || '');
+        const justEnabled = payload.guessGameEnabled === true && !oldGuessEnabled;
+
+        const shouldAnnounceSetup = isGuessEnabled && targetGuessChannel && (channelChanged || justEnabled);
 
         let resolvedGuild = guild;
         if (!resolvedGuild && req.client && req.client.guilds) {
             resolvedGuild = req.client.guilds.cache.get(guildId) || await req.client.guilds.fetch(guildId).catch(() => null);
         }
 
-        if (resolvedGuild && guessWasConfiguredOrUpdated) {
+        if (resolvedGuild && shouldAnnounceSetup) {
             try {
                 const { announceAndStartGame } = require('../../events/guessNumberSystem');
-                announceAndStartGame(resolvedGuild, settings).catch(err => {
+                const userTag = user ? `@${user.username}` : 'A server manager';
+                announceAndStartGame(resolvedGuild, settings, userTag).catch(err => {
                     console.error('[Guess Game Auto-Setup Error]:', err.message);
                 });
             } catch (guessErr) {

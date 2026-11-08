@@ -97,7 +97,7 @@ async function startOrResetGame(guildId, settings) {
 /**
  * Automatically states in the configured channel that Guess the Number is set up and starts the game.
  */
-async function announceAndStartGame(guild, settings) {
+async function announceAndStartGame(guild, settings, activatorName = 'A server moderator') {
     if (!guild || !settings || settings.guessGameEnabled === false || !settings.guessNumberChannelId) {
         console.warn('[Guess the Number] Missing guild, settings, or guessNumberChannelId:', {
             hasGuild: Boolean(guild),
@@ -140,58 +140,11 @@ async function announceAndStartGame(guild, settings) {
     const guessLimit = state.guessLimit;
     const xpReward = Math.max(10, parseInt(settings.guessGameXpReward, 10) || 50);
 
-    const setupEmbed = {
-        title: '🎲 Guess the Number is Ready!',
-        description: `The Number Guessing game has been successfully configured and is now active in this channel!\n\n` +
-            `🔢 **Range**: Between **${min.toLocaleString()}** and **${max.toLocaleString()}**\n` +
-            `🎯 **Guess Limit**: **${guessLimit}** ${guessLimit === 1 ? 'guess' : 'guesses'} per round\n` +
-            `🏆 **Win XP Reward**: **+${xpReward} XP**\n\n` +
-            `**How to Play**:\n` +
-            `Simply type any whole number in this channel to submit your guess. Nora will instantly react:\n` +
-            `• ⏬ The secret number is **lower**\n` +
-            `• ⏫ The secret number is **higher**\n` +
-            `• ✅ **You got it!** (Awards XP & immediately picks a new number)\n` +
-            `• ❌ **Out of guesses!** (Reveals the secret number & automatically restarts)\n\n` +
-            `*A secret number between ${min.toLocaleString()} and ${max.toLocaleString()} has been chosen! The first guess starts the round.*`,
-        color: 0x5865F2,
-        footer: { text: `Nora Games Engine • Round #${state.round} • Continuous Play` },
-        timestamp: new Date().toISOString()
-    };
-
-    const { buildEmbedV2Container } = require('../utils/embeds');
-    let sent = false;
-
-    // Try Components V2 Container
-    if (settings.embedsVersion !== 'v1') {
-        try {
-            const v2 = buildEmbedV2Container(setupEmbed);
-            await channel.send({ ...v2 });
-            sent = true;
-        } catch (v2Err) {
-            console.warn('[Guess the Number] V2 send failed, attempting standard embed:', v2Err.message);
-        }
-    }
-
-    // Fallback standard embed
-    if (!sent) {
-        try {
-            await channel.send({ embeds: [setupEmbed] });
-            sent = true;
-        } catch (embedErr) {
-            console.warn('[Guess the Number] Embed send failed, attempting plain text fallback:', embedErr.message);
-        }
-    }
-
-    // Final fallback: plain text message (if bot lacks EmbedLinks permission)
-    if (!sent) {
-        try {
-            await channel.send(`🎲 **Guess the Number is Active!** Range: **${min.toLocaleString()}** to **${max.toLocaleString()}** (Limit: ${guessLimit} guesses | +${xpReward} XP). Type your guess in this channel to start!`);
-            sent = true;
-        } catch (textErr) {
-            console.error('[Guess the Number] All send attempts failed in channel:', textErr.message);
-            return null;
-        }
-    }
+    // Send a small, clean message instead of spammy embeds
+    const smallNotice = `🎲 **${activatorName}** has enabled **Guess the Number** in this channel! Range: **${min.toLocaleString()}** to **${max.toLocaleString()}** (${guessLimit} guesses per round). Type any whole number to start guessing!`;
+    await channel.send(smallNotice).catch(err => {
+        console.error('[Guess the Number] Failed to send setup notice:', err.message);
+    });
 
     return state;
 }
@@ -265,21 +218,8 @@ module.exports = {
                 console.error('[Guess Game XP Error]:', xpErr);
             }
 
-            const winEmbed = {
-                title: '🎉 Number Guessed Correctly!',
-                description: `Congratulations <@${message.author.id}>! You found the secret number **${state.target}** in **${state.attempts}** ${state.attempts === 1 ? 'guess' : 'guesses'}!\n\n**+${xpReward} XP** has been added to your profile.\n\n🔄 *A new secret number between **${min.toLocaleString()}** and **${max.toLocaleString()}** has been selected (Limit: **${guessLimit}** guesses). Start guessing!*`,
-                color: 0x10b981
-            };
-
-            const { buildEmbedV2Container } = require('../utils/embeds');
-            if (settings.embedsVersion !== 'v1') {
-                const v2 = buildEmbedV2Container(winEmbed);
-                await message.channel.send({ ...v2 }).catch(async () => {
-                    await message.channel.send({ embeds: [winEmbed] }).catch(() => {});
-                });
-            } else {
-                await message.channel.send({ embeds: [winEmbed] }).catch(() => {});
-            }
+            const smallWinMessage = `🎉 <@${message.author.id}> guessed the secret number **${state.target}** in **${state.attempts}** ${state.attempts === 1 ? 'guess' : 'guesses'}! (+**${xpReward} XP**)\n*New round! Guess a number between **${min.toLocaleString()}** and **${max.toLocaleString()}** (${guessLimit} guesses). Type a number to play (⏬ = lower, ⏫ = higher).* `;
+            await message.channel.send(smallWinMessage).catch(() => {});
 
             // Always restart immediately
             state.target = Math.floor(Math.random() * range) + min;
@@ -293,21 +233,8 @@ module.exports = {
             // ❌ Ran out of guesses!
             await message.react('❌').catch(() => {});
 
-            const failEmbed = {
-                title: '❌ Out of Guesses!',
-                description: `Nobody guessed it! The secret number was **${state.target}**.\n\n🔄 *A new secret number between **${min.toLocaleString()}** and **${max.toLocaleString()}** has been selected (Limit: **${guessLimit}** guesses). Good luck!*`,
-                color: 0xef4444
-            };
-
-            const { buildEmbedV2Container } = require('../utils/embeds');
-            if (settings.embedsVersion !== 'v1') {
-                const v2 = buildEmbedV2Container(failEmbed);
-                await message.channel.send({ ...v2 }).catch(async () => {
-                    await message.channel.send({ embeds: [failEmbed] }).catch(() => {});
-                });
-            } else {
-                await message.channel.send({ embeds: [failEmbed] }).catch(() => {});
-            }
+            const smallFailMessage = `❌ Nobody guessed it! The secret number was **${state.target}**.\n*New round! Guess a number between **${min.toLocaleString()}** and **${max.toLocaleString()}** (${guessLimit} guesses). Type a number to play (⏬ = lower, ⏫ = higher).* `;
+            await message.channel.send(smallFailMessage).catch(() => {});
 
             // Always restart immediately
             state.target = Math.floor(Math.random() * range) + min;

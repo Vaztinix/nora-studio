@@ -143,6 +143,7 @@ function evaluateDynamicShards(client, basePing = 28, isGatewayReady = true, wsS
     const shardBuckets = Array.from({ length: effectiveShardCount }, (_, idx) => ({
         id: idx,
         guilds: 0,
+        guildsList: [],
         users: 0,
         voiceConnections: 0,
         largestGuildMembers: 0
@@ -152,6 +153,7 @@ function evaluateDynamicShards(client, basePing = 28, isGatewayReady = true, wsS
         const targetShard = getShardIdForGuild(g.id, effectiveShardCount);
         const bucket = shardBuckets[targetShard] || shardBuckets[0];
         bucket.guilds += 1;
+        bucket.guildsList.push(g);
         bucket.users += g.memberCount;
         bucket.voiceConnections += g.voiceCount;
         if (g.memberCount > bucket.largestGuildMembers) {
@@ -215,6 +217,7 @@ function evaluateDynamicShards(client, basePing = 28, isGatewayReady = true, wsS
             pingMs: basePing,
             pingQuality: basePing < 75 ? 'Optimal' : (basePing < 160 ? 'Good' : 'Elevated'),
             guilds: shardGuilds,
+            guildsList: b.guildsList || [],
             users: shardUsers,
             voiceConnections: b.voiceConnections,
             safeCapacityLimit: SHARD_LIMITS.SAFE_GUILD_LIMIT,

@@ -413,13 +413,28 @@ module.exports = function(client) {
                 .setEmoji('🌐')
         );
 
-        await channel.send({
-            embeds: [embed],
-            components: [statusRow],
-            files
-        }).catch(err => {
-            console.error('[Sentinel Error] Could not send status embed to updates channel:', err.message);
-        });
+        const { buildEmbedV2Container } = require('../../utils/embeds');
+        let sentV2 = false;
+        try {
+            const v2Payload = buildEmbedV2Container(embed, [statusRow]);
+            await channel.send({
+                ...v2Payload,
+                files
+            });
+            sentV2 = true;
+        } catch (v2Err) {
+            console.warn('[Status Dispatch] V2 send failed, attempting fallback to standard embed:', v2Err.message);
+        }
+
+        if (!sentV2) {
+            await channel.send({
+                embeds: [embed],
+                components: [statusRow],
+                files
+            }).catch(err => {
+                console.error('[Sentinel Error] Could not send status embed to updates channel:', err.message);
+            });
+        }
 
         if (!isTest) {
             lastNotifiedSector = newSector;
