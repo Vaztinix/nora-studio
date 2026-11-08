@@ -29,6 +29,7 @@ router.use(requireGuildPermission);
  * Retrieve the current GuildSettings for the specified server.
  */
 router.get('/', settingsRateLimiter, async (req, res) => {
+    const t0 = Date.now();
     try {
         const { guildId } = req.params;
         let settings = await settingsCache.get(guildId);

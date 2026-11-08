@@ -104,7 +104,36 @@ async function buildStarboardPayload(message, count, settings, triggerEmoji, exi
 
     // Nora AI Spotlight Commentary if Nora AI and Starboard AI Spotlight are enabled
     let aiSpotlightText = existingAiTake || null;
-    if (settings?.noraAiEnabled !== false && settings?.starboardAiEnabled !== false) {
+
+    // Purge any old canned/comedy presets
+    if (aiSpotlightText && (aiSpotlightText.includes('Pure comedy gold') || aiSpotlightText.includes('iconic and deserves a star'))) {
+        aiSpotlightText = null;
+    }
+
+    // Never attach comedic or witty AI spotlight to serious administrative, safety, blacklist, or moderation notices
+    const msgTextLower = (message.content || '').toLowerCase();
+    const chNameLower = (message.channel?.name || '').toLowerCase();
+    const isSeriousNotice = 
+        msgTextLower.includes('blacklist') || 
+        msgTextLower.includes('server notice') || 
+        msgTextLower.includes('terms of service') || 
+        msgTextLower.includes('community guidelines') || 
+        msgTextLower.includes('investigation') || 
+        msgTextLower.includes('safety-security') || 
+        msgTextLower.includes('raid alert') || 
+        msgTextLower.includes('incident') ||
+        msgTextLower.includes('warning') ||
+        chNameLower.includes('safety') ||
+        chNameLower.includes('security') ||
+        chNameLower.includes('blacklist') ||
+        chNameLower.includes('announcement') ||
+        chNameLower.includes('rules');
+
+    if (isSeriousNotice) {
+        aiSpotlightText = null;
+    }
+
+    if (!isSeriousNotice && settings?.noraAiEnabled !== false && settings?.starboardAiEnabled !== false) {
         if (aiSpotlightText) {
             embed.addFields({
                 name: '✨ Nora AI Spotlight',

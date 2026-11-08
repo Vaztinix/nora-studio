@@ -4181,6 +4181,53 @@
                     }
                 });
 
+                // Check In-Site Gatekeeper customizations against old state
+                const insiteMappings = [
+                    { id: 'setting-insiteVerificationEnabled', key: 'insiteVerificationEnabled', label: 'In-Site Gatekeeper System', isCheck: true },
+                    { id: 'setting-insiteVerifyChannelId', key: 'verifyChannelId', label: 'In-Site Gatekeeper Channel' },
+                    { id: 'setting-insiteLogChannelId', key: 'verificationLogChannelId', label: 'In-Site Gatekeeper Audit Log' },
+                    { id: 'setting-insiteUnverifiedRoleId', key: 'unverifiedRoleId', label: 'In-Site Unverified Role' },
+                    { id: 'setting-insiteVerifyEmbedTitle', key: 'verifyEmbedTitle', label: 'In-Site Panel Title' },
+                    { id: 'setting-insiteVerifyEmbedDesc', key: 'verifyEmbedDesc', label: 'In-Site Panel Description' },
+                    { id: 'setting-insiteVerifyEmbedColor', key: 'verifyEmbedColor', label: 'In-Site Panel Accent Color' },
+                    { id: 'setting-insiteVerifyBtnLabel', key: 'verifyBtnLabel', label: 'In-Site Primary Button' },
+                    { id: 'setting-insiteVerifyBtnEmoji', key: 'verifyBtnEmoji', label: 'In-Site Primary Emoji' },
+                    { id: 'setting-insiteShowHelpBtn', key: 'verifyInsiteShowHelpBtn', label: 'In-Site "Why In-Site?" Button', isCheck: true },
+                    { id: 'setting-insiteHelpLabel', key: 'verifyInsiteHelpLabel', label: 'In-Site Help Label' },
+                    { id: 'setting-insiteHelpEmoji', key: 'verifyInsiteHelpEmoji', label: 'In-Site Help Emoji' },
+                    { id: 'setting-insiteHelpDesc', key: 'verifyInsiteHelpDesc', label: 'In-Site Help Description' }
+                ];
+                insiteMappings.forEach(m => {
+                    const el = document.getElementById(m.id);
+                    if (!el) return;
+                    let curVal = m.isCheck ? el.checked : el.value;
+                    let prevVal = oldState[m.key];
+                    if (m.isCheck) {
+                        const prevBool = prevVal !== false && prevVal !== 0 && prevVal !== '0' && prevVal !== 'false';
+                        if (curVal !== prevBool) {
+                            diffs.push({
+                                fieldId: m.id,
+                                key: m.key,
+                                label: m.label,
+                                oldStr: prevBool ? 'Enabled' : 'Disabled',
+                                newStr: curVal ? 'Enabled' : 'Disabled'
+                            });
+                        }
+                    } else {
+                        curVal = String(curVal || '').trim();
+                        prevVal = String(prevVal || '').trim();
+                        if (curVal !== prevVal) {
+                            diffs.push({
+                                fieldId: m.id,
+                                key: m.key,
+                                label: m.label,
+                                oldStr: prevVal || '(empty)',
+                                newStr: curVal || '(empty)'
+                            });
+                        }
+                    }
+                });
+
                 // Also check split log selects if present
                 const splitSelects = document.querySelectorAll('.split-log-select');
                 splitSelects.forEach(select => {
@@ -5412,11 +5459,12 @@
         }
         window.syncInsiteChannelWithVerify = syncInsiteChannelWithVerify;
 
-        async function triggerInsiteDeploy(btn) {
+                async function triggerInsiteDeploy(btn) {
             if (!currentServerId) {
-                if (typeof showToast === 'function') showToast('Please select a server first.', 'warning');
+                if (typeof showToast === 'function') showToast('Please select a server first.', 'error');
                 return;
             }
+
             const originalText = btn ? btn.innerHTML : '';
             if (btn) {
                 btn.disabled = true;
@@ -5439,13 +5487,29 @@
                     await saveSettings();
                 }
 
-                const res = await fetch(`${apiBase}/api/guilds/${currentServerId}/actions`, {
+                const showHelp = document.getElementById('setting-insiteShowHelpBtn') ? !!document.getElementById('setting-insiteShowHelpBtn').checked : (document.getElementById('setting-verifyInsiteShowHelpBtn') ? !!document.getElementById('setting-verifyInsiteShowHelpBtn').checked : false);
+
+                const res = await fetch(`${apiBase}/api/guilds/${currentServerId}/action`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${t}`
                     },
-                    body: JSON.stringify({ action: 'spawn_verify', targetChannelId: channelId })
+                    body: JSON.stringify({
+                        action: 'spawn_verify',
+                        verificationType: 'insite',
+                        targetChannelId: channelId,
+                        verifyChannelId: channelId,
+                        verifyEmbedTitle: (document.getElementById('setting-insiteVerifyEmbedTitle') || document.getElementById('setting-verifyEmbedTitle') || {}).value,
+                        verifyEmbedDesc: (document.getElementById('setting-insiteVerifyEmbedDesc') || document.getElementById('setting-verifyEmbedDesc') || {}).value,
+                        verifyEmbedColor: (document.getElementById('setting-insiteVerifyEmbedColor') || document.getElementById('setting-verifyEmbedColor') || {}).value,
+                        verifyBtnLabel: (document.getElementById('setting-insiteVerifyBtnLabel') || document.getElementById('setting-verifyBtnLabel') || {}).value,
+                        verifyBtnEmoji: (document.getElementById('setting-insiteVerifyBtnEmoji') || document.getElementById('setting-verifyBtnEmoji') || {}).value,
+                        verifyInsiteShowHelpBtn: showHelp,
+                        verifyInsiteHelpLabel: (document.getElementById('setting-insiteHelpLabel') || document.getElementById('setting-verifyInsiteHelpLabel') || {}).value,
+                        verifyInsiteHelpEmoji: (document.getElementById('setting-insiteHelpEmoji') || document.getElementById('setting-verifyInsiteHelpEmoji') || {}).value,
+                        verifyInsiteHelpDesc: (document.getElementById('setting-insiteHelpDesc') || document.getElementById('setting-verifyInsiteHelpDesc') || {}).value
+                    })
                 });
 
                 const data = await res.json();
@@ -5455,7 +5519,7 @@
                     if (typeof showToast === 'function') showToast(data.error || 'Failed to deploy security panel.', 'error');
                 }
             } catch (err) {
-                if (typeof showToast === 'function') showToast('Network error deploying In-Site security panel.', 'error');
+                if (typeof showToast === 'function') showToast('Network error deploying In-Site security panel: ' + err.message, 'error');
             } finally {
                 if (btn) {
                     btn.disabled = false;
@@ -14714,57 +14778,7 @@
             if (typeof markFormDirty === 'function') markFormDirty('setting-insiteVerifyChannelId');
         };
 
-        window.triggerInsiteDeploy = async function(btn) {
-            if (!currentServerId) {
-                showToast('Please select a server first.', 'warning');
-                return;
-            }
-            const originalText = btn ? btn.innerHTML : '';
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deploying...';
-            }
-
-            try {
-                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
-                const t = sessionStorage.getItem('discord_token');
-                const channelSelect = document.getElementById('setting-insiteVerifyChannelId') || document.getElementById('setting-verifyChannelId');
-                const channelId = channelSelect ? channelSelect.value : null;
-
-                if (!channelId) {
-                    showToast('Please select a Gatekeeper Spawn Channel before deploying.', 'warning');
-                    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
-                    return;
-                }
-
-                if (typeof saveSettings === 'function') {
-                    await saveSettings();
-                }
-
-                const res = await fetch(`${apiBase}/api/guilds/${currentServerId}/actions`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${t}`
-                    },
-                    body: JSON.stringify({ action: 'spawn_verify', targetChannelId: channelId })
-                });
-
-                const data = await res.json();
-                if (res.ok && data.success) {
-                    showToast('✅ In-Site Security Gatekeeper panel successfully deployed!', 'success');
-                } else {
-                    showToast(data.error || 'Failed to deploy security panel.', 'error');
-                }
-            } catch (err) {
-                showToast('Network error deploying In-Site security panel.', 'error');
-            } finally {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerHTML = originalText;
-                }
-            }
-        };
+        window.triggerInsiteDeploy = triggerInsiteDeploy;
 
         window.fetchInsiteLogs = async function() {
             if (!currentServerId) return;
@@ -19269,11 +19283,7 @@
             if (insiteHelpLabelEl && insiteHelpLabelEl.value) payload.verifyInsiteHelpLabel = insiteHelpLabelEl.value;
             const insiteHelpEmojiEl = document.getElementById('setting-insiteHelpEmoji');
             if (insiteHelpEmojiEl && insiteHelpEmojiEl.value) payload.verifyInsiteHelpEmoji = insiteHelpEmojiEl.value;
-            const insiteHelpDescEl = document.getElementById('setting-insiteHelpDesc');
-            if (insiteHelpDescEl && insiteHelpDescEl.value) payload.verifyInsiteHelpDesc = insiteHelpDescEl.value;
-                
-
-                KEYS.forEach(k => {
+            KEYS.forEach(k => {
                 const el = document.getElementById('setting-' + k);
                 if (!el) return;
                 let val = el.type === 'checkbox' ? el.checked : el.value;
@@ -30830,7 +30840,8 @@
                     if (insiteHelpEmojiEl) insiteHelpEmojiEl.value = s.verifyInsiteHelpEmoji || '❓';
 
                     const insiteHelpDescEl = document.getElementById('setting-insiteHelpDesc');
-                    
+                    if (insiteHelpDescEl) insiteHelpDescEl.value = s.verifyInsiteHelpDesc || '';
+                    if (typeof updateInsiteLivePreview === 'function') updateInsiteLivePreview();
                 } catch (e) {
                     console.warn('[In-Site Settings Populate Fault]:', e.message);
                 }
@@ -31354,27 +31365,27 @@
             const t = sessionStorage.getItem('discord_token');
             const old = btn.textContent; btn.textContent = "Working...";
             const payload = { action };
-            if (action === 'spawn_verify') {
+            if (action === 'spawn_verify' || action === 'spawn_insite_verify') {
                 const verifyTypeEl = document.getElementById('setting-verificationType');
-                const verifyChanEl = document.getElementById('setting-verifyChannelId');
-                const verifyTitleEl = document.getElementById('setting-verifyEmbedTitle');
-                const verifyDescEl = document.getElementById('setting-verifyEmbedDesc');
-                const verifyColorEl = document.getElementById('setting-verifyEmbedColor');
-                const verifyBtnLabelEl = document.getElementById('setting-verifyBtnLabel');
-                const verifyBtnEmojiEl = document.getElementById('setting-verifyBtnEmoji');
-                const verifyHelpToggleEl = document.getElementById('setting-verifyInsiteShowHelpBtn');
-                const verifyHelpLabelEl = document.getElementById('setting-verifyInsiteHelpLabel');
-                const verifyHelpEmojiEl = document.getElementById('setting-verifyInsiteHelpEmoji');
-                const verifyHelpDescEl = document.getElementById('setting-verifyInsiteHelpDesc');
+                const verifyChanEl = document.getElementById('setting-insiteVerifyChannelId') || document.getElementById('setting-verifyChannelId');
+                const verifyTitleEl = document.getElementById('setting-insiteVerifyEmbedTitle') || document.getElementById('setting-verifyEmbedTitle');
+                const verifyDescEl = document.getElementById('setting-insiteVerifyEmbedDesc') || document.getElementById('setting-verifyEmbedDesc');
+                const verifyColorEl = document.getElementById('setting-insiteVerifyEmbedColor') || document.getElementById('setting-verifyEmbedColor');
+                const verifyBtnLabelEl = document.getElementById('setting-insiteVerifyBtnLabel') || document.getElementById('setting-verifyBtnLabel');
+                const verifyBtnEmojiEl = document.getElementById('setting-insiteVerifyBtnEmoji') || document.getElementById('setting-verifyBtnEmoji');
+                const verifyHelpToggleEl = document.getElementById('setting-insiteShowHelpBtn') || document.getElementById('setting-verifyInsiteShowHelpBtn');
+                const verifyHelpLabelEl = document.getElementById('setting-insiteHelpLabel') || document.getElementById('setting-verifyInsiteHelpLabel');
+                const verifyHelpEmojiEl = document.getElementById('setting-insiteHelpEmoji') || document.getElementById('setting-verifyInsiteHelpEmoji');
+                const verifyHelpDescEl = document.getElementById('setting-insiteHelpDesc') || document.getElementById('setting-verifyInsiteHelpDesc');
 
-                if (verifyTypeEl && verifyTypeEl.value) payload.verificationType = verifyTypeEl.value;
+                payload.verificationType = (verifyTypeEl && verifyTypeEl.value) ? verifyTypeEl.value : 'insite';
                 if (verifyChanEl && verifyChanEl.value) payload.verifyChannelId = verifyChanEl.value;
                 if (verifyTitleEl) payload.verifyEmbedTitle = verifyTitleEl.value;
                 if (verifyDescEl) payload.verifyEmbedDesc = verifyDescEl.value;
                 if (verifyColorEl) payload.verifyEmbedColor = verifyColorEl.value;
                 if (verifyBtnLabelEl) payload.verifyBtnLabel = verifyBtnLabelEl.value;
                 if (verifyBtnEmojiEl) payload.verifyBtnEmoji = verifyBtnEmojiEl.value;
-                if (verifyHelpToggleEl) payload.verifyInsiteShowHelpBtn = verifyHelpToggleEl.checked;
+                if (verifyHelpToggleEl) payload.verifyInsiteShowHelpBtn = !!verifyHelpToggleEl.checked;
                 if (verifyHelpLabelEl) payload.verifyInsiteHelpLabel = verifyHelpLabelEl.value;
                 if (verifyHelpEmojiEl) payload.verifyInsiteHelpEmoji = verifyHelpEmojiEl.value;
                 if (verifyHelpDescEl) payload.verifyInsiteHelpDesc = verifyHelpDescEl.value;

@@ -1467,7 +1467,7 @@ router.delete('/saved-webhooks/:presetId', async (req, res) => {
 
  */
 
-router.post('/action', async (req, res) => {
+router.post(['/action', '/actions'], async (req, res) => {
 
     try {
 

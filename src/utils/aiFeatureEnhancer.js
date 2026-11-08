@@ -106,6 +106,10 @@ class AIFeatureEnhancer {
      */
     static async getStarboardCommentary(authorName, messageSnippet, starCount, replyContext = '') {
         if (!messageSnippet || messageSnippet.trim().length < 2) return null;
+        const lower = messageSnippet.toLowerCase();
+        if (lower.includes('blacklist') || lower.includes('server notice') || lower.includes('terms of service') || lower.includes('community guidelines') || lower.includes('investigation') || lower.includes('safety-security') || lower.includes('raid alert') || lower.includes('warning') || lower.includes('incident')) {
+            return null; // Tone protection: never generate comedic commentary for serious administrative/safety notices
+        }
         const cleanSnippet = messageSnippet.replace(/\n+/g, ' ').slice(0, 180);
         const replyPart = replyContext ? ` (${replyContext.slice(0, 80)})` : '';
         const prompt = `You are Nora, a witty and entertaining Discord bot. A message by "${authorName}"${replyPart} just earned ${starCount} stars and was inducted into the Starboard hall of fame!
