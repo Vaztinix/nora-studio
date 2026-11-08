@@ -25,6 +25,24 @@ const settingsCache = require('../../utils/settingsCache');
 const activityTracker = require('../../utils/activityTracker');
 const aiCreditManager = require('../../utils/aiCreditManager');
 
+// Helper to safely retrieve guild from cache or REST, populating channels and roles if sparse
+async function resolveGuildSafely(client, guildId) {
+    if (!client || !guildId) return null;
+    let guild = client.guilds.cache.get(guildId);
+    if (!guild) {
+        guild = await client.guilds.fetch(guildId).catch(() => null);
+    }
+    if (guild) {
+        if (!guild.channels?.cache || guild.channels.cache.size === 0) {
+            await guild.channels.fetch().catch(() => null);
+        }
+        if (!guild.roles?.cache || guild.roles.cache.size === 0) {
+            await guild.roles.fetch().catch(() => null);
+        }
+    }
+    return guild;
+}
+
 // Short-term in-memory cache for aggregated dashboard data (15s TTL) to prevent repeated heavy queries
 const dashboardDataCache = new Map();
 const DASHBOARD_DATA_TTL = 15 * 1000;
@@ -91,44 +109,52 @@ router.get('/full-dashboard-data', async (req, res) => {
             return res.json(cached.data);
         }
 
-        const guild = req.client.guilds.cache.get(guildId);
+        const guild = await resolveGuildSafely(req.client, guildId);
         if (!guild) return res.status(404).json({ error: 'Guild not found by bot.' });
 
         const me = guild.members.me || await guild.members.fetch(req.client.user.id).catch(() => null);
 
-        // 1. Channels
+        // 1. Channels (robust fallback if permission checks are missing or cold)
         const channels = [];
-        guild.channels.cache.forEach(c => {
-            if (c.type === 0 || c.isTextBased()) {
-                const canView = c.permissionsFor(me)?.has('ViewChannel') || false;
-                const canSend = c.permissionsFor(me)?.has('SendMessages') || false;
-                if (canView) {
-                    channels.push({ 
-                        id: c.id, 
-                        name: c.name, 
-                        canSend,
-                        rateLimitPerUser: c.rateLimitPerUser || 0
-                    });
+        if (guild.channels?.cache) {
+            guild.channels.cache.forEach(c => {
+                if (c.type === 0 || (typeof c.isTextBased === 'function' && c.isTextBased())) {
+                    const canView = me ? (c.permissionsFor(me)?.has('ViewChannel') ?? true) : true;
+                    const canSend = me ? (c.permissionsFor(me)?.has('SendMessages') ?? true) : true;
+                    if (canView) {
+                        channels.push({ 
+                            id: c.id, 
+                            name: c.name, 
+                            canSend,
+                            rateLimitPerUser: c.rateLimitPerUser || 0
+                        });
+                    }
                 }
-            }
-        });
+            });
+        }
 
-        // 2. Roles
-        const roles = guild.roles.cache.map(r => ({
-            id: r.id,
-            name: r.name,
-            color: r.hexColor,
-            position: r.position,
-            managed: r.managed
-        })).sort((a, b) => b.position - a.position);
+        // 2. Roles (safe map)
+        let roles = [];
+        if (guild.roles?.cache) {
+            roles = guild.roles.cache.map(r => ({
+                id: r.id,
+                name: r.name,
+                color: r.hexColor,
+                position: r.position,
+                managed: r.managed
+            })).sort((a, b) => b.position - a.position);
+        }
 
-        // 3. Emojis
-        const emojis = guild.emojis.cache.map(e => ({
-            id: e.id,
-            name: e.name,
-            animated: e.animated,
-            url: e.imageURL()
-        }));
+        // 3. Emojis (safe map)
+        let emojis = [];
+        if (guild.emojis?.cache) {
+            emojis = guild.emojis.cache.map(e => ({
+                id: e.id,
+                name: e.name,
+                animated: e.animated,
+                url: typeof e.imageURL === 'function' ? e.imageURL() : (e.url || null)
+            }));
+        }
 
         // 4. Database Models & Adaptive Slowmode in Parallel
         const GuildSettings = require('../../database/models/GuildSettings');
@@ -1617,7 +1643,7 @@ router.post('/action', async (req, res) => {
 
 
 
-        if (action === 'spawn_verify') {
+        if (action === 'spawn_verify' || action === 'spawn_insite_verify') {
             const settingsCache = require('../../utils/settingsCache');
             const verifyEngine = require('../../bot/engines/verify');
             const settings = await settingsCache.get(guildId);
@@ -4217,6 +4243,25 @@ router.post('/applications/submissions/:subId/deny', async (req, res) => {
         res.json({ success: true, submission });
     } catch (e) {
         console.error('Error denying submission from dashboard:', e);
+        res.status(500).json({ error: e.message });
+    }
+});
+
+/**
+ * GET /api/guilds/:guildId/insite-logs
+ * Real-time forensic and verification logs for dedicated In-Site Security section
+ */
+router.get('/insite-logs', async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const VerificationLog = require('../../database/models/VerificationLog');
+        const logs = await VerificationLog.findAll({
+            where: { guildId },
+            order: [['createdAt', 'DESC']],
+            limit: 50
+        });
+        res.json({ success: true, logs });
+    } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });

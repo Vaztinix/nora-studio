@@ -226,7 +226,7 @@ const requireGuildPermission = async (req, res, next) => {
         // Fallback check against bot's live guild cache if not found in OAuth list (e.g. newly joined or >200 guilds)
         if (!guild && req.client && req.client.guilds) {
             try {
-                const botGuild = req.client.guilds.cache.get(guildId);
+                const botGuild = req.client.guilds.cache.get(guildId) || await req.client.guilds.fetch(guildId).catch(() => null);
                 const user = await getDiscordUser(token).catch(() => null);
                 if (botGuild && user) {
                     if (botGuild.ownerId === user.id) {

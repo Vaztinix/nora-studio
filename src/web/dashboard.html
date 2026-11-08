@@ -5594,6 +5594,10 @@
                     <i class="fas fa-gauge-high"></i>
                     <span>Adaptive Slowmode</span>
                 </button>
+                <button class="mobile-nav-item" data-tab="tab-insite-verify" onclick="showTab('tab-insite-verify'); closeMobileNav();">
+                    <i class="fas fa-fingerprint" style="color: #818cf8;"></i>
+                    <span>In-Site Gatekeeper</span>
+                </button>
                 <button class="mobile-nav-item" data-tab="tab-verify" onclick="showTab('tab-verify'); closeMobileNav();">
                     <i class="fas fa-user-check"></i>
                     <span>Verification & Roblox</span>
@@ -6722,6 +6726,7 @@
                         <button class="h-tab" data-tab="tab-safety" onclick="showTab('tab-safety')"><span><i class="fas fa-shield-virus"></i> AutoMod Defense</span></button>
                         <button class="h-tab" data-tab="tab-adaptive-slowmode" onclick="showTab('tab-adaptive-slowmode')"><span><i class="fas fa-gauge-high"></i> Adaptive Slowmode</span></button>
                         <button class="h-tab" data-tab="tab-verify" onclick="showTab('tab-verify')"><span><i class="fas fa-user-check"></i> Verification & Roblox</span></button>
+                        <button class="h-tab" data-tab="tab-insite-verify" onclick="showTab('tab-insite-verify')"><span><i class="fas fa-fingerprint" style="color: #818cf8;"></i> In-Site Gatekeeper</span></button>
                         <button class="h-tab" data-tab="tab-logging" onclick="showTab('tab-logging')"><span><i class="fas fa-file-alt"></i> Welcomer & Audit Logs</span></button>
 
                         <!-- Management & Tools -->
@@ -10539,6 +10544,263 @@
                                     <p style="margin: 0; font-size: 0.88rem;">Loading server verification logs and threat intelligence...</p>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <!-- ================= DEDICATED IN-SITE GATEKEEPER SECTION ================= -->
+                <div id="tab-insite-verify" class="tab-content" style="display: none;">
+                    <!-- Hero Banner -->
+                    <div style="background: linear-gradient(135deg, rgba(88, 101, 242, 0.08) 0%, rgba(139, 92, 246, 0.04) 100%); border: 1px solid rgba(88, 101, 242, 0.25); border-radius: 20px; padding: 26px 30px; margin-bottom: 22px; box-shadow: 0 8px 32px rgba(0,0,0,0.25);">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+                            <div style="display: flex; align-items: center; gap: 16px;">
+                                <div style="width: 54px; height: 54px; border-radius: 16px; background: linear-gradient(135deg, rgba(88, 101, 242, 0.35) 0%, rgba(139, 92, 246, 0.2) 100%); border: 1px solid rgba(88, 101, 242, 0.5); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: #818cf8; box-shadow: 0 10px 24px rgba(88, 101, 242, 0.25);">
+                                    <i class="fas fa-fingerprint"></i>
+                                </div>
+                                <div>
+                                    <div style="display: flex; align-items: center; gap: 10px;">
+                                        <h1 style="font-size: 1.85rem; font-weight: 800; color: #fff; margin: 0; letter-spacing: -0.02em;">In-Site Security Gatekeeper</h1>
+                                        <span style="font-size: 0.68rem; background: rgba(88, 101, 242, 0.2); color: #818cf8; border: 1px solid rgba(88, 101, 242, 0.4); padding: 3px 8px; border-radius: 999px; font-weight: 800; letter-spacing: 0.5px;">HIGH ASSURANCE</span>
+                                    </div>
+                                    <p style="color: var(--muted); font-size: 0.88rem; margin: 4px 0 0 0;">An advanced way to secure servers across all communities. Protected web-based session passes, 31-point device forensics, anti-alt detection, and proxy shielding.</p>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <button type="button" class="config-btn primary" onclick="triggerInsiteDeploy(this)" style="width: auto; padding: 10px 18px; font-size: 0.85rem; font-weight: 800; border-radius: 10px; background: #5865F2; color: #fff; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 18px rgba(88, 101, 242, 0.4);">
+                                    <i class="fas fa-paper-plane"></i> Deploy Security Panel
+                                </button>
+                                <button type="button" class="save-btn" style="width: auto; padding: 10px 20px; font-size: 0.85rem; border-radius: 10px;" onclick="saveSettings()">
+                                    <i class="fas fa-save" style="margin-right: 6px;"></i> Save Changes
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Real-Time Gatekeeper Ribbon -->
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 18px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 16px;">
+                            <div style="background: rgba(0,0,0,0.3); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-shield-alt" style="color: #818cf8;"></i> Gatekeeper Status
+                                </div>
+                                <div id="insite-stat-status" style="font-size: 1.05rem; font-weight: 800; color: #fff; margin-top: 3px;">Active & Armed</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.3); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-microchip" style="color: #10b981;"></i> Forensic Depth
+                                </div>
+                                <div style="font-size: 1.05rem; font-weight: 800; color: #10b981; margin-top: 3px;">31 Client Vectors</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.3); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-network-wired" style="color: #38bdf8;"></i> Network Shield
+                                </div>
+                                <div style="font-size: 1.05rem; font-weight: 800; color: #38bdf8; margin-top: 3px;">VPN & Tor Block</div>
+                            </div>
+                            <div style="background: rgba(0,0,0,0.3); padding: 12px 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="font-size: 0.72rem; color: var(--muted); font-weight: 600; text-transform: uppercase; display: flex; align-items: center; gap: 6px;">
+                                    <i class="fas fa-user-lock" style="color: #f59e0b;"></i> Zero-Trust Pass
+                                </div>
+                                <div style="font-size: 1.05rem; font-weight: 800; color: #f59e0b; margin-top: 3px;">15-Min Expiry</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Master Activation Switch -->
+                    <div class="panel" style="background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(88, 101, 242, 0.25); border-radius: 16px; padding: 22px; margin-bottom: 22px;">
+                        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px;">
+                            <div style="display: flex; align-items: center; gap: 14px;">
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(88, 101, 242, 0.2); color: #818cf8; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                                    <i class="fas fa-shield-halved"></i>
+                                </div>
+                                <div>
+                                    <h3 style="margin: 0; font-size: 1.15rem; color: #fff; font-weight: 700;">Enable In-Site Security Gatekeeper</h3>
+                                    <p style="margin: 3px 0 0 0; font-size: 0.82rem; color: var(--muted);">Direct incoming members to Nora's high-assurance verification portal at <code style="color: #818cf8; background: rgba(88, 101, 242, 0.1); padding: 2px 6px; border-radius: 4px;">vaztinix.dev/verify/security</code>.</p>
+                                </div>
+                            </div>
+                            <label class="switch"><input type="checkbox" id="setting-insiteVerificationEnabled" onchange="updateInsiteLivePreview()"><span class="slider"></span></label>
+                        </div>
+                    </div>
+
+                    <!-- 2-Column Core Architecture -->
+                    <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 24px; align-items: start; margin-bottom: 24px;">
+                        
+                        <!-- Left: Routing, Roles & Embed Controls -->
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
+                            
+                            <!-- Destination & Role Routing -->
+                            <div class="panel" style="margin: 0; padding: 22px; background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 16px; display: flex; flex-direction: column; gap: 16px;">
+                                <div style="display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;">
+                                    <i class="fas fa-route" style="color: #818cf8;"></i>
+                                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #fff;">Channel & Role Destination</h4>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600; font-size: 0.8rem;">Gatekeeper Spawn Channel</label>
+                                    <select id="setting-insiteVerifyChannelId" style="width: 100%; box-sizing: border-box;" onchange="syncInsiteChannelWithVerify(this.value)">
+                                        <option value="">Select channel...</option>
+                                    </select>
+                                    <span style="font-size: 0.72rem; color: var(--muted); margin-top: 4px; display: block;">The channel where the In-Site Security Pass embed will be deployed.</span>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600; font-size: 0.8rem;">Security Audit Log Channel</label>
+                                    <select id="setting-insiteLogChannelId" style="width: 100%; box-sizing: border-box;">
+                                        <option value="">Use Default Logs</option>
+                                    </select>
+                                    <span style="font-size: 0.72rem; color: var(--muted); margin-top: 4px; display: block;">Channel where forensic logs and passed verifications will be posted.</span>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="font-weight: 600; font-size: 0.8rem;">Verified Role(s) to Grant</label>
+                                    <input type="hidden" id="setting-insiteVerifyRoleId" value="">
+                                    <div id="setting-insiteVerifyRoleId-container" class="multiselect-container"></div>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 0; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 12px;">
+                                    <label style="font-weight: 600; font-size: 0.8rem;">Unverified Quarantine Role</label>
+                                    <select id="setting-insiteUnverifiedRoleId" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;">
+                                        <option value="">None (No unverified role)</option>
+                                    </select>
+                                    <div class="row" style="margin: 0; padding: 0; border: none;">
+                                        <span style="font-size: 0.74rem; color: var(--muted);">Strip unverified role upon successful verification</span>
+                                        <label class="switch small"><input type="checkbox" id="setting-insiteRemoveUnverifiedRole" checked><span class="slider"></span></label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel Embed Customization -->
+                            <div class="panel" style="margin: 0; padding: 22px; background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 16px; display: flex; flex-direction: column; gap: 16px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 12px;">
+                                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                        <i class="fas fa-palette" style="color: #818cf8;"></i> In-Site Panel Embed Studio
+                                    </h4>
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="font-size: 0.78rem; font-weight: 600; color: var(--muted);">Embed Title</label>
+                                    <input type="text" id="setting-insiteVerifyEmbedTitle" placeholder="Community Gatekeeper • In-Site Security Pass" oninput="updateInsiteLivePreview()" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
+                                </div>
+
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <label style="font-size: 0.78rem; font-weight: 600; color: var(--muted);">Instructions / Description</label>
+                                    <textarea id="setting-insiteVerifyEmbedDesc" rows="4" placeholder="Welcome to the server!&#10;&#10;To safeguard our community with an advanced way to secure servers across all communities, server access requires completing the Nora In-Site Security Pass.&#10;&#10;Click the button below to generate your private session pass." oninput="updateInsiteLivePreview()" style="width: 100%; box-sizing: border-box; resize: vertical; font-size: 0.85rem; line-height: 1.4;"></textarea>
+                                </div>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 0.6fr; gap: 10px;">
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-size: 0.78rem; font-weight: 600; color: var(--muted);">Accent Color</label>
+                                        <input type="color" id="setting-insiteVerifyEmbedColor" value="#5865F2" oninput="updateInsiteLivePreview()" style="width: 100%; height: 38px; padding: 0; border: none; border-radius: 8px; cursor: pointer; background: transparent;">
+                                    </div>
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-size: 0.78rem; font-weight: 600; color: var(--muted);">Primary Button Label</label>
+                                        <input type="text" id="setting-insiteVerifyBtnLabel" placeholder="Start In-Site Verification" oninput="updateInsiteLivePreview()" style="width: 100%; box-sizing: border-box; font-size: 0.85rem;">
+                                    </div>
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-size: 0.78rem; font-weight: 600; color: var(--muted);">Emoji</label>
+                                        <input type="text" id="setting-insiteVerifyBtnEmoji" placeholder="🛡️" oninput="updateInsiteLivePreview()" style="width: 100%; box-sizing: border-box; text-align: center; font-size: 0.85rem;">
+                                    </div>
+                                </div>
+
+                                <!-- Secondary Button ("Why In-Site?") Controls -->
+                                <div style="background: rgba(88, 101, 242, 0.05); border: 1px solid rgba(88, 101, 242, 0.2); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                                        <div>
+                                            <div style="font-size: 0.82rem; font-weight: 700; color: #fff;">Secondary Button ("Why In-Site?")</div>
+                                            <div style="font-size: 0.72rem; color: var(--muted);">Display secondary informational modal alongside the verification button</div>
+                                        </div>
+                                        <label class="switch small"><input type="checkbox" id="setting-insiteShowHelpBtn" checked onchange="updateInsiteLivePreview()"><span class="slider"></span></label>
+                                    </div>
+                                    <div style="display: grid; grid-template-columns: 1fr 0.4fr; gap: 10px;">
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">Button Label</label>
+                                            <input type="text" id="setting-insiteHelpLabel" placeholder="Why In-Site?" oninput="updateInsiteLivePreview()" style="width: 100%; box-sizing: border-box; font-size: 0.82rem;">
+                                        </div>
+                                        <div class="input-group" style="margin-bottom: 0;">
+                                            <label style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">Emoji</label>
+                                            <input type="text" id="setting-insiteHelpEmoji" placeholder="❓" oninput="updateInsiteLivePreview()" style="width: 100%; box-sizing: border-box; text-align: center; font-size: 0.82rem;">
+                                        </div>
+                                    </div>
+                                    <div class="input-group" style="margin-bottom: 0;">
+                                        <label style="font-size: 0.75rem; font-weight: 600; color: var(--muted);">Custom "Why In-Site?" Explanation Body (Optional)</label>
+                                        <textarea id="setting-insiteHelpDesc" rows="3" placeholder="Leave blank to use Nora's default explanation of advanced security..." style="width: 100%; box-sizing: border-box; resize: vertical; font-size: 0.8rem;"></textarea>
+                                    </div>
+                                </div>
+
+                                <button type="button" class="config-btn primary" onclick="triggerInsiteDeploy(this)" style="width: 100%; padding: 13px; font-weight: 800; font-size: 0.9rem; background: #5865F2; color: #fff; border: none; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 18px rgba(88, 101, 242, 0.4); margin-top: 4px;">
+                                    <i class="fas fa-paper-plane" style="margin-right: 6px;"></i> Deploy In-Site Panel to Channel
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Right: Live Discord Preview & Security Telemetry -->
+                        <div style="display: flex; flex-direction: column; gap: 20px; position: sticky; top: 20px;">
+                            
+                            <!-- Live Discord Preview Card -->
+                            <div class="panel" style="margin: 0; padding: 22px; background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                                    <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #fff;">Live Discord Preview</h4>
+                                    <span style="font-size: 0.72rem; color: #818cf8; background: rgba(88, 101, 242, 0.15); padding: 2px 8px; border-radius: 6px; font-weight: 700; border: 1px solid rgba(88, 101, 242, 0.3);">Real-Time Sync</span>
+                                </div>
+
+                                <div style="background: #313338; border-radius: 10px; padding: 16px; font-family: 'gg sans', 'Noto Sans', sans-serif; color: #dbdee1; border: 1px solid #1e1f22; box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);">
+                                    <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                        <img src="/nora.png" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover;" onerror="this.src='/nora.png';">
+                                        <div style="flex: 1; overflow: hidden;">
+                                            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                                                <span style="font-weight: 700; color: #fff; font-size: 0.95rem;">Nora</span>
+                                                <span style="background: #5865F2; color: #fff; font-size: 0.62rem; padding: 1px 4px; border-radius: 3px; font-weight: 700;">BOT</span>
+                                                <span style="color: #949ba4; font-size: 0.75rem;">Today at 12:00 PM</span>
+                                            </div>
+                                            
+                                            <!-- Embed Card -->
+                                            <div id="insite-preview-embed" style="border-left: 4px solid #5865F2; background: #2b2d31; border-radius: 4px; padding: 12px 14px; margin-top: 4px; display: flex; flex-direction: column; gap: 6px;">
+                                                <div id="insite-preview-title" style="font-weight: 700; color: #fff; font-size: 0.95rem;">Community Gatekeeper • In-Site Security Pass</div>
+                                                <div id="insite-preview-desc" style="font-size: 0.82rem; color: #dbdee1; line-height: 1.4; white-space: pre-line;">To safeguard our community with an advanced way to secure servers across all communities, server access requires completing the Nora In-Site Security Pass.<br><br>Click the button below to generate your private session pass.</div>
+                                                <div style="font-size: 0.7rem; color: #949ba4; margin-top: 4px; display: flex; align-items: center; gap: 6px;">
+                                                    <img src="/nora.png" style="width: 14px; height: 14px; border-radius: 50%;">
+                                                    <span>Nora Enterprise Security • Advanced Security</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Button Row -->
+                                            <div id="insite-preview-actions" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                                                <button id="insite-preview-primary-btn" style="background: #248046; color: #fff; border: none; padding: 7px 16px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                                    <span id="insite-preview-primary-emoji">🛡️</span>
+                                                    <span id="insite-preview-primary-label">Start In-Site Verification</span>
+                                                </button>
+                                                <button id="insite-preview-help-btn" style="background: #4e5058; color: #fff; border: none; padding: 7px 14px; border-radius: 6px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                                    <span id="insite-preview-help-emoji">❓</span>
+                                                    <span id="insite-preview-help-label">Why In-Site?</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Real-Time Telemetry & Forensic Log Dossiers -->
+                            <div class="panel" style="margin: 0; padding: 22px; background: rgba(255, 255, 255, 0.015); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 16px;">
+                                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
+                                            <i class="fas fa-tower-broadcast" style="color: #10b981;"></i> In-Site Verification Dossiers
+                                        </h4>
+                                        <p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--muted);">Real-time telemetry and forensic scores from members completing the web pass.</p>
+                                    </div>
+                                    <button type="button" class="btn-outline" onclick="fetchInsiteLogs()" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 6px; cursor: pointer;">
+                                        <i class="fas fa-rotate"></i> Refresh
+                                    </button>
+                                </div>
+
+                                <div id="insite-logs-container" style="display: flex; flex-direction: column; gap: 8px; max-height: 380px; overflow-y: auto;">
+                                    <div style="text-align: center; padding: 24px 10px; color: var(--muted); font-size: 0.82rem;">
+                                        <i class="fas fa-shield-halved" style="font-size: 1.5rem; margin-bottom: 8px; color: #818cf8; display: block;"></i>
+                                        Click Refresh to load recent verification telemetry records.
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -18125,7 +18387,37 @@
         async function saveSettings() {
             if (!checkThrottling()) return;
             const payload = {};
-            KEYS.forEach(k => {
+            // In-Site Gatekeeper settings collectors
+            const insiteEnabledEl = document.getElementById('setting-insiteVerificationEnabled');
+            if (insiteEnabledEl) payload.insiteVerificationEnabled = insiteEnabledEl.checked;
+            const insiteChanEl = document.getElementById('setting-insiteVerifyChannelId');
+            if (insiteChanEl && insiteChanEl.value) payload.verifyChannelId = insiteChanEl.value;
+            const insiteLogChanEl = document.getElementById('setting-insiteLogChannelId');
+            if (insiteLogChanEl && insiteLogChanEl.value) payload.verificationLogChannelId = insiteLogChanEl.value;
+            const insiteTitleEl = document.getElementById('setting-insiteVerifyEmbedTitle');
+            if (insiteTitleEl && insiteTitleEl.value) payload.verifyEmbedTitle = insiteTitleEl.value;
+            const insiteDescEl = document.getElementById('setting-insiteVerifyEmbedDesc');
+            if (insiteDescEl && insiteDescEl.value) payload.verifyEmbedDesc = insiteDescEl.value;
+            const insiteColorEl = document.getElementById('setting-insiteVerifyEmbedColor');
+            if (insiteColorEl && insiteColorEl.value) payload.verifyEmbedColor = insiteColorEl.value;
+            const insiteBtnLabelEl = document.getElementById('setting-insiteVerifyBtnLabel');
+            if (insiteBtnLabelEl && insiteBtnLabelEl.value) payload.verifyBtnLabel = insiteBtnLabelEl.value;
+            const insiteBtnEmojiEl = document.getElementById('setting-insiteVerifyBtnEmoji');
+            if (insiteBtnEmojiEl && insiteBtnEmojiEl.value) payload.verifyBtnEmoji = insiteBtnEmojiEl.value;
+            const insiteHelpToggleEl = document.getElementById('setting-insiteShowHelpBtn');
+            if (insiteHelpToggleEl) payload.verifyInsiteShowHelpBtn = insiteHelpToggleEl.checked;
+            const insiteHelpLabelEl = document.getElementById('setting-insiteHelpLabel');
+            if (insiteHelpLabelEl && insiteHelpLabelEl.value) payload.verifyInsiteHelpLabel = insiteHelpLabelEl.value;
+            const insiteHelpEmojiEl = document.getElementById('setting-insiteHelpEmoji');
+            if (insiteHelpEmojiEl && insiteHelpEmojiEl.value) payload.verifyInsiteHelpEmoji = insiteHelpEmojiEl.value;
+            const insiteHelpDescEl = document.getElementById('setting-insiteHelpDesc');
+            if (insiteHelpDescEl && insiteHelpDescEl.value) payload.verifyInsiteHelpDesc = insiteHelpDescEl.value;
+                if (insiteHelpDescEl) insiteHelpDescEl.value = s.verifyInsiteHelpDesc || '';
+
+                if (typeof updateInsiteLivePreview === 'function') updateInsiteLivePreview();
+                if (typeof fetchInsiteLogs === 'function') fetchInsiteLogs();
+
+                KEYS.forEach(k => {
                 const el = document.getElementById('setting-' + k);
                 if (!el) return;
                 let val = el.type === 'checkbox' ? el.checked : el.value;
@@ -21264,6 +21556,7 @@
                         'tab-welcome': 'Games & Counting',
                         'tab-logging': 'Server Logging',
                         'tab-verify': 'Verification',
+                        'tab-insite-verify': 'In-Site Gatekeeper',
                         'tab-leveling': 'Leveling System',
                         'tab-safety': 'Security & Anti-Raid',
                         'tab-automod': 'AutoMod',
@@ -24004,6 +24297,7 @@
             'tab-safety': { title: 'AutoMod & Threat Defense', group: 'Safety & Onboarding', icon: 'fa-shield-alt', color: '#ef4444', desc: 'Proactive anti-raid shields, link/invite filters, spam thresholds, and automated escalation rules.' },
             'tab-adaptive-slowmode': { title: 'Adaptive Slowmode Engine', group: 'Safety & Onboarding', icon: 'fa-tachometer-alt', color: '#06b6d4', desc: 'Automatically scale channel slowmodes in real time based on live chat velocity.' },
             'tab-verify': { title: 'Verification & Roblox Sync', group: 'Safety & Onboarding', icon: 'fa-user-check', color: '#22c55e', desc: 'Protect your server with interactive verification panels, Roblox group rank bindings, and threat screening.', embedKey: 'verifyEmbedVersion' },
+            'tab-insite-verify': { title: 'In-Site Security Gatekeeper', group: 'Safety & Onboarding', icon: 'fa-fingerprint', color: '#818cf8', desc: 'Deploy encrypted web-based zero-trust security passes with 31-point forensic fingerprinting, alt detection, and proxy shielding.', embedKey: 'verifyEmbedVersion' },
             'tab-logging': { title: 'Welcomer, Goodbye & Audit Logs', group: 'Safety & Onboarding', icon: 'fa-clipboard-list', color: '#6366f1', desc: 'Design custom welcome/goodbye banners and route granular server audit events to dedicated log channels.', embedKey: 'welcomeEmbedVersion' },
             'tab-tickets': { title: 'Support Ticketing Suite', group: 'Management & Tools', icon: 'fa-ticket-alt', color: '#ec4899', desc: 'Deploy customizable support ticket panels, staff claim workflows, custom forms, and transcript logs.', embedKey: 'ticketEmbedVersion' },
             'tab-webhooks': { title: 'Webhook & Embed Builder', group: 'Management & Tools', icon: 'fa-paper-plane', color: '#5865f2', desc: 'Compose and dispatch Embeds V2 containers, custom markdown broadcasts, and staff-shared Saved Webhooks.', embedKey: 'webhookEmbedVersion' },
@@ -29476,6 +29770,55 @@
                     window.currentActivityRules = [];
                 }
                 if (typeof renderActivityRules === 'function') renderActivityRules();
+// Populate In-Site Gatekeeper controls from server settings
+                try {
+                    const insiteEnabledEl = document.getElementById('setting-insiteVerificationEnabled');
+                    if (insiteEnabledEl) {
+                        const isProtected = currentServerId === '1487342521133830174' || currentServerId === '1515800329889779954';
+                        insiteEnabledEl.checked = s.insiteVerificationEnabled === true || s.verificationType === 'insite' || isProtected;
+                    }
+                    const insiteChanEl = document.getElementById('setting-insiteVerifyChannelId');
+                    if (insiteChanEl && s.verifyChannelId) {
+                        insiteChanEl.value = s.verifyChannelId;
+                        if (typeof refreshCustomDropdown === 'function') refreshCustomDropdown('setting-insiteVerifyChannelId');
+                    }
+                    const insiteLogChanEl = document.getElementById('setting-insiteLogChannelId');
+                    if (insiteLogChanEl && s.verificationLogChannelId) {
+                        insiteLogChanEl.value = s.verificationLogChannelId;
+                        if (typeof refreshCustomDropdown === 'function') refreshCustomDropdown('setting-insiteLogChannelId');
+                    }
+                    const insiteTitleEl = document.getElementById('setting-insiteVerifyEmbedTitle');
+                    if (insiteTitleEl) insiteTitleEl.value = s.verifyEmbedTitle || 'Community Gatekeeper • In-Site Security Pass';
+
+                    const insiteDescEl = document.getElementById('setting-insiteVerifyEmbedDesc');
+                    if (insiteDescEl) insiteDescEl.value = s.verifyEmbedDesc || 'Welcome to the server!\n\nTo safeguard our community with an advanced way to secure servers across all communities, server access requires completing the Nora In-Site Security Pass.\n\nClick the button below to generate your private session pass.';
+
+                    const insiteColorEl = document.getElementById('setting-insiteVerifyEmbedColor');
+                    if (insiteColorEl) insiteColorEl.value = s.verifyEmbedColor || '#5865F2';
+
+                    const insiteBtnLabelEl = document.getElementById('setting-insiteVerifyBtnLabel');
+                    if (insiteBtnLabelEl) insiteBtnLabelEl.value = s.verifyBtnLabel || 'Start In-Site Verification';
+
+                    const insiteBtnEmojiEl = document.getElementById('setting-insiteVerifyBtnEmoji');
+                    if (insiteBtnEmojiEl) insiteBtnEmojiEl.value = s.verifyBtnEmoji || '🛡️';
+
+                    const insiteHelpToggleEl = document.getElementById('setting-insiteShowHelpBtn');
+                    if (insiteHelpToggleEl) insiteHelpToggleEl.checked = s.verifyInsiteShowHelpBtn !== false;
+
+                    const insiteHelpLabelEl = document.getElementById('setting-insiteHelpLabel');
+                    if (insiteHelpLabelEl) insiteHelpLabelEl.value = s.verifyInsiteHelpLabel || 'Why In-Site?';
+
+                    const insiteHelpEmojiEl = document.getElementById('setting-insiteHelpEmoji');
+                    if (insiteHelpEmojiEl) insiteHelpEmojiEl.value = s.verifyInsiteHelpEmoji || '❓';
+
+                    const insiteHelpDescEl = document.getElementById('setting-insiteHelpDesc');
+                    if (insiteHelpDescEl) insiteHelpDescEl.value = s.verifyInsiteHelpDesc || '';
+
+                    if (typeof updateInsiteLivePreview === 'function') updateInsiteLivePreview();
+                    if (typeof fetchInsiteLogs === 'function') fetchInsiteLogs();
+                } catch (e) {
+                    console.warn('[In-Site Settings Populate Fault]:', e.message);
+                }
 
                 if (s && typeof s.isPremium === 'boolean') {
                     currentServerIsPremium = !!s.isPremium;

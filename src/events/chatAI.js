@@ -192,18 +192,14 @@ async function processMessageInternal(message, client) {
         );
 
         // Allowed Channels Selection:
-        // Dedicated selection for channels Nora can respond in using AI.
-        // If none configured, but a dedicated channel is set, only the dedicated channel can allow AI responses.
+        // If the server configured a strict Allowed Channels list, only permit AI interactions in those channels
         const allowedList = (settings?.aiAllowedChannels || '').split(',').map(s => s.trim()).filter(Boolean);
         if (allowedList.length > 0) {
             if (!allowedList.includes(message.channel.id) && !dedicatedList.includes(message.channel.id)) {
                 return;
             }
-        } else if (dedicatedList.length > 0) {
-            if (!dedicatedList.includes(message.channel.id)) {
-                return;
-            }
         }
+        // In all other channels, Nora will naturally respond when directly mentioned or replied to
 
         let isMentioned = Boolean(client.user && message.mentions?.has(client.user) && !message.mentions.everyone);
         let isReply = false;
@@ -409,30 +405,30 @@ async function processMessageInternal(message, client) {
         const nameViewingEnabled = settings?.aiNameViewingEnabled !== false;
         const authorDisplayName = nameViewingEnabled ? (message.member?.displayName || message.author.username) : 'Member';
 
-        // 2. Fetch Recent Channel Messages (Only if Memory is enabled)
+        // 2. Real-Time Channel Context & Live Memory (Locked into active channel)
         let recentHistoryStr = '';
         let fetchedHistoryMessages = null;
-        if (memoryEnabled) {
-            try {
-                const fetched = await message.channel.messages.fetch({ limit: 35 }).catch(() => null);
-                fetchedHistoryMessages = fetched;
-                if (fetched && fetched.size > 0) {
-                    const historyList = [];
-                    const sorted = Array.from(fetched.values()).reverse();
-                    for (const m of sorted) {
-                        if (m.id === message.id) continue;
-                        const cleanText = (m.cleanContent || m.content || '').replace(/\s+/g, ' ').trim();
-                        if (m.author.id === message.author.id && cleanText === plainContent && Math.abs(message.createdTimestamp - m.createdTimestamp) < 4000) continue;
-                        const name = m.author.id === client.user.id ? 'Nora' : (nameViewingEnabled ? (m.member?.displayName || m.author.username) : 'Member');
-                        if (!cleanText && (!m.attachments || m.attachments.size === 0)) continue;
-                        const nameWithId = m.author.id === client.user.id ? 'Nora' : (nameViewingEnabled ? `${m.member?.displayName || m.author.username} (@${m.author.username}, <@${m.author.id}>)` : 'Member');
-                        historyList.push(`[${nameWithId}]: ${cleanText || '[Sent an image/attachment]'}`);
-                    }
-                    recentHistoryStr = historyList.slice(-25).join('\n');
+        try {
+            const fetched = await message.channel.messages.fetch({ limit: 25 }).catch(() => null);
+            fetchedHistoryMessages = fetched;
+            if (fetched && fetched.size > 0) {
+                const historyList = [];
+                const sorted = Array.from(fetched.values()).reverse();
+                for (const m of sorted) {
+                    if (m.id === message.id) continue;
+                    const cleanText = (m.cleanContent || m.content || '').replace(/\s+/g, ' ').trim();
+                    // Filter out prefix commands (e.g. n!warn, !help, /mute) to keep AI context focused on conversation
+                    if (/^(n[!/?]|[!/?.#$-])\w+/i.test(cleanText)) continue;
+                    if (m.author.id === message.author.id && cleanText === plainContent && Math.abs(message.createdTimestamp - m.createdTimestamp) < 3000) continue;
+                    const isBot = m.author.id === client.user.id;
+                    const nameWithId = isBot ? 'Nora' : (nameViewingEnabled ? `${m.member?.displayName || m.author.username} (@${m.author.username}, <@${m.author.id}>)` : 'Member');
+                    const text = cleanText || (m.attachments?.size > 0 ? '[Shared an image/media attachment]' : '[Media/Sticker]');
+                    historyList.push(`[${nameWithId}]: ${text}`);
                 }
-            } catch (e) {
-                console.warn('[ChatAI] Could not fetch channel history:', e.message);
+                recentHistoryStr = historyList.slice(-18).join('\n');
             }
+        } catch (e) {
+            console.warn('[ChatAI] Could not fetch channel history:', e.message);
         }
 
         // 3. Direct Reply Context
@@ -487,12 +483,7 @@ async function processMessageInternal(message, client) {
         }
 
         // 9. Full User Profile Awareness (PFP, Banner, Bio, Pronouns)
-        let fullUser = null;
-        try {
-            fullUser = await client.users.fetch(message.author.id, { force: true });
-        } catch (e) {
-            fullUser = message.author;
-        }
+        const fullUser = client.users.cache.get(message.author.id) || message.author;
 
         const avatarUrl = fullUser.displayAvatarURL({ dynamic: true, size: 512 });
         const bannerUrl = fullUser.bannerURL({ dynamic: true, size: 1024 }) || null;
@@ -645,7 +636,7 @@ async function processMessageInternal(message, client) {
         const deviceSpecsContext = getSanitizedSpecsSummary();
 
         // Default to high-throughput, quota-efficient production flash
-        const selectedModel = (settings?.aiModel && settings.aiModel !== 'gemini-2.5-flash' && settings.aiModel !== 'gemini-2.0-flash' && settings.aiModel !== 'gemini-1.5-flash' && settings.aiModel !== 'gemini-1.5-pro') ? settings.aiModel : 'gemini-flash-latest';
+        const selectedModel = (settings?.aiModel && settings.aiModel !== 'gemini-flash-latest' && settings.aiModel !== 'gemini-1.5-flash' && settings.aiModel !== 'gemini-1.5-pro') ? settings.aiModel : 'gemini-2.0-flash';
         let customPrompt = settings?.aiSystemPrompt || '';
         if (!customPrompt.trim() && settings?.aiPromptTemplate && AI_PERSONA_TEMPLATES[settings.aiPromptTemplate]) {
             customPrompt = AI_PERSONA_TEMPLATES[settings.aiPromptTemplate];
@@ -691,7 +682,8 @@ async function processMessageInternal(message, client) {
             deviceSpecsContext,
             isStaffOnlyChannel: isCurrentChannelStaffOnly,
             selectedModel: selectedModel,
-            customSystemPrompt: customPrompt
+            customSystemPrompt: customPrompt,
+            channelName: message.channel.name
         };
 
         const runOpenAI = async () => {

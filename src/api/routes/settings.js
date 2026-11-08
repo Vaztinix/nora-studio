@@ -129,7 +129,7 @@ router.post('/', settingsRateLimiter, async (req, res) => {
 
         // Calculate Premium status
         let isPremium = !!settings.isPremium || !!settings.isManualPremium;
-        const guild = req.client.guilds.cache.get(guildId);
+        const guild = req.client ? (req.client.guilds.cache.get(guildId) || await req.client.guilds.fetch(guildId).catch(() => null)) : null;
         if (guild && (guild.ownerId === '1214048435632603137' || guild.ownerId === '1366229304257544213')) {
             isPremium = true;
         }
@@ -325,6 +325,20 @@ router.post('/', settingsRateLimiter, async (req, res) => {
         }
 
         // Update the settings model with the payload provided by the dashboard
+        // In-Site Security Pass customizer normalization
+        if (payload.verifyInsiteShowHelpBtn !== undefined) {
+            payload.verifyInsiteShowHelpBtn = (payload.verifyInsiteShowHelpBtn === true || payload.verifyInsiteShowHelpBtn === 1 || payload.verifyInsiteShowHelpBtn === '1' || payload.verifyInsiteShowHelpBtn === 'true');
+        }
+        if (payload.insiteVerificationEnabled !== undefined) {
+            payload.insiteVerificationEnabled = (payload.insiteVerificationEnabled === true || payload.insiteVerificationEnabled === 1 || payload.insiteVerificationEnabled === '1' || payload.insiteVerificationEnabled === 'true');
+        }
+        if (payload.verifyInsiteHelpDesc) {
+            payload.verifyInsiteHelpDesc = String(payload.verifyInsiteHelpDesc).replace(/\s*\(such as UTTP\)/gi, '').replace(/UTTP/gi, 'malicious raid networks');
+        }
+        if (payload.verifyEmbedDesc) {
+            payload.verifyEmbedDesc = String(payload.verifyEmbedDesc).replace(/\s*\(such as UTTP\)/gi, '').replace(/UTTP/gi, 'malicious raid networks');
+        }
+
         await settings.update(payload);
         settingsCache.invalidate(guildId);
 
