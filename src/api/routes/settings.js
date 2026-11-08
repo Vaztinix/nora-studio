@@ -344,6 +344,19 @@ router.post('/', settingsRateLimiter, async (req, res) => {
         const oldGuessEnabled = Boolean(settings.guessGameEnabled);
         const oldGuessChannel = settings.guessNumberChannelId ? String(settings.guessNumberChannelId) : '';
 
+        // 🛡️ Automatic Pre-Save Settings Backup Snapshot
+        try {
+            const { createGuildBackup } = require('../../utils/settingsBackupManager');
+            await createGuildBackup(guildId, {
+                existingSnapshot: settings,
+                incomingUpdates: payload,
+                triggerSource: 'DASHBOARD_SAVE',
+                actorId: req.user?.id || null,
+                actorName: req.user?.username || 'Dashboard Admin'
+            });
+        } catch (backupErr) {
+            console.warn('[SettingsBackup] Pre-save snapshot warning:', backupErr.message);
+        }
         await settings.update(payload);
         settingsCache.invalidate(guildId);
 
@@ -461,6 +474,19 @@ router.delete('/', settingsRateLimiter, async (req, res) => {
         const { guildId } = req.params;
         const { performCascadingErasure } = require('../../utils/erasure');
         
+        // 🛡️ Automatic Pre-Reset Settings Backup Snapshot
+        try {
+            const { createGuildBackup } = require('../../utils/settingsBackupManager');
+            await createGuildBackup(guildId, {
+                triggerSource: 'PRE_RESET',
+                actorId: req.user?.id || null,
+                actorName: req.user?.username || 'Dashboard Admin',
+                note: 'Automatic safety backup taken prior to settings reset',
+                force: true
+            });
+        } catch (backupErr) {
+            console.warn('[SettingsBackup] Pre-reset snapshot warning:', backupErr.message);
+        }
         await performCascadingErasure(guildId);
         
         // Invalidate the settings cache as well
@@ -480,6 +506,78 @@ router.delete('/', settingsRateLimiter, async (req, res) => {
     } catch (error) {
         console.error('Error deleting settings for guild %s:', req.params.guildId, error);
         res.status(500).json({ error: 'Internal server error during settings reset.' });
+    }
+});
+
+/**
+ * GET /api/guilds/:guildId/settings/backups
+ * Lists automatic & manual settings snapshots for this server.
+ */
+router.get('/backups', settingsRateLimiter, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { listGuildBackups } = require('../../utils/settingsBackupManager');
+        const backups = await listGuildBackups(guildId, req.query.limit || 25);
+        res.json({ success: true, backups });
+    } catch (error) {
+        console.error('Error listing settings backups for guild %s:', req.params.guildId, error);
+        res.status(500).json({ error: 'Failed to load server settings backups.' });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/settings/backups/create
+ * Creates an immediate on-demand settings snapshot for this server.
+ */
+router.post('/backups/create', settingsRateLimiter, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { createGuildBackup, listGuildBackups } = require('../../utils/settingsBackupManager');
+        const note = req.body?.note ? String(req.body.note).trim().substring(0, 180) : 'Manual configuration snapshot';
+        const record = await createGuildBackup(guildId, {
+            triggerSource: 'MANUAL_BACKUP',
+            actorId: req.user?.id || null,
+            actorName: req.user?.username || 'Server Admin',
+            note,
+            force: true
+        });
+        const backups = await listGuildBackups(guildId, 25);
+        res.json({ success: true, createdId: record?.id || null, backups });
+    } catch (error) {
+        console.error('Error creating manual settings backup for guild %s:', req.params.guildId, error);
+        res.status(500).json({ error: 'Failed to create server settings backup.' });
+    }
+});
+
+/**
+ * POST /api/guilds/:guildId/settings/backups/:backupId/restore
+ * Restores a server's settings to a chosen snapshot (automatically saving a PRE_RESTORE snapshot first).
+ */
+router.post('/backups/:backupId/restore', settingsRateLimiter, async (req, res) => {
+    try {
+        const { guildId, backupId } = req.params;
+        const { restoreGuildBackup } = require('../../utils/settingsBackupManager');
+        const result = await restoreGuildBackup(guildId, backupId, {
+            actorId: req.user?.id || null,
+            actorName: req.user?.username || 'Server Admin'
+        });
+
+        await logServerAction({
+            guildId,
+            req,
+            action: 'RESTORE_SETTINGS_BACKUP',
+            details: `Restored server settings from ${result.restoredFrom}`
+        }).catch(() => {});
+
+        res.json({
+            success: true,
+            message: `Server settings restored from ${result.restoredFrom}.`,
+            restoredFrom: result.restoredFrom,
+            settings: result.settings
+        });
+    } catch (error) {
+        console.error('Error restoring settings backup for guild %s:', req.params.guildId, error);
+        res.status(400).json({ error: error.message || 'Failed to restore server settings backup.' });
     }
 });
 

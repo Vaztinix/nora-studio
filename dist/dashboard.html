@@ -7277,6 +7277,7 @@
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; position: relative;">
+                        <button class="config-btn" id="backups-config-btn" onclick="openSettingsBackupsModal()" style="width: auto; padding: 10px 14px; border-color: rgba(168, 85, 247, 0.35); background: rgba(168, 85, 247, 0.08); color: #e9d5ff;" title="View Automatic Settings Backups & Restore"><i class="fas fa-history" style="margin-right: 6px; color: #c084fc;"></i> Backups</button>
                         <button class="config-btn" id="reload-config-btn" onclick="manualReloadConfig()" style="width: auto; padding: 10px 14px;" title="Reload Configuration From Server"><i class="fas fa-sync-alt" id="reload-config-icon" style="margin-right: 6px;"></i> Reload Config</button>
                         <button class="config-btn" id="undo-btn" onclick="undoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-undo" style="margin-right: 6px;"></i> Undo</button>
                         <button class="config-btn" id="redo-btn" onclick="redoChange()" style="width: auto; padding: 10px 14px;" disabled><i class="fas fa-redo" style="margin-right: 6px;"></i> Redo</button>
@@ -37290,5 +37291,190 @@ window.fetchRobloxStatus = async function(t) {
             </div>
         </div>
     </div>
+
+    <!-- Server Settings Backups & Restore Modal -->
+    <div id="settings-backups-modal" class="modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 10050; align-items: center; justify-content: center; backdrop-filter: blur(10px);">
+        <div class="modal-content" style="max-width: 680px; width: 94%; max-height: 86vh; display: flex; flex-direction: column; background: #0b0e17; border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 18px; padding: 24px; box-shadow: 0 24px 60px rgba(0,0,0,0.75);">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fas fa-shield-alt" style="color: #a855f7; font-size: 1.15rem;"></i>
+                        <h3 style="margin: 0; font-size: 1.18rem; font-weight: 800; color: #fff;">Automatic Server Settings Backups</h3>
+                    </div>
+                    <p style="margin: 5px 0 0 0; font-size: 0.8rem; color: rgba(255,255,255,0.65); line-height: 1.4;">
+                        Nora automatically creates a versioned snapshot before every configuration save, command update, or reset, plus periodic 6-hour full backups. Restore any point in time in 1 click.
+                    </p>
+                </div>
+                <button type="button" onclick="closeSettingsBackupsModal()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 0.95rem;"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 10px 12px; border-radius: 12px;">
+                <input type="text" id="manual-backup-note-input" placeholder="Optional snapshot label (e.g. Before event setup)..." maxlength="140" style="flex: 1; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.82rem;">
+                <button type="button" id="create-manual-backup-btn" onclick="createManualSettingsBackup()" style="background: linear-gradient(135deg, #a855f7, #6366f1); border: none; color: #fff; font-weight: 700; font-size: 0.8rem; padding: 9px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap;">
+                    <i class="fas fa-camera" style="margin-right: 5px;"></i> Create Snapshot Now
+                </button>
+            </div>
+
+            <div id="settings-backups-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; min-height: 220px;">
+                <div style="text-align: center; padding: 40px 20px; color: rgba(255,255,255,0.5); font-size: 0.88rem;">
+                    <i class="fas fa-circle-notch fa-spin" style="margin-right: 6px;"></i> Loading automatic snapshots...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    async function openSettingsBackupsModal() {
+        const modal = document.getElementById('settings-backups-modal');
+        if (!modal) return;
+        modal.style.display = 'flex';
+        await loadSettingsBackupsList();
+    }
+
+    function closeSettingsBackupsModal() {
+        const modal = document.getElementById('settings-backups-modal');
+        if (modal) modal.style.display = 'none';
+    }
+
+    async function loadSettingsBackupsList() {
+        const listEl = document.getElementById('settings-backups-list');
+        if (!listEl) return;
+        const guildId = typeof currentGuildId !== 'undefined' && currentGuildId ? currentGuildId : window.currentGuildId;
+        if (!guildId) {
+            listEl.innerHTML = '<div style="text-align:center; padding:30px; color:#f87171;">Select a server first to view its configuration backups.</div>';
+            return;
+        }
+        listEl.innerHTML = '<div style="text-align: center; padding: 36px 20px; color: rgba(255,255,255,0.6); font-size: 0.85rem;"><i class="fas fa-circle-notch fa-spin" style="margin-right: 6px;"></i> Fetching server configuration history...</div>';
+        try {
+            const token = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token_v52') || '';
+            const res = await fetch(`/api/guilds/${guildId}/settings/backups?limit=25`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            });
+            const data = await res.json();
+            if (!res.ok || !data.backups) {
+                throw new Error(data.error || 'Failed to load backups');
+            }
+            renderSettingsBackupsList(data.backups);
+        } catch (err) {
+            listEl.innerHTML = `<div style="text-align:center; padding:30px; color:#f87171;"><i class="fas fa-exclamation-triangle"></i> ${err.message}</div>`;
+        }
+    }
+
+    function renderSettingsBackupsList(backups) {
+        const listEl = document.getElementById('settings-backups-list');
+        if (!listEl) return;
+        if (!Array.isArray(backups) || backups.length === 0) {
+            listEl.innerHTML = '<div style="text-align:center; padding:30px; color:rgba(255,255,255,0.5);">No snapshots recorded for this server yet.</div>';
+            return;
+        }
+        const badgeLabels = {
+            'DASHBOARD_SAVE': { label: 'Pre-Save Auto Backup', color: '#60a5fa', bg: 'rgba(96,165,250,0.14)' },
+            'SETUP_COMMAND': { label: '/setup Auto Backup', color: '#34d399', bg: 'rgba(52,211,153,0.14)' },
+            'MANUAL_BACKUP': { label: 'Manual Snapshot', color: '#c084fc', bg: 'rgba(192,132,252,0.16)' },
+            'PRE_RESTORE': { label: 'Pre-Restore Safety Point', color: '#fbbf24', bg: 'rgba(251,191,36,0.14)' },
+            'PRE_RESET': { label: 'Pre-Reset Safety Point', color: '#f87171', bg: 'rgba(248,113,113,0.15)' },
+            'INITIAL_BASELINE': { label: 'Verified Baseline', color: '#22c55e', bg: 'rgba(34,197,94,0.14)' }
+        };
+
+        listEl.innerHTML = backups.map(b => {
+            const meta = badgeLabels[b.triggerSource] || { label: b.triggerSource || 'Auto Snapshot', color: '#94a3b8', bg: 'rgba(148,163,184,0.14)' };
+            const dateStr = b.createdAt ? new Date(b.createdAt).toLocaleString() : 'Unknown time';
+            const keysPreview = Array.isArray(b.changedKeys) && b.changedKeys.length > 0
+                ? `Changed (${b.changedKeys.length}): ${b.changedKeys.slice(0, 6).join(', ')}${b.changedKeys.length > 6 ? '...' : ''}`
+                : (b.note || 'Full server configuration state');
+            const s = b.summary || {};
+            const pills = [
+                `<span style="font-size:0.68rem; padding:2px 7px; border-radius:6px; background:${s.autoModActive ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)'}; color:${s.autoModActive ? '#4ade80' : '#94a3b8'};">AutoMod: ${s.autoModActive ? 'ON' : 'OFF'}</span>`,
+                `<span style="font-size:0.68rem; padding:2px 7px; border-radius:6px; background:${s.antiRaidEnabled ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)'}; color:${s.antiRaidEnabled ? '#4ade80' : '#94a3b8'};">Anti-Raid: ${s.antiRaidEnabled ? 'ON' : 'OFF'}</span>`,
+                `<span style="font-size:0.68rem; padding:2px 7px; border-radius:6px; background:${s.welcomerEnabled ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)'}; color:${s.welcomerEnabled ? '#4ade80' : '#94a3b8'};">Welcomer: ${s.welcomerEnabled ? 'ON' : 'OFF'}</span>`,
+                `<span style="font-size:0.68rem; padding:2px 7px; border-radius:6px; background:${s.levelingEnabled ? 'rgba(34,197,94,0.15)' : 'rgba(255,255,255,0.06)'}; color:${s.levelingEnabled ? '#4ade80' : '#94a3b8'};">Leveling: ${s.levelingEnabled ? 'ON' : 'OFF'}</span>`
+            ].join(' ');
+
+            return `
+                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                    <div style="min-width: 0; flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px;">
+                            <span style="font-weight: 800; font-size: 0.84rem; color: #fff;">#${b.id}</span>
+                            <span style="font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 999px; background: ${meta.bg}; color: ${meta.color};">${meta.label}</span>
+                            <span style="font-size: 0.75rem; color: rgba(255,255,255,0.55);"><i class="far fa-clock"></i> ${dateStr}</span>
+                            <span style="font-size: 0.74rem; color: rgba(255,255,255,0.5);">by ${b.actorName || 'System'}</span>
+                        </div>
+                        <div style="font-size: 0.77rem; color: rgba(255,255,255,0.72); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${keysPreview}</div>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">${pills}</div>
+                    </div>
+                    <button type="button" onclick="restoreSettingsBackup(${b.id})" style="background: rgba(34, 197, 94, 0.14); border: 1px solid rgba(34, 197, 94, 0.4); color: #4ade80; font-weight: 700; font-size: 0.78rem; padding: 8px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap; transition: all 0.15s ease;">
+                        <i class="fas fa-undo-alt" style="margin-right: 5px;"></i> Restore
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function createManualSettingsBackup() {
+        const guildId = typeof currentGuildId !== 'undefined' && currentGuildId ? currentGuildId : window.currentGuildId;
+        if (!guildId) return;
+        const noteInput = document.getElementById('manual-backup-note-input');
+        const btn = document.getElementById('create-manual-backup-btn');
+        const note = noteInput ? noteInput.value.trim() : '';
+        if (btn) btn.disabled = true;
+        try {
+            const token = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token_v52') || '';
+            const res = await fetch(`/api/guilds/${guildId}/settings/backups/create`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({ note })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to create snapshot');
+            if (noteInput) noteInput.value = '';
+            if (typeof showNotification === 'function') {
+                showNotification('Configuration snapshot saved!', 'success');
+            }
+            if (data.backups) renderSettingsBackupsList(data.backups);
+        } catch (err) {
+            if (typeof showNotification === 'function') {
+                showNotification('Backup failed: ' + err.message, 'error');
+            }
+        } finally {
+            if (btn) btn.disabled = false;
+        }
+    }
+
+    async function restoreSettingsBackup(backupId) {
+        const guildId = typeof currentGuildId !== 'undefined' && currentGuildId ? currentGuildId : window.currentGuildId;
+        if (!guildId) return;
+        if (!confirm(`Restore this server's configuration to Snapshot #${backupId}? (Nora will automatically save a backup of your current settings first.)`)) {
+            return;
+        }
+        try {
+            const token = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token_v52') || '';
+            const res = await fetch(`/api/guilds/${guildId}/settings/backups/${backupId}/restore`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Restore failed');
+            if (typeof showNotification === 'function') {
+                showNotification(data.message || `Restored Snapshot #${backupId}!`, 'success');
+            }
+            closeSettingsBackupsModal();
+            if (typeof fetchSettings === 'function') {
+                await fetchSettings(guildId, true);
+            } else if (typeof manualReloadConfig === 'function') {
+                await manualReloadConfig();
+            }
+        } catch (err) {
+            if (typeof showNotification === 'function') {
+                showNotification('Restore error: ' + err.message, 'error');
+            }
+        }
+    }
+    </script>
 </body>
 </html>

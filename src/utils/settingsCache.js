@@ -36,6 +36,15 @@ async function update(guildId, updates) {
     if (!settings) {
         settings = await GuildSettings.create({ guildId, ...updates });
     } else {
+        try {
+            const { createGuildBackup } = require('./settingsBackupManager');
+            await createGuildBackup(guildId, {
+                existingSnapshot: settings,
+                incomingUpdates: updates,
+                triggerSource: 'SETUP_COMMAND',
+                actorName: 'Discord Command (/setup)'
+            });
+        } catch (_) {}
         await settings.update(updates);
     }
     

@@ -450,12 +450,8 @@ router.get('/emojis', async (req, res) => {
  * GET /api/guilds/:guildId/app-emojis
  * Returns all custom application emojis.
  */
-let appEmojisMemCache = { list: null, expiresAt: 0 };
 router.get('/app-emojis', async (req, res) => {
     try {
-        if (appEmojisMemCache.list && Date.now() < appEmojisMemCache.expiresAt) {
-            return res.json(appEmojisMemCache.list);
-        }
         let appEmojis = [];
         if (req.client.application) {
             try {
@@ -467,7 +463,6 @@ router.get('/app-emojis', async (req, res) => {
                         animated: e.animated,
                         url: e.imageURL({ size: 64 })
                     }));
-                    appEmojisMemCache = { list: appEmojis, expiresAt: Date.now() + 5 * 60 * 1000 };
                 }
             } catch (err) {
                 console.error('Failed to fetch app emojis:', err);
@@ -494,33 +489,44 @@ router.get('/members', async (req, res) => {
 
 
 
-        // Prefer cached members; only trigger a short gateway fetch if cache has <= 2 members
-        let membersMap = guild.members.cache;
-        if (membersMap.size <= 2) {
-            try {
-                membersMap = await Promise.race([
-                    guild.members.fetch(),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Member fetch timeout')), 1200))
-                ]);
-            } catch (e) {
-                membersMap = guild.members.cache;
-            }
+        // Fetch all members in the guild (with caching fallback)
+
+        let membersMap;
+
+        try {
+
+            membersMap = await guild.members.fetch();
+
+        } catch (e) {
+
+            console.warn('[Relay Engine] Full members fetch failed. Using cached members.', e.message);
+
+            membersMap = guild.members.cache;
+
         }
 
-        const memberIds = Array.from(membersMap.keys());
 
-        // Fetch leveling records, roblox verifications, and preferences for this guild's members in parallel
-        const [levels, robloxList, prefsList] = await Promise.all([
-            UserLevel.findAll({ where: { guildId } }),
-            memberIds.length > 0 ? RobloxVerify.findAll({ where: { userId: memberIds } }) : [],
-            memberIds.length > 0 ? UserPrefs.findAll({
-                where: { userId: memberIds },
-                attributes: { exclude: ['rankCardBackgroundImage', 'customRankCardBg', 'customLevelUpBg', 'dashboardBgImage', 'teamCardImage', 'teamCardBanner'] }
-            }) : []
-        ]);
+
+        // Fetch leveling records for this guild
+
+        const levels = await UserLevel.findAll({ where: { guildId } });
 
         const levelsMap = new Map(levels.map(l => [l.userId, l]));
+
+
+
+        // Fetch roblox verifications and preferences in bulk to prevent N+1 queries
+
+        const robloxList = await RobloxVerify.findAll();
+
         const robloxMap = new Map(robloxList.map(r => [r.userId, r]));
+
+        
+
+        const prefsList = await UserPrefs.findAll({
+            attributes: { exclude: ['rankCardBackgroundImage', 'customRankCardBg', 'customLevelUpBg', 'dashboardBgImage', 'teamCardImage', 'teamCardBanner'] }
+        });
+
         const prefsMap = new Map(prefsList.map(p => [p.userId, p]));
 
 

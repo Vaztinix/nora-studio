@@ -104,6 +104,13 @@ async function autoMigrateDatabase() {
         } catch (premErr) {
             console.warn('[DB Auto-Migrate] Early adopter premium enforcer warning:', premErr.message);
         }
+
+        try {
+            const { startAutoBackupScheduler } = require('../utils/settingsBackupManager');
+            startAutoBackupScheduler();
+        } catch (backupErr) {
+            console.warn('[DB Auto-Migrate] Settings backup scheduler warning:', backupErr.message);
+        }
     } catch (err) {
         console.error('[DB Auto-Migrate] Migration failed:', err.message);
     }

@@ -1613,4 +1613,55 @@ router.get('/early-adopters', requireOwner, async (req, res) => {
         res.status(500).json({ success: false, error: e.message });
     }
 });
+// 🛡️ SERVER SETTINGS BACKUPS & RESTORE (OWNER OPERATIONS)
+router.get('/settings-backups', requireOwner, async (req, res) => {
+    try {
+        const { getAdminBackupOverview } = require('../../utils/settingsBackupManager');
+        const overview = await getAdminBackupOverview();
+        res.json({ success: true, ...overview });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+router.post('/settings-backups/create', requireOwner, async (req, res) => {
+    try {
+        const { createFullDatabaseSettingsBackup, createGuildBackup } = require('../../utils/settingsBackupManager');
+        const { guildId, note } = req.body || {};
+        if (guildId) {
+            const record = await createGuildBackup(guildId, {
+                triggerSource: 'OWNER_MANUAL_BACKUP',
+                actorId: req.user?.id || '1214048435632603137',
+                actorName: req.user?.username || 'Nora Owner',
+                note: note || 'Manual owner snapshot',
+                force: true
+            });
+            return res.json({ success: true, message: `Created settings snapshot #${record?.id} for server ${guildId}.`, record });
+        }
+        const full = await createFullDatabaseSettingsBackup('OWNER_MANUAL');
+        res.json({ success: true, message: `Full settings backup created (${full?.totalGuilds || 0} servers -> ${full?.filename}).`, backup: full });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+router.post('/settings-backups/restore', requireOwner, async (req, res) => {
+    try {
+        const { guildId, backupId } = req.body || {};
+        if (!guildId) return res.status(400).json({ error: 'Missing guildId.' });
+        const { restoreGuildBackup } = require('../../utils/settingsBackupManager');
+        const result = await restoreGuildBackup(guildId, backupId || 'latest', {
+            actorId: req.user?.id || '1214048435632603137',
+            actorName: req.user?.username || 'Nora Owner'
+        });
+        res.json({
+            success: true,
+            message: `Restored server ${guildId} settings from ${result.restoredFrom}.`,
+            ...result
+        });
+    } catch (e) {
+        res.status(400).json({ error: e.message });
+    }
+});
+
 module.exports = router;

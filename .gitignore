@@ -29,6 +29,7 @@ __pycache__/
 bot_log*.txt
 dev_chatlog_deleted.txt
 Nora Backups/
+src/database/backups/
 
 # Temp cache data
 member_cache.json

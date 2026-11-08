@@ -1149,6 +1149,25 @@
                                 <button class="btn-action" onclick="syncStaticTelemetry()" style="width: 100%;">Sync Public Telemetry</button>
                             </div>
 
+                            <div style="background: rgba(0,0,0,0.3); padding: 18px; border-radius: 12px; border: 1px solid rgba(168, 85, 247, 0.35);">
+                                <h4 style="font-size: 0.92rem; font-weight: 700; color: #fff; margin-bottom: 6px;"><i class="fas fa-database" style="color: #c084fc;"></i> Full Server Settings Backup</h4>
+                                <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 14px;">Creates an immediate JSON + SQLite snapshot of all communities' settings on disk and refreshes recovery points.</p>
+                                <button class="btn-action" onclick="triggerOwnerFullBackup()" style="width: 100%; background: linear-gradient(135deg, #a855f7, #6366f1);">Create Full Backup Now</button>
+                            </div>
+
+                        </div>
+
+                        <div style="margin-top: 20px; background: rgba(0,0,0,0.3); padding: 18px; border-radius: 12px; border: 1px solid var(--border-subtle);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
+                                <div>
+                                    <h4 style="font-size: 0.95rem; font-weight: 800; color: #fff; margin: 0;"><i class="fas fa-history" style="color: #38bdf8; margin-right: 6px;"></i> Automatic Server Settings Snapshots</h4>
+                                    <p style="font-size: 0.78rem; color: var(--text-muted); margin: 4px 0 0 0;">Every dashboard save, <code>/setup</code> update, or reset is automatically snapshotted. Restore any server below.</p>
+                                </div>
+                                <button class="btn-action btn-secondary" onclick="loadOwnerSettingsBackups()" style="width: auto; padding: 7px 14px; font-size: 0.78rem;"><i class="fas fa-sync-alt"></i> Load Recent Snapshots</button>
+                            </div>
+                            <div id="owner-settings-backups-container" style="display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto;">
+                                <div style="font-size: 0.82rem; color: var(--text-dim); padding: 12px 0;">Click "Load Recent Snapshots" to inspect or restore server configuration snapshots.</div>
+                            </div>
                         </div>
                     </div>
 
@@ -3938,6 +3957,80 @@
                 loadAiCreditsDesk();
             } catch (err) {
                 alert(`Rollover Error: ${err.message}`);
+            }
+        }
+
+        async function triggerOwnerFullBackup() {
+            try {
+                const apiBase = window.getApiBaseUrl();
+                const authToken = getAdminAuthToken();
+                const res = await fetch(`${apiBase}/api/admin/settings-backups/create`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({})
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Backup failed');
+                alert(data.message || 'Full server settings backup created!');
+                loadOwnerSettingsBackups();
+            } catch (err) {
+                alert('Backup error: ' + err.message);
+            }
+        }
+
+        async function loadOwnerSettingsBackups() {
+            const container = document.getElementById('owner-settings-backups-container');
+            if (!container) return;
+            container.innerHTML = '<div style="font-size:0.82rem; color:var(--text-muted); padding:12px 0;"><i class="fas fa-circle-notch fa-spin"></i> Loading snapshots...</div>';
+            try {
+                const apiBase = window.getApiBaseUrl();
+                const authToken = getAdminAuthToken();
+                const res = await fetch(`${apiBase}/api/admin/settings-backups`, {
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Failed to load backups');
+                const list = data.recentGuildSnapshots || [];
+                if (list.length === 0) {
+                    container.innerHTML = '<div style="font-size:0.82rem; color:var(--text-dim); padding:12px 0;">No snapshots found.</div>';
+                    return;
+                }
+                container.innerHTML = list.map(s => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; background:rgba(255,255,255,0.03); border:1px solid var(--border-subtle); border-radius:8px; padding:10px 12px;">
+                        <div style="min-width:0; flex:1;">
+                            <div style="font-size:0.82rem; font-weight:700; color:#fff;">#${s.id} • Guild <code>${s.guildId}</code> • <span style="color:#a78bfa;">${s.triggerSource}</span></div>
+                            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:2px;">${new Date(s.createdAt).toLocaleString()} by ${s.actorName || 'System'} ${s.changedKeys && s.changedKeys.length ? `(${s.changedKeys.length} keys changed)` : ''}</div>
+                        </div>
+                        <button class="btn-action" style="width:auto; padding:6px 12px; font-size:0.75rem;" onclick="restoreOwnerGuildBackup('${s.guildId}', ${s.id})"><i class="fas fa-undo"></i> Restore</button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                container.innerHTML = `<div style="font-size:0.82rem; color:#f43f5e;">${err.message}</div>`;
+            }
+        }
+
+        async function restoreOwnerGuildBackup(guildId, backupId) {
+            if (!confirm(`Restore server ${guildId} to Snapshot #${backupId}?`)) return;
+            try {
+                const apiBase = window.getApiBaseUrl();
+                const authToken = getAdminAuthToken();
+                const res = await fetch(`${apiBase}/api/admin/settings-backups/restore`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ guildId, backupId })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Restore failed');
+                alert(data.message || `Restored server ${guildId} to Snapshot #${backupId}!`);
+                loadOwnerSettingsBackups();
+            } catch (err) {
+                alert('Restore error: ' + err.message);
             }
         }
 

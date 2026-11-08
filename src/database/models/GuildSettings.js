@@ -421,7 +421,7 @@ const GuildSettings = sequelize.define('GuildSettings', {
     },
     automodHateSpeech: {
         type: DataTypes.BOOLEAN,
-        defaultValue: true
+        defaultValue: false
     },
     allowedInvites: {
         type: DataTypes.TEXT, // JSON array of allowed invite codes or vanity codes

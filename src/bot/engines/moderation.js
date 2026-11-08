@@ -113,18 +113,9 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
         return { actionRequired: false };
     }
 
-    // Master toggles
+    // Master toggles — AutoMod MUST have autoModActive explicitly enabled
     const isModerationEnabled = guildConfig.moderationEnabled !== false;
-    const hasAnyRuleEnabled = Boolean(
-        guildConfig.automodProfanity || guildConfig.automodSexual ||
-        guildConfig.automodSlurs || guildConfig.automodSpam ||
-        guildConfig.automodMentions || guildConfig.automodScam ||
-        guildConfig.automodInvites || guildConfig.automodLinks ||
-        guildConfig.automodCaps || guildConfig.automodZalgo ||
-        guildConfig.automodSelfPromo || guildConfig.automodHateSpeech ||
-        guildConfig.spamDetectionEnabled
-    );
-    const isAutoModActive = guildConfig.autoModActive === true || (guildConfig.autoModActive !== false && hasAnyRuleEnabled) || hasAnyRuleEnabled;
+    const isAutoModActive = Boolean(guildConfig.autoModActive === true);
     if (!isModerationEnabled || !isAutoModActive) {
         return { actionRequired: false };
     }
@@ -364,7 +355,7 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
     }
 
     // 9. SEVERE SLURS & HATE SPEECH
-    if (guildConfig.automodSlurs !== false) {
+    if (guildConfig.automodSlurs) {
         for (const pattern of SEVERE_SLUR_PATTERNS) {
             const match = lowerText.match(pattern);
             if (match) {
@@ -380,7 +371,7 @@ async function assessMessageThreatContext(guildConfig, messageInstance) {
     }
 
     // 10. TOXIC HARASSMENT & HATE SPEECH
-    if (guildConfig.automodHateSpeech !== false || guildConfig.automodHardcore) {
+    if (guildConfig.automodHateSpeech || guildConfig.automodHardcore) {
         for (const pattern of TOXIC_HARASSMENT_PATTERNS) {
             const match = lowerText.match(pattern);
             if (match) {
