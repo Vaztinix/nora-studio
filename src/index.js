@@ -1,4 +1,5 @@
 require('dotenv').config();
+require('./utils/embeds'); // 🛡️ Initialize Components V2 prototype protections
 
 
 

@@ -1572,14 +1572,15 @@ module.exports = {
                     if (payload.embeds && Array.isArray(payload.embeds) && payload.embeds.length > 0) {
                         try {
                             const v2 = buildEmbedV2Container(payload.embeds[0], payload.components || [], payload.content || '');
-                            return {
+                            const result = {
                                 ...payload,
                                 isComponentsV2Converted: true,
-                                embeds: [],
                                 content: undefined,
                                 components: v2.components,
                                 flags: (payload.flags || 0) | 32768
                             };
+                            delete result.embeds;
+                            return result;
                         } catch (e) {
                             return payload;
                         }
@@ -1619,6 +1620,18 @@ module.exports = {
                             return await origFollowUp.call(this, v2Options);
                         } catch (err) {
                             return await origFollowUp.call(this, options);
+                        }
+                    };
+                }
+
+                const origUpdate = interaction.update;
+                if (typeof origUpdate === 'function') {
+                    interaction.update = async function(options) {
+                        const v2Options = wrapPayload(options);
+                        try {
+                            return await origUpdate.call(this, v2Options);
+                        } catch (err) {
+                            return await origUpdate.call(this, options);
                         }
                     };
                 }

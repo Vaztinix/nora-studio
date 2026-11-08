@@ -1606,7 +1606,4 @@ router.get('/early-adopters', requireOwner, async (req, res) => {
         res.status(500).json({ success: false, error: e.message });
     }
 });
-    }
-});
-
 module.exports = router;

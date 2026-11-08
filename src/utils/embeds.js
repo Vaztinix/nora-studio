@@ -282,5 +282,94 @@ module.exports = {
                 }
             ]
         };
+    },
+
+    /**
+     * Sanitizes an interaction/message payload for Discord Components V2.
+     * Prevents DiscordAPIError[50035]: data.embeds[MESSAGE_CANNOT_USE_LEGACY_FIELDS_WITH_COMPONENTS_V2]
+     */
+    sanitizeComponentsV2Payload: function(options, targetMessage) {
+        if (!options || typeof options !== 'object') return options;
+
+        const msgHasV2 = Boolean(
+            targetMessage?.flags?.has?.(32768) ||
+            ((targetMessage?.flags?.bitfield || 0) & 32768) !== 0 ||
+            ((options?.flags || 0) & 32768) !== 0
+        );
+
+        if (options.embeds && Array.isArray(options.embeds) && options.embeds.length > 0) {
+            try {
+                const v2 = module.exports.buildEmbedV2Container(
+                    options.embeds[0],
+                    options.components || [],
+                    options.content || ''
+                );
+                const safe = {
+                    ...options,
+                    isComponentsV2Converted: true,
+                    content: undefined,
+                    components: v2.components,
+                    flags: (options.flags || 0) | 32768
+                };
+                delete safe.embeds;
+                return safe;
+            } catch (e) {
+                if (msgHasV2) {
+                    const fallback = { ...options };
+                    delete fallback.embeds;
+                    return fallback;
+                }
+                return options;
+            }
+        } else if (msgHasV2 && 'embeds' in options) {
+            const clean = { ...options };
+            delete clean.embeds;
+            return clean;
+        }
+
+        return options;
     }
 };
+
+// 🛡️ Global Protection for Discord Components V2 Message Updates & Edits
+const { MessageComponentInteraction, ModalSubmitInteraction, Message } = require('discord.js');
+
+if (MessageComponentInteraction && MessageComponentInteraction.prototype && !MessageComponentInteraction.prototype._v2Patched) {
+    MessageComponentInteraction.prototype._v2Patched = true;
+    const origUpdate = MessageComponentInteraction.prototype.update;
+    MessageComponentInteraction.prototype.update = function(options) {
+        try {
+            const safeOptions = module.exports.sanitizeComponentsV2Payload(options, this.message);
+            return origUpdate.call(this, safeOptions);
+        } catch (e) {
+            return origUpdate.call(this, options);
+        }
+    };
+}
+
+if (ModalSubmitInteraction && ModalSubmitInteraction.prototype && !ModalSubmitInteraction.prototype._v2Patched) {
+    ModalSubmitInteraction.prototype._v2Patched = true;
+    const origModalUpdate = ModalSubmitInteraction.prototype.update;
+    ModalSubmitInteraction.prototype.update = function(options) {
+        try {
+            const safeOptions = module.exports.sanitizeComponentsV2Payload(options, this.message);
+            return origModalUpdate.call(this, safeOptions);
+        } catch (e) {
+            return origModalUpdate.call(this, options);
+        }
+    };
+}
+
+if (Message && Message.prototype && !Message.prototype._v2Patched) {
+    Message.prototype._v2Patched = true;
+    const origEdit = Message.prototype.edit;
+    Message.prototype.edit = function(options) {
+        try {
+            const safeOptions = module.exports.sanitizeComponentsV2Payload(options, this);
+            return origEdit.call(this, safeOptions);
+        } catch (e) {
+            return origEdit.call(this, options);
+        }
+    };
+}
+

@@ -141,7 +141,7 @@ module.exports = {
             return (!color || color === 0) ? 0x7c3aed : color;
         };
 
-        const buildDashboard = (viewName) => {
+        const buildRawDashboard = (viewName) => {
             const embed = new EmbedBuilder()
                 .setColor(getRoleColor(interaction))
                 .setTimestamp()
@@ -1315,7 +1315,20 @@ module.exports = {
             }
 
             // Fallback
-            return buildDashboard('main');
+            return buildRawDashboard('main');
+        };
+
+        const buildDashboard = (viewName) => {
+            const raw = buildRawDashboard(viewName);
+            if (settings?.embedsVersion !== 'v1') {
+                const { buildEmbedV2Container } = require('../../utils/embeds');
+                const v2 = buildEmbedV2Container(raw.embeds[0], raw.components || []);
+                return {
+                    flags: 32768,
+                    components: v2.components
+                };
+            }
+            return raw;
         };
 
         const initialView = buildDashboard(initialViewName);
@@ -1344,18 +1357,18 @@ module.exports = {
                 state.youtubeFeedCount = await ContentFeed.count({ where: { guildId: interaction.guild.id, platform: 'YOUTUBE' } }).catch(() => 0);
 
                 if (i.customId === 'action_quick_refresh') {
-                    return i.update(buildDashboard('main'));
+                    return await i.update(buildDashboard('main'));
                 }
 
                 if (i.customId === 'config_main' || i.customId.startsWith('view_')) {
                     const view = i.customId.startsWith('view_') ? i.customId : i.values[0];
                     state.currentView = view;
-                    return i.update(buildDashboard(view));
+                    return await i.update(buildDashboard(view));
                 }
 
                 if (i.customId === 'go_back') {
                     state.currentView = 'main';
-                    return i.update(buildDashboard('main'));
+                    return await i.update(buildDashboard('main'));
                 }
 
                 let update = false;
@@ -1421,10 +1434,10 @@ module.exports = {
                 if (i.customId === 'action_leveling_exceptions') { settings.levelingIgnoredChannels = i.values || []; update = true; }
 
                 // Games, Starboard & AFK Navigation
-                if (i.customId === 'action_goto_starboard') { state.currentView = 'view_starboard'; return i.update(buildDashboard('view_starboard')); }
-                if (i.customId === 'action_goto_counting') { state.currentView = 'view_counting'; return i.update(buildDashboard('view_counting')); }
-                if (i.customId === 'action_goto_onewordstory') { state.currentView = 'view_onewordstory'; return i.update(buildDashboard('view_onewordstory')); }
-                if (i.customId === 'action_goto_afk') { state.currentView = 'view_afk'; return i.update(buildDashboard('view_afk')); }
+                if (i.customId === 'action_goto_starboard') { state.currentView = 'view_starboard'; return await i.update(buildDashboard('view_starboard')); }
+                if (i.customId === 'action_goto_counting') { state.currentView = 'view_counting'; return await i.update(buildDashboard('view_counting')); }
+                if (i.customId === 'action_goto_onewordstory') { state.currentView = 'view_onewordstory'; return await i.update(buildDashboard('view_onewordstory')); }
+                if (i.customId === 'action_goto_afk') { state.currentView = 'view_afk'; return await i.update(buildDashboard('view_afk')); }
 
                 // AFK Module
                 if (i.customId === 'action_afk_toggle') { settings.afkEnabled = settings.afkEnabled !== false ? false : true; update = true; }
@@ -1459,7 +1472,7 @@ module.exports = {
                 if (i.customId === 'action_starboard_channel') { settings.starboardChannelId = i.values[0]; update = true; }
                 if (i.customId === 'action_starboard_reward_role') {
                     state.pendingStarboardRole = i.values.length > 0 ? i.values[0] : null;
-                    return i.update(buildDashboard('view_starboard'));
+                    return await i.update(buildDashboard('view_starboard'));
                 }
                 if (i.customId === 'action_starboard_add_reward') {
                     if (state.pendingStarboardRole) {
@@ -1490,7 +1503,7 @@ module.exports = {
                 if (i.customId === 'action_log_part_select') {
                     state.selectedLogCategory = i.values[0];
                     settings.selectedLogCategory = i.values[0];
-                    return i.update(buildDashboard('view_logging'));
+                    return await i.update(buildDashboard('view_logging'));
                 }
                 if (i.customId === 'action_log_channel') {
                     const selectedCategory = state.selectedLogCategory || 'default';
@@ -1721,7 +1734,7 @@ module.exports = {
                         settings.ticketPanelDesc = submitted.fields.getTextInputValue('panel_desc');
                         await settings.save();
                         settingsCache.invalidate(interaction.guild.id);
-                        return submitted.update(buildDashboard('view_tickets'));
+                        return await submitted.update(buildDashboard('view_tickets'));
                     } catch (e) {
                         return;
                     }
@@ -1906,7 +1919,7 @@ module.exports = {
                 // Dev Controls
                 if (i.customId === 'dev_reboot') {
                     if (!APP_OWNER_IDS.includes(i.user.id)) return i.reply({ content: 'Unauthorized.', ephemeral: true });
-                    await i.update({ content: '🔄 Rebooting application core...', embeds: [], components: [] });
+                    await i.update({ content: '🔄 Rebooting application core...', components: [] });
                     process.exit(1);
                 }
                 if (i.customId === 'dev_dbsync') {
@@ -1933,7 +1946,7 @@ module.exports = {
                             await syncAutoModRule(i.guild, sync, isRuleEnabled, settings.automodMentions, settings);
                         }
                     }
-                    return i.update(buildDashboard(state.currentView));
+                    return await i.update(buildDashboard(state.currentView));
                 }
 
             } catch (err) {
