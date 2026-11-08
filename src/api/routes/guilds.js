@@ -170,8 +170,18 @@ router.get('/full-dashboard-data', async (req, res) => {
         ]);
 
         // 5. Analytics summary
+        let onlineCount = 0;
+        if (guild.approximatePresenceCount) {
+            onlineCount = guild.approximatePresenceCount;
+        } else if (guild.presences?.cache?.size) {
+            onlineCount = guild.presences.cache.filter(p => p.status && p.status !== 'offline').size;
+        } else if (guild.members?.cache?.size) {
+            onlineCount = guild.members.cache.filter(m => m.presence?.status && m.presence.status !== 'offline').size;
+        }
+
         const analytics = {
-            memberCount: guild.memberCount || 0,
+            memberCount: guild.memberCount || guild.approximateMemberCount || 0,
+            onlineCount: onlineCount,
             channelCount: guild.channels.cache.size || 0,
             roleCount: guild.roles.cache.size || 0
         };
@@ -844,8 +854,19 @@ router.get('/analytics', async (req, res) => {
         // Real-time Chat Velocity (Messages Per Minute)
         const chatVelocity = activityTracker.getGuildVelocity(guildId);
 
+        let onlineMembersCount = 0;
+        if (guild.approximatePresenceCount) {
+            onlineMembersCount = guild.approximatePresenceCount;
+        } else if (guild.presences?.cache?.size) {
+            onlineMembersCount = guild.presences.cache.filter(p => p.status && p.status !== 'offline').size;
+        } else if (guild.members?.cache?.size) {
+            onlineMembersCount = guild.members.cache.filter(m => m.presence?.status && m.presence.status !== 'offline').size;
+        }
+
         res.json({
-            totalMembers: guild.memberCount,
+            totalMembers: guild.memberCount || guild.approximateMemberCount || 0,
+            onlineMembers: onlineMembersCount,
+            onlineCount: onlineMembersCount,
             totalNoraUsers,
             totalVotes: activeGuildLevels.reduce((sum, r) => sum + (r.voteCount || 0), 0),
             totalTextActivity,

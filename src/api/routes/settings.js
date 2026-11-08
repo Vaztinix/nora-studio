@@ -64,7 +64,7 @@ router.get('/', settingsRateLimiter, async (req, res) => {
             premiumSponsors: premiumStatus.sponsors || [],
             directServerPremium: premiumStatus.directServerPremium,
             heartbeat,
-            dbSync: 1
+            dbSync: Math.max(1, Math.round(Date.now() - t0))
         });
     } catch (error) {
         console.error('Error fetching settings for guild %s:', req.params.guildId, error);

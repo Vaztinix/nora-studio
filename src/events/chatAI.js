@@ -351,41 +351,10 @@ async function processMessageInternal(message, client) {
 
         // 🎨 2. Check for AI Image Generation Intent (Google Gemini & Imagen ONLY)
         if (isImageGenerationPrompt(plainContent)) {
-            const imageGenEnabled = Boolean(settings?.aiImageGenerationEnabled);
-            if (!imageGenEnabled) {
-                return message.reply({
-                    content: "🎨 AI Image Generation is currently disabled on this server. A server administrator can enable or disable it anytime in `/setup ai` or the Nora Web Dashboard.",
-                    allowedMentions: { parse: ['users'], repliedUser: false }
-                }).catch(() => {});
-            }
-
-            try {
-                const imgResult = await generateAIImage(plainContent);
-                const attachment = new AttachmentBuilder(imgResult.buffer, { name: imgResult.filename });
-                const wittyImageCaptions = [
-                    `Here is what I created with Google for you: **${imgResult.enhancedPrompt}** 🎨✨`,
-                    `Freshly rendered via Google: **${imgResult.enhancedPrompt}**! Hope you love it ✨`,
-                    `Done! Here's your Google artwork of **${imgResult.enhancedPrompt}** 🖼️`
-                ];
-                const caption = wittyImageCaptions[Math.floor(Math.random() * wittyImageCaptions.length)];
-                return message.reply({
-                    content: caption,
-                    files: [attachment],
-                    allowedMentions: { parse: ['users'], repliedUser: false }
-                }).catch(() => {});
-            } catch (err) {
-                console.error('[ChatAI] Google image generation error:', err.message);
-                if (err.message && err.message.toLowerCase().includes('safety')) {
-                    return message.reply({
-                        content: `🛡️ **Image Blocked by Google Safety Filter**: Google strictly prohibits sexual, explicit, or inappropriate requests.`,
-                        allowedMentions: { parse: ['users'], repliedUser: false }
-                    }).catch(() => {});
-                }
-                return message.reply({
-                    content: `🎨 **Google Image Generation**: ${err.message || 'Unable to generate image with Google at this time.'}\n*(Server staff can disable this feature anytime in \`/setup ai\`)*`,
-                    allowedMentions: { parse: ['users'], repliedUser: false }
-                }).catch(() => {});
-            }
+            return message.reply({
+                content: "⚠️ **Google Image Generation is currently unavailable.** Check our support server for more information: https://discord.gg/vaztinix",
+                allowedMentions: { parse: ['users'], repliedUser: false }
+            }).catch(() => {});
         }
 
         if (!settings) {

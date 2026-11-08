@@ -3978,11 +3978,19 @@ app.get('/api/user/guilds', async (req, res) => {
 
             const premiumManager = require('./utils/premiumManager');
             const premiumStatus = await premiumManager.resolveGuildPremiumStatus(liveGuild, settings, user);
-            const isPremium = premiumStatus.isPremium || isUserBotOwner;
+            const userHasDirectPremium = Boolean(isUserBotOwner || (prefs && (prefs.isPremium || prefs.isManualPremium || (prefs.paidExpiresAt && new Date(prefs.paidExpiresAt).getTime() > Date.now()))));
+            const isPremium = premiumStatus.isPremium || isUserBotOwner || (userHasDirectPremium && (g.owner || isManaged));
 
+            let memberCount = liveGuild ? (liveGuild.memberCount || liveGuild.approximateMemberCount || 0) : 0;
             let onlineCount = 0;
-            if (liveGuild && liveGuild.presences && liveGuild.presences.cache) {
-                onlineCount = liveGuild.presences.cache.filter(p => p.status !== 'offline').size;
+            if (liveGuild) {
+                if (liveGuild.approximatePresenceCount) {
+                    onlineCount = liveGuild.approximatePresenceCount;
+                } else if (liveGuild.presences && liveGuild.presences.cache && liveGuild.presences.cache.size > 0) {
+                    onlineCount = liveGuild.presences.cache.filter(p => p.status && p.status !== 'offline').size;
+                } else if (liveGuild.members && liveGuild.members.cache && liveGuild.members.cache.size > 0) {
+                    onlineCount = liveGuild.members.cache.filter(m => m.presence && m.presence.status !== 'offline').size;
+                }
             }
 
             return {
@@ -3990,7 +3998,7 @@ app.get('/api/user/guilds', async (req, res) => {
                 name: g.name,
                 icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
                 hasNora,
-                memberCount: liveGuild ? liveGuild.memberCount : 0,
+                memberCount: memberCount,
                 onlineCount: onlineCount,
                 permissions: g.permissions,
                 topggVerified: false,

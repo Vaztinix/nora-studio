@@ -1037,7 +1037,7 @@ module.exports = {
                     .addFields(
                         { name: 'Nora AI Master Switch', value: isAiEnabled ? '🟢 **Active & Enabled**' : '🔴 **Completely Disabled**', inline: true },
                         { name: 'Google Gemini Model', value: `🧠 \`${currentModel}\``, inline: true },
-                        { name: 'Google Image Gen', value: isImageGenActive ? '🟢 **Enabled (Google)**' : '🔴 **Disabled**', inline: true },
+                        { name: 'Google Image Gen', value: '🔒 **Currently Unavailable** (Visit support server)', inline: true },
                         { name: 'Personality Template', value: `🎭 \`${currentTemplate.toUpperCase()}\``, inline: true },
                         { name: 'Dedicated Auto-Respond Channel', value: autoChannelText, inline: true },
                         { name: 'Auto-Respond Status', value: autoRespondActive ? '🟢 **Active (No Ping Required)**' : '⚪ **Inactive / Mentions Only**', inline: true },

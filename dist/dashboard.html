@@ -5390,6 +5390,19 @@
         }
         window.updateInsiteLivePreview = updateInsiteLivePreview;
 
+        function handleLockedImageGenToggle(e) {
+            if (e) e.preventDefault();
+            const toggle = document.getElementById('setting-aiImageGenerationEnabled');
+            if (toggle) toggle.checked = false;
+            if (typeof showToast === 'function') {
+                showToast('Google Image Gen Unavailable', 'Google Image Generation is currently unavailable. Check our support server (https://discord.gg/vaztinix) for more information.', 'warning');
+            } else {
+                alert('Google Image Generation is currently unavailable. Check our support server for more information: https://discord.gg/vaztinix');
+            }
+        }
+        window.handleLockedImageGenToggle = handleLockedImageGenToggle;
+
+
         function syncInsiteChannelWithVerify(val) {
             const vChan = document.getElementById('setting-verifyChannelId');
             if (vChan && val) {
@@ -7172,7 +7185,17 @@
                         <button class="back-link" id="back-to-servers">← Back to Servers</button>
                         <div class="config-title">
                             <img id="cfg-icon" src="/nora.png" onerror="this.onerror=null; this.src='/nora.png';">
-                            <div><h2 id="cfg-name" data-no-translate>Loading... <div id="cfg-status" class="status-indicator online" title="Online"></div></h2><p style="color: var(--muted); margin-top: 4px;">Guild Configuration</p><div id="server-tier-sponsor-banner" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 6px;"></div></div>
+                            <div>
+        <h2 id="cfg-name" data-no-translate>Loading... <div id="cfg-status" class="status-indicator online" title="Online"></div></h2>
+        <div id="cfg-member-stats" style="font-size: 0.78rem; color: var(--muted); margin-top: 4px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <span>Guild Configuration</span>
+            <span style="opacity: 0.3;">•</span>
+            <span id="cfg-member-count"><i class="fas fa-users" style="color: #60a5fa; margin-right: 4px;"></i> <strong id="cfg-member-num" style="color: #fff;">0</strong> Members</span>
+            <span style="opacity: 0.3;">•</span>
+            <span id="cfg-online-count" style="display: inline-flex; align-items: center; gap: 5px; color: #22c55e; font-weight: 600;"><span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 6px #22c55e;"></span> <span id="cfg-online-num">0</span> Online</span>
+        </div>
+        <div id="server-tier-sponsor-banner" style="display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 6px;"></div>
+    </div>
                         </div>
                     </div>
                     <div style="display: flex; gap: 8px; align-items: center; position: relative;">
@@ -10375,15 +10398,16 @@
                                         <label class="switch"><input type="checkbox" id="setting-aiNameViewingEnabled" checked><span class="slider"></span></label>
                                     </div>
 
-                                    <!-- Google AI Image Generation Toggle -->
+                                    <!-- Google AI Image Generation Toggle (Locked) -->
                                     <div style="display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 10px;">
                                         <div>
                                             <div style="font-size: 0.83rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
                                                 <i class="fas fa-image" style="color: var(--muted);"></i> Google AI Image Generation
+                                                <span style="font-size: 0.68rem; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #f59e0b; padding: 2px 7px; border-radius: 6px; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;"><i class="fas fa-lock"></i> Currently Unavailable</span>
                                             </div>
-                                            <div style="font-size: 0.72rem; color: var(--muted);">Family-safe Google image generation. Toggle off anytime to disable image generation server-wide.</div>
+                                            <div style="font-size: 0.72rem; color: var(--muted);">Google Image Generation is currently unavailable. Check our <a href="https://discord.gg/vaztinix" target="_blank" style="color: #60a5fa; text-decoration: underline;">support server</a> for more information.</div>
                                         </div>
-                                        <label class="switch"><input type="checkbox" id="setting-aiImageGenerationEnabled" checked><span class="slider"></span></label>
+                                        <label class="switch" onclick="handleLockedImageGenToggle(event)" title="Google Image Generation is currently unavailable."><input type="checkbox" id="setting-aiImageGenerationEnabled" disabled><span class="slider" style="cursor: not-allowed; opacity: 0.5;"></span></label>
                                     </div>
                                 </div>
                             </div>
@@ -10727,7 +10751,7 @@
                                 </div>
 
                                 <div class="input-group" style="margin-bottom: 0; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 12px;">
-                                    <label style="font-weight: 600; font-size: 0.8rem;">Unverified Quarantine Role</label>
+                                    <label style="font-weight: 600; font-size: 0.8rem;">Unverified Role</label>
                                     <select id="setting-unverifiedRoleId" style="width: 100%; box-sizing: border-box; margin-bottom: 8px;">
                                         <option value="">None (No unverified role)</option>
                                     </select>
@@ -11300,11 +11324,11 @@
                                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
                                     <div>
                                         <h4 style="margin: 0; font-size: 0.95rem; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 8px;">
-                                            <i class="fas fa-tower-broadcast" style="color: #10b981;"></i> In-Site Verification Dossiers
+                                            <i class="fas fa-tower-broadcast" style="color: #10b981;"></i> In-Site Verification Records
                                         </h4>
-                                        <p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--muted);">Real-time telemetry and forensic scores from members completing the web pass.</p>
+                                        <p style="margin: 2px 0 0; font-size: 0.75rem; color: var(--muted);">Real-time security telemetry and risk scores from members completing the web pass.</p>
                                     </div>
-                                    <button type="button" class="btn-outline" onclick="fetchInsiteLogs()" style="padding: 5px 12px; font-size: 0.75rem; border-radius: 6px; cursor: pointer;">
+                                    <button type="button" class="btn-outline" onclick="fetchInsiteLogs()" style="padding: 6px 14px; font-size: 0.75rem; border-radius: 6px; cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0;">
                                         <i class="fas fa-rotate"></i> Refresh
                                     </button>
                                 </div>
@@ -13261,16 +13285,16 @@
                             <i class="fas fa-gift" style="color: #FF3366;"></i> Voter Rewards & Roles
                         </button>
                         <button type="button" class="topgg-subnav-btn" style="padding: 9px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); background: transparent; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onclick="switchTopggSubnav('announcements', this)">
-                            <i class="fas fa-bullhorn" style="color: #38bdf8;"></i> Announcements & Reminders
+                            <i class="fas fa-bullhorn" style="color: #38bdf8;"></i> Announcements
                         </button>
                         <button type="button" class="topgg-subnav-btn" style="padding: 9px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); background: transparent; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onclick="switchTopggSubnav('gateway', this)">
-                            <i class="fas fa-plug" style="color: #fbbf24;"></i> Webhook Gateway
+                            <i class="fas fa-plug" style="color: #fbbf24;"></i> Webhook
                         </button>
                         <button type="button" class="topgg-subnav-btn" style="padding: 9px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); background: transparent; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onclick="switchTopggSubnav('multibot', this)">
-                            <i class="fas fa-robot" style="color: #a78bfa;"></i> Multi-Bot Tracker
+                            <i class="fas fa-robot" style="color: #a78bfa;"></i> Bots
                         </button>
                         <button type="button" class="topgg-subnav-btn" style="padding: 9px 18px; border-radius: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; border: 1px solid rgba(255,255,255,0.08); background: transparent; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s;" onclick="switchTopggSubnav('stream', this)">
-                            <i class="fas fa-stream" style="color: #34d399;"></i> Live Inbound Stream
+                            <i class="fas fa-stream" style="color: #34d399;"></i> Votes
                         </button>
                     </div>
 
@@ -14861,6 +14885,118 @@
         }
         window.populateVoiceChannelSelect = populateVoiceChannelSelect;
 
+        
+        const GAME_BRANDING_TABLE = {
+            'roblox': {
+                name: 'Roblox',
+                bg: '#000000',
+                border: 'rgba(255,255,255,0.2)',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#ffffff" style="display: block;"><path d="M5.166 0L0 18.834 18.834 24 24 5.166 5.166 0zm9.417 14.167l-4.583-1.25 1.25-4.584 4.583 1.25-1.25 4.584z"/></svg>',
+                players: '1 - 100 Players'
+            },
+            'minecraft': {
+                name: 'Minecraft',
+                bg: '#3e2723',
+                border: '#4caf50',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" style="display: block;"><path fill="#528a2c" d="M12 2l10 5.5v2l-10-5.5L2 9.5V7.5L12 2z"/><path fill="#3f6b21" d="M12 4l8 4.4v1.6L12 5.6 4 10V8.4L12 4z"/><path fill="#866043" d="M2 9.5l10 5.5v9L2 18.5v-9z"/><path fill="#573d26" d="M12 15l10-5.5v9L12 24v-9z"/></svg>',
+                players: '1 - 8 Players (Co-op) • 100+ (Servers)'
+            },
+            'rocket league': {
+                name: 'Rocket League',
+                bg: '#003366',
+                border: '#0080ff',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#00aaff" style="display: block;"><path d="M12 2L4 5v6c0 5.5 3.4 10.7 8 12 4.6-1.3 8-6.5 8-12V5l-8-3zm-1 5h2v6h-2V7zm-2 2h2v4H9V9zm6 0h2v4h-2V9z"/></svg>',
+                players: '1 - 8 Players'
+            },
+            'fortnite': {
+                name: 'Fortnite',
+                bg: '#4a154b',
+                border: '#a855f7',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#c084fc" style="display: block;"><path d="M4 2h16v4h-10v5h8v4h-8v7H4V2z"/></svg>',
+                players: '1 - 100 Players'
+            },
+            'valorant': {
+                name: 'Valorant',
+                bg: '#1a0008',
+                border: '#ff4655',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#ff4655" style="display: block;"><path d="M9.4 3H3l7.6 15.6h6.4L9.4 3zm11.6 0l-3.2 6.5 3.2 6.6h3.2l-3.2-6.6 3.2-6.5H21z"/></svg>',
+                players: '5v5 (10 Players)'
+            },
+            'league of legends': {
+                name: 'League of Legends',
+                bg: '#091428',
+                border: '#c89b3c',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#f0e6d2" style="display: block;"><path d="M4 3h4v14h8v4H4V3zm14 0h2v14h-2V3z"/></svg>',
+                players: '5v5 (10 Players)'
+            },
+            'counter-strike 2': {
+                name: 'Counter-Strike 2',
+                bg: '#2d1800',
+                border: '#f59e0b',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#fbbf24" style="display: block;"><path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.8l7 3.5v7.4l-7 3.5-7-3.5V8.3l7-3.5z"/><path d="M11 7h2v6h-2zm-3 8h6v2H8z"/></svg>',
+                players: '5v5 (10 Players)'
+            },
+            'grand theft auto v': {
+                name: 'Grand Theft Auto V',
+                bg: '#062812',
+                border: '#22c55e',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#4ade80" style="display: block;"><path d="M12 22l-7-18h4.5l4.5 13.5L18.5 4H23L12 22z"/></svg>',
+                players: '1 - 30 Players'
+            },
+            'apex legends': {
+                name: 'Apex Legends',
+                bg: '#2d0606',
+                border: '#ef4444',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#f87171" style="display: block;"><path d="M12 2L1 21h5l6-11 6 11h5L12 2zm0 10l-2.5 5h5L12 12z"/></svg>',
+                players: '3 - 60 Players'
+            },
+            'overwatch 2': {
+                name: 'Overwatch 2',
+                bg: '#2b1400',
+                border: '#f97316',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#fb923c" style="display: block;"><circle cx="12" cy="12" r="10" stroke="#f97316" stroke-width="2" fill="none"/><path d="M12 5l-4 7h2l2-4 2 4h2l-4-7zm-5 9l2 3h6l2-3h3l-3 5H7l-3-5h3z"/></svg>',
+                players: '5v5 (10 Players)'
+            },
+            'genshin impact': {
+                name: 'Genshin Impact',
+                bg: '#08253a',
+                border: '#38bdf8',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#38bdf8" style="display: block;"><path d="M12 2l2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5L12 2z"/></svg>',
+                players: '1 - 4 Players'
+            },
+            'dead by daylight': {
+                name: 'Dead by Daylight',
+                bg: '#31000b',
+                border: '#e11d48',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#fb7185" style="display: block;"><path d="M4 4h3v16H4zm5 0h3v16H9zm5 0h3v16h-3zm-13 14l16-12 1.5 2L2.5 20z"/></svg>',
+                players: '1v4 (5 Players)'
+            },
+            'among us': {
+                name: 'Among Us',
+                bg: '#370b1c',
+                border: '#ec4899',
+                iconHtml: '<svg viewBox="0 0 24 24" width="20" height="20" fill="#f472b6" style="display: block;"><path d="M12 2C8.7 2 6 4.7 6 8v10c0 1.1.9 2 2 2h1v2h6v-2h1c1.1 0 2-.9 2-2V8c0-3.3-2.7-6-6-6zm4 8H8V7c0-1.7 1.3-3 3-3h2c1.7 0 3 1.3 3 3v3z"/></svg>',
+                players: '4 - 15 Players'
+            }
+        };
+
+        function getGameBranding(name) {
+            if (!name) return { name: 'Game', bg: 'rgba(88,101,242,0.15)', border: 'rgba(88,101,242,0.3)', iconHtml: '<i class="fas fa-gamepad"></i>', players: '1 - 8 Players' };
+            const lower = name.toLowerCase().trim();
+            for (const key of Object.keys(GAME_BRANDING_TABLE)) {
+                if (lower === key || lower.includes(key) || key.includes(lower)) {
+                    return GAME_BRANDING_TABLE[key];
+                }
+            }
+            return {
+                name: name,
+                bg: 'rgba(88,101,242,0.15)',
+                border: 'rgba(88,101,242,0.35)',
+                iconHtml: '<i class="fas fa-gamepad" style="color: #818cf8;"></i>',
+                players: 'Multiplayer'
+            };
+        }
+
         function renderActivityRules() {
             const container = document.getElementById('activity-rules-container');
             const badge = document.getElementById('activity-rules-count-badge');
@@ -14889,21 +15025,30 @@
             rules.forEach((rule, idx) => {
                 const vc = (window.cachedVoiceChannels || []).find(c => String(c.id) === String(rule.channelId)) || (window.guildChannels || []).find(c => String(c.id) === String(rule.channelId));
                 const vcName = vc ? vc.name : ('Voice Channel ' + rule.channelId);
+                const brand = getGameBranding(rule.gameName);
 
                 html += `
-                    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; transition: all 0.2s;">
-                        <div style="display: flex; align-items: center; gap: 12px;">
-                            <div style="width: 34px; height: 34px; border-radius: 8px; background: rgba(88, 101, 242, 0.15); border: 1px solid rgba(88, 101, 242, 0.3); color: #818cf8; display: flex; align-items: center; justify-content: center; font-size: 0.95rem;">
-                                <i class="fas fa-gamepad"></i>
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 16px; transition: all 0.2s; gap: 14px;">
+                        <div style="display: flex; align-items: center; gap: 14px; min-width: 0; flex: 1;">
+                            <div style="width: 38px; height: 38px; border-radius: 10px; background: ${brand.bg}; border: 1px solid ${brand.border}; display: flex; align-items: center; justify-content: center; flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+                                ${brand.iconHtml}
                             </div>
-                            <div>
-                                <div style="font-size: 0.9rem; font-weight: 700; color: #fff;">${escapeHtml(rule.gameName)}</div>
-                                <div style="font-size: 0.76rem; color: #94a3b8; display: flex; align-items: center; gap: 6px; margin-top: 2px;">
+                            <div style="min-width: 0;">
+                                <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                    <span style="font-size: 0.92rem; font-weight: 800; color: #fff;">${escapeHtml(rule.gameName)}</span>
+                                    <span style="font-size: 0.68rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; padding: 2px 8px; border-radius: 999px; font-weight: 600; display: inline-flex; align-items: center; gap: 4px;">
+                                        <i class="fas fa-users" style="font-size: 0.6rem; color: #38bdf8;"></i> ${brand.players}
+                                    </span>
+                                    <span style="font-size: 0.65rem; color: #10b981; font-weight: 700; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.25); padding: 2px 7px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;">
+                                        <span style="width: 5px; height: 5px; background: #10b981; border-radius: 50%;"></span> Presence Auto-Route
+                                    </span>
+                                </div>
+                                <div style="font-size: 0.76rem; color: #94a3b8; display: flex; align-items: center; gap: 6px; margin-top: 3px;">
                                     <span>Routes to</span> <i class="fas fa-arrow-right" style="font-size: 0.65rem; color: #818cf8;"></i> <span style="color: #60a5fa; font-weight: 600;">🔊 ${escapeHtml(vcName)}</span>
                                 </div>
                             </div>
                         </div>
-                        <button type="button" onclick="deleteActivityRule('${rule.id || idx}')" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;" title="Remove this rule">
+                        <button type="button" onclick="deleteActivityRule('${rule.id || idx}')" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.25); color: #ef4444; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; flex-shrink: 0;" title="Remove this rule">
                             <i class="fas fa-trash-alt" style="font-size: 0.8rem;"></i>
                         </button>
                     </div>
@@ -18726,9 +18871,8 @@
                 
                 let memberInfo = '';
                 if (g.hasNora) {
-                    const onlineStr = g.onlineCount 
-                        ? `<span style="color: #22c55e; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600;"><span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 6px #22c55e;"></span> ${g.onlineCount} Online</span>` 
-                        : '';
+                    const onlineNum = (g.onlineCount !== undefined && g.onlineCount !== null) ? g.onlineCount : (g.onlineMembers || 0);
+                    const onlineStr = `<span style="color: #22c55e; display: flex; align-items: center; gap: 5px; font-size: 0.75rem; font-weight: 600;"><span style="width: 6px; height: 6px; background: #22c55e; border-radius: 50%; box-shadow: 0 0 6px #22c55e;"></span> ${onlineNum} Online</span>`;
                     memberInfo = `<div style="font-size: 0.75rem; color: var(--muted); margin-top: 6px; display: flex; flex-direction: column; align-items: center; gap: 3px;"><span>${g.memberCount || 0} Members</span>${onlineStr}</div>`;
                 } else {
                     memberInfo = `<p style="font-size: 0.75rem; color: #93c5fd; margin-top: 6px; text-align: center; margin-bottom: 0; font-weight: 600;">Not configured yet</p>`;
@@ -23327,6 +23471,10 @@
             const cfgIconEl = document.getElementById('cfg-icon');
             if (cfgIconEl) cfgIconEl.src = guildIconUrl;
             document.getElementById('cfg-name').innerHTML = `${escapeHtml(g.name)} <div id="cfg-status" class="status-indicator online" title="Online"></div>`;
+            const cfgMemberNumEl = document.getElementById('cfg-member-num');
+            if (cfgMemberNumEl) cfgMemberNumEl.textContent = (g.memberCount || 0).toLocaleString();
+            const cfgOnlineNumEl = document.getElementById('cfg-online-num');
+            if (cfgOnlineNumEl) cfgOnlineNumEl.textContent = ((g.onlineCount !== undefined && g.onlineCount !== null) ? g.onlineCount : (g.onlineMembers || 0)).toLocaleString();
             
             [viewServers, viewPrefs, viewNotifications, viewProfile].forEach(v => { if(v) v.style.display = 'none'; });
             viewConfig.style.display = 'block';
@@ -23988,6 +24136,10 @@
                 const ovMod = document.getElementById('overview-automod-actions');
 
                 if (ovMembers) ovMembers.textContent = (data.totalMembers || 0).toLocaleString();
+                const cfgMemberNumEl = document.getElementById('cfg-member-num');
+                if (cfgMemberNumEl && data.totalMembers !== undefined) cfgMemberNumEl.textContent = (data.totalMembers || 0).toLocaleString();
+                const cfgOnlineNumEl = document.getElementById('cfg-online-num');
+                if (cfgOnlineNumEl && data.onlineCount !== undefined) cfgOnlineNumEl.textContent = (data.onlineCount || 0).toLocaleString();
                 if (ovMessages) ovMessages.textContent = (data.totalTextActivity || 0).toLocaleString();
                 if (ovVoice) {
                     const vCount = Number(data.activeVoiceUsers) || 0;
@@ -24560,6 +24712,8 @@
                     'setting-boostChannelId',
                     'setting-verifyChannelId',
                     'setting-verificationLogChannelId',
+                    'setting-insiteVerifyChannelId',
+                    'setting-insiteLogChannelId',
                     'setting-ticketChannelId',
                     'setting-ticketLogChannelId',
                     'setting-robloxVerifyChannelId',
@@ -29388,6 +29542,7 @@
                     'setting-ticketSupportRoleId',
                     'setting-promoterRoleId',
                     'setting-unverifiedRoleId',
+                    'setting-insiteUnverifiedRoleId',
                     'setting-countingTopCounterRoleId',
                     'setting-countingFailRoleId',
                     'setting-afkRoleId',
@@ -35121,23 +35276,11 @@ function renderTopggBots(bots, defaultBotId) {
     const container = document.getElementById('topgg-bots-container');
     if (!container) return;
 
-    let html = `
-        <!-- Default Nora Bot Entry -->
-        <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 51, 102, 0.2); border-radius: 12px; padding: 10px 14px;">
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="/nora.png" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #FF3366;" alt="Nora">
-                <div>
-                    <div style="font-weight: 800; font-size: 0.92rem; color: #fff; display: flex; align-items: center; gap: 6px;">
-                        Nora Assistant <span class="badge stable" style="font-size: 0.65rem; background: rgba(255, 51, 102, 0.2); color: #FF3366;">Primary Bot</span>
-                    </div>
-                    <div style="font-size: 0.75rem; color: var(--muted); font-family: monospace;">ID: ${defaultBotId || '593420060990005248'}</div>
-                </div>
-            </div>
-            <div style="display: flex; align-items: center; gap: 8px;">
-                <span style="font-size: 0.72rem; color: var(--success); font-weight: 700; background: rgba(46, 160, 67, 0.15); padding: 3px 8px; border-radius: 6px;">Listening</span>
-            </div>
-        </div>
-    `;
+    const botCountEl = document.getElementById('topgg-stat-bots');
+    const count = Array.isArray(bots) ? bots.length : 0;
+    if (botCountEl) botCountEl.textContent = `${count} Connected`;
+
+    let html = '';
 
     if (Array.isArray(bots) && bots.length > 0) {
         bots.forEach(b => {
