@@ -106,7 +106,13 @@ async function buildStarboardPayload(message, count, settings, triggerEmoji, exi
     let aiSpotlightText = existingAiTake || null;
 
     // Purge any old canned/comedy presets
-    if (aiSpotlightText && (aiSpotlightText.includes('Pure comedy gold') || aiSpotlightText.includes('iconic and deserves a star'))) {
+    if (aiSpotlightText && (
+        aiSpotlightText.includes('Pure comedy gold') || 
+        aiSpotlightText.includes('council has voted') ||
+        aiSpotlightText.includes('Framed in the server hall of fame') ||
+        aiSpotlightText.includes('Instant classic') ||
+        aiSpotlightText.includes('iconic and deserves a star')
+    )) {
         aiSpotlightText = null;
     }
 
@@ -430,14 +436,12 @@ async function handleReactionAdd(reaction, user) {
         if (!sentMessageId) return;
 
         // Save or update entry in database
-        const resolvedSpotlight = payload.aiSpotlightText || existingAiTake || (entry?.aiSpotlight ?? null);
+        const resolvedSpotlight = payload.aiSpotlightText || null;
         if (entry) {
             entry.starCount = validCount;
             entry.starboardMessageId = sentMessageId;
             entry.tierEmoji = payload.tier.emoji;
-            if (resolvedSpotlight) {
-                entry.aiSpotlight = resolvedSpotlight;
-            }
+            entry.aiSpotlight = resolvedSpotlight;
             await entry.save();
         } else {
             entry = await StarboardEntry.create({
@@ -644,6 +648,7 @@ async function handleReactionRemove(reaction, user) {
             await sendOrEditStarboardMessage(starboardChannel, entry.starboardMessageId, payload, settings);
             entry.starCount = validCount;
             entry.tierEmoji = payload.tier.emoji;
+            entry.aiSpotlight = payload.aiSpotlightText || null;
             await entry.save();
         }
     });
