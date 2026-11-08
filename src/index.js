@@ -4076,7 +4076,10 @@ app.get('/api/user/guilds', async (req, res) => {
             const userHasDirectPremium = Boolean(isUserBotOwner || (prefs && (prefs.isPremium || prefs.isManualPremium || (prefs.paidExpiresAt && new Date(prefs.paidExpiresAt).getTime() > Date.now()))));
             const isPremium = premiumStatus.isPremium || isUserBotOwner || (userHasDirectPremium && (g.owner || isManaged));
 
-            let memberCount = liveGuild ? (liveGuild.memberCount || liveGuild.approximateMemberCount || 0) : 0;
+            let memberCount = liveGuild ? (liveGuild.memberCount || liveGuild.approximateMemberCount || (liveGuild.members?.cache?.size || 0)) : 0;
+            if (!memberCount && g.approximate_member_count) {
+                memberCount = g.approximate_member_count;
+            }
             let onlineCount = 0;
             if (liveGuild) {
                 if (liveGuild.approximatePresenceCount) {
@@ -4086,6 +4089,9 @@ app.get('/api/user/guilds', async (req, res) => {
                 } else if (liveGuild.members && liveGuild.members.cache && liveGuild.members.cache.size > 0) {
                     onlineCount = liveGuild.members.cache.filter(m => m.presence && m.presence.status !== 'offline').size;
                 }
+            }
+            if (!onlineCount && g.approximate_presence_count) {
+                onlineCount = g.approximate_presence_count;
             }
 
             return {

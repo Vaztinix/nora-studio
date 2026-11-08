@@ -568,11 +568,14 @@ router.get('/all-servers', requireOwner, async (req, res) => {
         const guilds = Array.from(req.client.guilds.cache.values());
         const list = guilds.map(g => {
             const gs = premiumMap.get(g.id);
+            const count = (typeof g.memberCount === 'number' && g.memberCount > 0)
+                ? g.memberCount
+                : (g.approximateMemberCount || (g.members && g.members.cache ? g.members.cache.size : 0));
             return {
                 id: g.id,
                 name: g.name,
                 icon: g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png` : 'https://cdn.discordapp.com/embed/avatars/0.png',
-                memberCount: g.memberCount,
+                memberCount: count,
                 joinedAt: g.joinedAt,
                 ownerId: g.ownerId,
                 isPremium: gs ? !!gs.isPremium : false,
@@ -606,18 +609,13 @@ router.get('/all-users', requireOwner, async (req, res) => {
     try {
         const allPrefs = await UserPrefs.findAll();
 
-        const list = await Promise.all(allPrefs.map(async prefs => {
-            let userObj = req.client.users.cache.get(prefs.userId);
-            if (!userObj) {
-                try {
-                    userObj = await req.client.users.fetch(prefs.userId);
-                } catch (e) {}
-            }
+        const list = allPrefs.map(prefs => {
+            const userObj = req.client.users.cache.get(prefs.userId);
             return {
                 userId: prefs.userId,
-                username: userObj ? userObj.username : `ID: ${prefs.userId}`,
-                displayName: prefs.displayName || (userObj ? (userObj.globalName || userObj.username) : `ID: ${prefs.userId}`),
-                avatar: userObj ? userObj.displayAvatarURL() : 'https://cdn.discordapp.com/embed/avatars/0.png',
+                username: prefs.username || (userObj ? userObj.username : `User_${prefs.userId.slice(-4)}`),
+                displayName: prefs.displayName || (userObj ? (userObj.globalName || userObj.username) : `User_${prefs.userId.slice(-4)}`),
+                avatar: userObj ? userObj.displayAvatarURL() : (prefs.avatar || 'https://cdn.discordapp.com/embed/avatars/0.png'),
                 authedAt: prefs.createdAt,
                 language: prefs.language,
                 bio: prefs.bio || '',
@@ -625,7 +623,7 @@ router.get('/all-users', requireOwner, async (req, res) => {
                 isManualPremium: !!prefs.isManualPremium,
                 paidExpiresAt: prefs.paidExpiresAt
             };
-        }));
+        });
 
         const sort = req.query.sort || 'newest';
         if (sort === 'newest') {

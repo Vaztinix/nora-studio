@@ -99,7 +99,7 @@ const getCachedUserGuilds = async (token) => {
         const maxRetries = 3;
         for (let attempt = 1; attempt <= maxRetries; attempt++) {
             try {
-                const response = await fetch('https://discord.com/api/v10/users/@me/guilds', {
+                const response = await fetch('https://discord.com/api/v10/users/@me/guilds?with_counts=true', {
                     headers: { Authorization: `Bearer ${resolvedToken}` },
                     timeout: 6000
                 });

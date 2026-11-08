@@ -19068,7 +19068,7 @@
                 try {
                     console.info('[Nora Guilds]: Fallback fetching and filtering guilds directly from Discord API...');
                     const [dRes, botGuildsRes] = await Promise.all([
-                        fetch('https://discord.com/api/v10/users/@me/guilds', {
+                        fetch('https://discord.com/api/v10/users/@me/guilds?with_counts=true', {
                             headers: { Authorization: `Bearer ${t}` }
                         }).catch(() => null),
                         safeFetch('/api/bot/guild-ids').catch(() => null)
@@ -19106,6 +19106,8 @@
                                     owner: g.owner,
                                     permissions: g.permissions,
                                     hasNora: hasNora,
+                                    memberCount: g.approximate_member_count || g.memberCount || 0,
+                                    onlineCount: g.approximate_presence_count || 0,
                                     isManaged: true
                                 };
                             });

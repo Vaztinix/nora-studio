@@ -746,8 +746,10 @@
                                 <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Inspect incoming member verification passes, composite browser fingerprints, and auto-flagged evasion alts.</p>
                             </div>
                             <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                <button class="btn-action btn-secondary" onclick="filterInsiteTab('all')" style="font-size: 0.76rem; padding: 6px 12px;">All Sessions</button>
-                                <button class="btn-action btn-secondary" onclick="filterInsiteTab('flagged')" style="font-size: 0.76rem; padding: 6px 12px; color: #fca5a5; border-color: rgba(244, 63, 94, 0.3);">Flagged Alts</button>
+                                <button class="btn-action btn-secondary" id="insite-tab-all" onclick="filterInsiteTab('all')" style="font-size: 0.76rem; padding: 6px 12px; background: rgba(88, 101, 242, 0.25); border-color: #5865F2; color: #fff; font-weight: 700;">All Sessions</button>
+                                <button class="btn-action btn-secondary" id="insite-tab-alts" onclick="filterInsiteTab('alts')" style="font-size: 0.76rem; padding: 6px 12px; color: #fca5a5; border-color: rgba(244, 63, 94, 0.3);"><i class="fas fa-user-secret"></i> Flagged Alts</button>
+                                <button class="btn-action btn-secondary" id="insite-tab-vpn" onclick="filterInsiteTab('vpn')" style="font-size: 0.76rem; padding: 6px 12px; color: #fbbf24; border-color: rgba(245, 158, 11, 0.3);"><i class="fas fa-shield-halved"></i> VPN/Tor</button>
+                                <button class="btn-action btn-secondary" id="insite-tab-clean" onclick="filterInsiteTab('clean')" style="font-size: 0.76rem; padding: 6px 12px; color: #4ade80; border-color: rgba(74, 222, 128, 0.3);"><i class="fas fa-check"></i> Clean</button>
                                 <button class="btn-action btn-secondary" onclick="fetchInsiteVerifications()" style="font-size: 0.76rem; padding: 6px 12px;"><i class="fas fa-rotate"></i> Refresh</button>
                             </div>
                         </div>
@@ -889,6 +891,29 @@
                         </div>
                         <div id="watched-list-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin-top: 10px;">
                             <div style="color: var(--text-dim); font-size: 0.85rem; padding: 20px;">Loading observed entities...</div>
+                        </div>
+                    </div>
+
+                    <!-- Authenticated User Directory -->
+                    <div class="glass-panel" style="margin-bottom: 20px;">
+                        <div class="glass-panel-header">
+                            <div>
+                                <div class="glass-panel-title"><i class="fas fa-users-gear" style="color: #38bdf8;"></i> Authenticated User Accounts (<span id="user-count">0</span>)</div>
+                                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 4px;">Inspect user preferences, grant/revoke individual Nora Premium, or manage account restrictions.</p>
+                            </div>
+                            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                                <label style="font-size: 0.75rem; color: var(--text-muted);">Sort:</label>
+                                <select id="users-sort" onchange="loadAdminDeskData()" style="padding: 5px 10px; font-size: 0.78rem; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 6px; color: #fff;">
+                                    <option value="newest">Newest Authenticated</option>
+                                    <option value="oldest">Oldest Authenticated</option>
+                                    <option value="alphabetical_username">Username (A-Z)</option>
+                                    <option value="alphabetical_display">Display Name (A-Z)</option>
+                                </select>
+                                <button class="btn-action btn-secondary" onclick="loadAdminDeskData()" style="font-size: 0.76rem; padding: 6px 12px;"><i class="fas fa-rotate"></i> Refresh</button>
+                            </div>
+                        </div>
+                        <div id="users-list-container" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px; max-height: 520px; overflow-y: auto; padding-right: 4px;">
+                            <div style="text-align: center; padding: 30px; color: var(--text-dim);">Loading user accounts...</div>
                         </div>
                     </div>
 
@@ -1390,9 +1415,15 @@
 
             try {
                 const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
-                const res = await fetch(apiBase + '/api/owner/watched-users', {
+                const endpoint = apiBase.endsWith('/api') ? '/admin/watched-users' : '/api/admin/watched-users';
+                let res = await fetch(apiBase + endpoint, {
                     headers: { Authorization: `Bearer ${t}` }
                 });
+                if (!res.ok) {
+                    res = await fetch(apiBase + '/api/owner/watched-users', {
+                        headers: { Authorization: `Bearer ${t}` }
+                    }).catch(() => null);
+                }
                 if (!res.ok) return;
                 const data = await res.json();
                 if (!data.success || !Array.isArray(data.users)) return;
@@ -1453,6 +1484,8 @@
                 if (guildsCountEl) guildsCountEl.textContent = data.countGuilds || (data.guilds ? data.guilds.length : 0);
                 if (usersCountEl) usersCountEl.textContent = data.countUsers || (data.users ? data.users.length : 0);
 
+                window.__allEarlyGuilds = data.guilds || [];
+                window.__allEarlyUsers = data.users || [];
                 if (guildsContainer) {
                     if (!data.guilds || data.guilds.length === 0) {
                         guildsContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 16px; text-align: center;">No early adopter guilds recorded.</div>';
@@ -1502,6 +1535,98 @@
         }
         window.loadEarlyAdopters = loadEarlyAdopters;
 
+        function filterEarlyAdopters(term) {
+            const guildsContainer = document.getElementById('early-guilds-container');
+            const usersContainer = document.getElementById('early-users-container');
+            const gList = (window.__allEarlyGuilds || []).filter(g => (g.name || '').toLowerCase().includes(term) || (g.id || '').includes(term));
+            const uList = (window.__allEarlyUsers || []).filter(u => (u.username || '').toLowerCase().includes(term) || (u.globalName || '').toLowerCase().includes(term) || (u.id || '').includes(term));
+
+            if (guildsContainer) {
+                if (gList.length === 0) {
+                    guildsContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 16px; text-align: center;">No early guilds match search.</div>';
+                } else {
+                    guildsContainer.innerHTML = gList.map((g, idx) => `
+                        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(245, 158, 11, 0.18); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                <span style="font-size: 0.72rem; font-weight: 800; color: #fbbf24; min-width: 24px;">#${idx + 1}</span>
+                                <img src="${g.icon || '/nora.png'}" style="width: 34px; height: 34px; border-radius: 8px; object-fit: cover;" onerror="this.src='/nora.png';">
+                                <div style="min-width: 0;">
+                                    <div style="font-size: 0.88rem; font-weight: 700; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${g.name || 'Unnamed Guild'}</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-dim); font-family: monospace;">${g.id} • ${g.memberCount || 0} members</div>
+                                </div>
+                            </div>
+                            <span style="font-size: 0.7rem; font-weight: 700; color: #fbbf24; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); padding: 3px 8px; border-radius: 6px; white-space: nowrap;">
+                                <i class="fas fa-crown"></i> Studio Plus
+                            </span>
+                        </div>
+                    `).join('');
+                }
+            }
+
+            if (usersContainer) {
+                if (uList.length === 0) {
+                    usersContainer.innerHTML = '<div style="color: var(--muted); font-size: 0.85rem; padding: 16px; text-align: center;">No early members match search.</div>';
+                } else {
+                    usersContainer.innerHTML = uList.map((u, idx) => `
+                        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(56, 189, 248, 0.18); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+                            <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                <span style="font-size: 0.72rem; font-weight: 800; color: #38bdf8; min-width: 24px;">#${idx + 1}</span>
+                                <img src="${u.avatar || '/nora.png'}" style="width: 34px; height: 34px; border-radius: 50%; object-fit: cover;" onerror="this.src='/nora.png';">
+                                <div style="min-width: 0;">
+                                    <div style="font-size: 0.88rem; font-weight: 700; color: #fff; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${u.globalName || u.username || 'User'}</div>
+                                    <div style="font-size: 0.72rem; color: var(--text-dim); font-family: monospace;">@${u.username || u.id} • ${u.id}</div>
+                                </div>
+                            </div>
+                            <span style="font-size: 0.7rem; font-weight: 700; color: #38bdf8; background: rgba(56, 189, 248, 0.15); border: 1px solid rgba(56, 189, 248, 0.3); padding: 3px 8px; border-radius: 6px; white-space: nowrap;">
+                                <i class="fas fa-star"></i> Personal Plus
+                            </span>
+                        </div>
+                    `).join('');
+                }
+            }
+        }
+        window.filterEarlyAdopters = filterEarlyAdopters;
+
+        // 💎 MANUAL PREMIUM PROVISIONING ACTIONS
+        async function managePremium(action) {
+            const type = document.getElementById('premium-type')?.value || 'server';
+            const id = document.getElementById('premium-id')?.value?.trim();
+            if (!id) {
+                alert('Please enter a target Discord ID (Server or User).');
+                return;
+            }
+            await managePremiumEx(action, type, id);
+        }
+        window.managePremium = managePremium;
+
+        async function managePremiumEx(action, type, id) {
+            if (!id) return;
+            const authToken = localStorage.getItem('nora_admin_token');
+            const apiBase = window.getApiBaseUrl();
+            try {
+                const endpoint = action === 'grant' ? '/api/admin/premium/grant' : '/api/admin/premium/revoke';
+                const res = await fetch(`${apiBase}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ type, id })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message || `Premium ${action === 'grant' ? 'granted' : 'revoked'} successfully!`);
+                    loadAdminDeskData();
+                } else {
+                    alert(`Error: ${data.error || 'Failed to update premium'}`);
+                }
+            } catch (e) {
+                alert('Network/API Error: ' + e.message);
+            }
+        }
+        window.managePremiumEx = managePremiumEx;
+
+
         // Auto-refresh every 5 minutes (300,000ms)
         if (!window._ownerAutoRefreshInterval) {
             window._ownerAutoRefreshInterval = setInterval(() => {
@@ -1539,12 +1664,13 @@
         let activeInsiteTab = 'all';
 
         function filterInsiteTab(tab) {
+            if (tab === 'flagged') tab = 'alts';
             activeInsiteTab = tab;
             ['all', 'alts', 'vpn', 'clean'].forEach(t => {
                 const btn = document.getElementById(`insite-tab-${t}`);
                 if (!btn) return;
                 if (t === tab) {
-                    btn.style.background = 'rgba(88, 101, 242, 0.25)';
+                    btn.style.background = 'rgba(88, 101, 242, 0.35)';
                     btn.style.borderColor = '#5865F2';
                     btn.style.color = '#fff';
                     btn.style.fontWeight = '700';
@@ -1652,14 +1778,15 @@
             }
 
             // Filtering
-            const searchVal = (document.getElementById('insite-search-input')?.value || '').toLowerCase().trim();
+            const searchVal = (document.getElementById('insite-search-input')?.value || document.getElementById('global-admin-search')?.value || '').toLowerCase().trim();
             const serverFilter = document.getElementById('insite-server-filter')?.value || 'all';
 
             let filtered = insiteVerifications.filter(v => {
                 if (serverFilter !== 'all' && v.guildId !== serverFilter) return false;
 
-                if (activeInsiteTab === 'alts') {
-                    if (!v.altDetected && v.riskLevel !== 'Critical') return false;
+                if (activeInsiteTab === 'alts' || activeInsiteTab === 'flagged') {
+                    const isFlagged = v.altDetected || v.riskLevel === 'Critical' || (v.riskScore !== undefined && v.riskScore >= 70) || v.status === 'FLAGGED';
+                    if (!isFlagged) return false;
                 } else if (activeInsiteTab === 'vpn') {
                     if (!v.vpnDetected && v.status !== 'BLOCKED') return false;
                 } else if (activeInsiteTab === 'clean') {
@@ -1880,42 +2007,47 @@
         async function loadAdminDeskData() {
             const authToken = localStorage.getItem('nora_admin_token');
             const apiBase = window.getApiBaseUrl();
+            
+            // ⚡ Instant Telemetry & UI Render: Show Overview & Health immediately without blocking!
+            loadSystemDiagnostics();
+            renderLists();
+            updateSidebarBadges();
+
             try {
                 const serversSortVal = document.getElementById('servers-sort')?.value || 'newest';
-                const resServers = await fetch(`${apiBase}/api/admin/all-servers?sort=${serversSortVal}`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                if (resServers.ok) {
-                    const data = await resServers.json();
+                const usersSortVal = document.getElementById('users-sort')?.value || 'newest';
+                const headers = { 'Authorization': `Bearer ${authToken}` };
+
+                // Parallel non-blocking requests
+                const [resServers, resUsers, resTerm, resIpBans] = await Promise.allSettled([
+                    fetch(`${apiBase}/api/admin/all-servers?sort=${serversSortVal}`, { headers }),
+                    fetch(`${apiBase}/api/admin/all-users?sort=${usersSortVal}`, { headers }),
+                    fetch(`${apiBase}/api/admin/terminated`, { headers }),
+                    fetch(`${apiBase}/api/admin/ip-bans`, { headers })
+                ]);
+
+                if (resServers.status === 'fulfilled' && resServers.value.ok) {
+                    const data = await resServers.value.json().catch(() => ({}));
                     activeServers = data.guilds || [];
                 }
-
-                const usersSortVal = document.getElementById('users-sort')?.value || 'newest';
-                const resUsers = await fetch(`${apiBase}/api/admin/all-users?sort=${usersSortVal}`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                if (resUsers.ok) {
-                    const data = await resUsers.json();
+                if (resUsers.status === 'fulfilled' && resUsers.value.ok) {
+                    const data = await resUsers.value.json().catch(() => ({}));
                     authedUsers = data.users || [];
                 }
-
-                const resTerm = await fetch(`${apiBase}/api/admin/terminated`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                if (resTerm.ok) {
-                    const data = await resTerm.json();
+                if (resTerm.status === 'fulfilled' && resTerm.value.ok) {
+                    const data = await resTerm.value.json().catch(() => ({}));
                     terminatedUsers = data.terminated || [];
                 }
-
-                const resIpBans = await fetch(`${apiBase}/api/admin/ip-bans`, {
-                    headers: { 'Authorization': `Bearer ${authToken}` }
-                });
-                if (resIpBans.ok) {
-                    const data = await resIpBans.json();
+                if (resIpBans.status === 'fulfilled' && resIpBans.value.ok) {
+                    const data = await resIpBans.value.json().catch(() => ({}));
                     ipBans = data.ipBans || [];
                 }
 
+                // Render populated lists and badges
                 renderLists();
+                updateSidebarBadges();
+
+                // Non-blocking secondary desks
                 loadAiStats();
                 loadEntitlementBindings();
                 loadSiteAlerts();
@@ -1925,8 +2057,6 @@
                 fetchInsiteVerifications();
                 fetchWatchedUsers(authToken);
                 loadEarlyAdopters();
-                loadSystemDiagnostics();
-                updateSidebarBadges();
             } catch (e) {
                 console.error("Failed to load admin desk data:", e);
             }
@@ -2167,7 +2297,8 @@
         }
 
         function renderLists() {
-            const searchTerm = (document.getElementById('search-input')?.value || '').toLowerCase();
+            const searchInput = document.getElementById('global-admin-search') || document.getElementById('search-input');
+            const searchTerm = (searchInput?.value || '').toLowerCase().trim();
             
             // Filter servers
             const filteredServers = activeServers.filter(s => 
@@ -2390,6 +2521,13 @@
         function filterLists() {
             renderLists();
             renderRevokedServers();
+            if (typeof renderInsiteVerificationsTable === 'function') {
+                renderInsiteVerificationsTable();
+            }
+            if (typeof filterEarlyAdopters === 'function') {
+                const val = (document.getElementById('global-admin-search')?.value || '').toLowerCase().trim();
+                filterEarlyAdopters(val);
+            }
         }
 
         // ==========================================
