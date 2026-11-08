@@ -377,6 +377,7 @@ const client = new Client({
         GatewayIntentBits.MessageContent,
         GatewayIntentBits.GuildVoiceStates,
         GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildPresences,
         GatewayIntentBits.AutoModerationExecution,
         GatewayIntentBits.AutoModerationConfiguration,
         GatewayIntentBits.DirectMessages,
@@ -3234,24 +3235,66 @@ app.get('/api/user/privacy/summary', async (req, res) => {
             memories.length +
             reminders.length;
 
+        const parsedMemories = [];
+        memories.forEach(m => {
+            let ins = [];
+            let ints = {};
+            try { ins = JSON.parse(m.insights || '[]'); } catch (_) {}
+            try { ints = JSON.parse(m.interests || '{}'); } catch (_) {}
+
+            if (Array.isArray(ins)) {
+                ins.forEach((trait, i) => {
+                    parsedMemories.push({
+                        id: `${m.userId}-insight-${i}`,
+                        category: 'Observed Trait',
+                        memoryKey: 'Aura Insight',
+                        content: String(trait),
+                        createdAt: m.updatedAt || m.createdAt || m.lastInteracted
+                    });
+                });
+            }
+            if (ints && typeof ints === 'object') {
+                Object.entries(ints).forEach(([topic, score]) => {
+                    parsedMemories.push({
+                        id: `${m.userId}-interest-${topic}`,
+                        category: 'Interest Affinity',
+                        memoryKey: `Topic: ${topic}`,
+                        content: `Affinity Weight: ${score}`,
+                        createdAt: m.updatedAt || m.createdAt || m.lastInteracted
+                    });
+                });
+            }
+        });
+
         res.json({
             success: true,
             user: {
                 id: user.id,
                 username: user.username,
+                globalName: user.global_name || user.username,
                 discriminator: user.discriminator,
-                avatar: user.avatar
+                avatar: user.avatar,
+                isPremium: Boolean(prefs && (prefs.isPremium || prefs.isManualPremium)),
+                joinedAt: prefs?.createdAt || null
             },
             totalRecords,
             preferences: prefs ? prefs.toJSON() : null,
-            robloxAccounts: robloxAccounts.map(r => ({
-                id: r.id,
-                robloxId: r.robloxId,
-                robloxUsername: r.robloxUsername,
-                isVerified: r.isVerified,
-                isActive: r.isActive,
-                createdAt: r.createdAt
-            })),
+            robloxAccounts: robloxAccounts.map(r => {
+                const isVerified = r.status === 'VERIFIED';
+                let robloxUser = r.robloxUsername;
+                if (!robloxUser || robloxUser === 'undefined') {
+                    robloxUser = `Roblox User (${r.robloxId || r.id})`;
+                }
+                return {
+                    id: r.id,
+                    robloxId: r.robloxId,
+                    robloxUsername: robloxUser,
+                    status: r.status || (isVerified ? 'VERIFIED' : 'PENDING'),
+                    isVerified: isVerified,
+                    isActive: Boolean(r.isActive),
+                    createdAt: r.createdAt
+                };
+            }),
             servers: serversArray,
             allTickets: [
                 ...activeTickets.map(t => ({ id: t.id, guildId: t.guildId, topic: t.topic, status: 'OPEN', createdAt: t.createdAt })),
@@ -3262,7 +3305,7 @@ app.get('/api/user/privacy/summary', async (req, res) => {
                 cases: cases.map(c => ({ id: c.id, guildId: c.guildId, type: c.type, reason: c.reason, createdAt: c.createdAt })),
                 notes: notes.map(n => ({ id: n.id, guildId: n.guildId, content: n.content, createdAt: n.createdAt }))
             },
-            memories: memories.map(m => ({ id: m.id, memoryKey: m.memoryKey || m.key, content: m.content || m.value, createdAt: m.createdAt })),
+            memories: parsedMemories,
             reminders: reminders.map(r => ({ id: r.id, message: r.message, expiresAt: r.expiresAt })),
             sessionsCount: sessions.length
         });
@@ -4496,7 +4539,11 @@ app.post('/api/user/roblox/unlink', handleRobloxUnlink);
 app.delete('/api/user/roblox/unlink', handleRobloxUnlink);
 
 app.get('/api/user/roblox/avatar', async (req, res) => {
-    const userId = req.query.userId || '1';
+    const rawUserId = String(req.query.userId || '1').trim();
+    if (!/^\d{1,20}$/.test(rawUserId)) {
+        return res.status(400).json({ error: 'Invalid user ID format' });
+    }
+    const userId = encodeURIComponent(rawUserId);
 
     // Check cache first — avoids hitting Roblox API entirely
     const cached = getCachedAvatar(userId);

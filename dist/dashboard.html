@@ -5349,6 +5349,150 @@
             }
         }
     </style>
+
+    <!-- Hoisted In-Site Gatekeeper Global API -->
+    <script>
+        function updateInsiteLivePreview() {
+            try {
+                const titleInput = document.getElementById('setting-insiteVerifyEmbedTitle');
+                const descInput = document.getElementById('setting-insiteVerifyEmbedDesc');
+                const colorInput = document.getElementById('setting-insiteVerifyEmbedColor');
+                const btnLabelInput = document.getElementById('setting-insiteVerifyBtnLabel');
+                const btnEmojiInput = document.getElementById('setting-insiteVerifyBtnEmoji');
+                const showHelpToggle = document.getElementById('setting-insiteShowHelpBtn');
+                const helpLabelInput = document.getElementById('setting-insiteHelpLabel');
+                const helpEmojiInput = document.getElementById('setting-insiteHelpEmoji');
+
+                const titleEl = document.getElementById('insite-preview-title');
+                const descEl = document.getElementById('insite-preview-desc');
+                const embedEl = document.getElementById('insite-preview-embed');
+                const btnLabelEl = document.getElementById('insite-preview-primary-label');
+                const btnEmojiEl = document.getElementById('insite-preview-primary-emoji');
+                const helpBtnEl = document.getElementById('insite-preview-help-btn');
+                const helpLabelEl = document.getElementById('insite-preview-help-label');
+                const helpEmojiEl = document.getElementById('insite-preview-help-emoji');
+
+                if (titleEl) titleEl.textContent = (titleInput && titleInput.value.trim()) ? titleInput.value : 'Community Gatekeeper • In-Site Security Pass';
+                if (descEl) descEl.textContent = (descInput && descInput.value.trim()) ? descInput.value : 'To safeguard our community with an advanced way to secure servers across all communities, server access requires completing the Nora In-Site Security Pass.\n\nClick the button below to generate your private session pass.';
+                if (embedEl && colorInput && colorInput.value) embedEl.style.borderLeftColor = colorInput.value;
+                if (btnLabelEl) btnLabelEl.textContent = (btnLabelInput && btnLabelInput.value.trim()) ? btnLabelInput.value : 'Start In-Site Verification';
+                if (btnEmojiEl) btnEmojiEl.textContent = (btnEmojiInput && btnEmojiInput.value.trim()) ? btnEmojiInput.value : '🛡️';
+
+                if (helpBtnEl) {
+                    const showHelp = showHelpToggle ? showHelpToggle.checked : true;
+                    helpBtnEl.style.display = showHelp ? 'flex' : 'none';
+                }
+                if (helpLabelEl) helpLabelEl.textContent = (helpLabelInput && helpLabelInput.value.trim()) ? helpLabelInput.value : 'Why In-Site?';
+                if (helpEmojiEl) helpEmojiEl.textContent = (helpEmojiInput && helpEmojiInput.value.trim()) ? helpEmojiInput.value : '❓';
+            } catch (e) {
+                console.warn('[In-Site Live Preview Sync]:', e.message);
+            }
+        }
+        window.updateInsiteLivePreview = updateInsiteLivePreview;
+
+        function syncInsiteChannelWithVerify(val) {
+            const vChan = document.getElementById('setting-verifyChannelId');
+            if (vChan && val) {
+                vChan.value = val;
+            }
+            if (typeof markFormDirty === 'function') markFormDirty('setting-insiteVerifyChannelId');
+        }
+        window.syncInsiteChannelWithVerify = syncInsiteChannelWithVerify;
+
+        async function triggerInsiteDeploy(btn) {
+            if (!currentServerId) {
+                if (typeof showToast === 'function') showToast('Please select a server first.', 'warning');
+                return;
+            }
+            const originalText = btn ? btn.innerHTML : '';
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deploying...';
+            }
+
+            try {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const t = sessionStorage.getItem('discord_token');
+                const channelSelect = document.getElementById('setting-insiteVerifyChannelId') || document.getElementById('setting-verifyChannelId');
+                const channelId = channelSelect ? channelSelect.value : null;
+
+                if (!channelId) {
+                    if (typeof showToast === 'function') showToast('Please select a Gatekeeper Spawn Channel before deploying.', 'warning');
+                    if (btn) { btn.disabled = false; btn.innerHTML = originalText; }
+                    return;
+                }
+
+                if (typeof saveSettings === 'function') {
+                    await saveSettings();
+                }
+
+                const res = await fetch(`${apiBase}/api/guilds/${currentServerId}/actions`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${t}`
+                    },
+                    body: JSON.stringify({ action: 'spawn_verify', targetChannelId: channelId })
+                });
+
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    if (typeof showToast === 'function') showToast('✅ In-Site Security Gatekeeper panel successfully deployed!', 'success');
+                } else {
+                    if (typeof showToast === 'function') showToast(data.error || 'Failed to deploy security panel.', 'error');
+                }
+            } catch (err) {
+                if (typeof showToast === 'function') showToast('Network error deploying In-Site security panel.', 'error');
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalText;
+                }
+            }
+        }
+        window.triggerInsiteDeploy = triggerInsiteDeploy;
+
+        async function fetchInsiteLogs() {
+            if (!currentServerId) return;
+            const container = document.getElementById('insite-verify-log-container');
+            if (!container) return;
+
+            try {
+                const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
+                const t = sessionStorage.getItem('discord_token');
+                const res = await fetch(`${apiBase}/api/guilds/${currentServerId}/verification-logs?limit=25`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    const logs = Array.isArray(data) ? data : (data.logs || []);
+                    if (logs.length === 0) {
+                        container.innerHTML = '<div style="text-align: center; padding: 24px 16px; color: var(--muted); font-size: 0.85rem;"><i class="fas fa-user-shield" style="font-size: 1.8rem; margin-bottom: 8px; opacity: 0.4; display: block;"></i>No member verification sessions recorded yet.</div>';
+                    } else {
+                        container.innerHTML = logs.map(l => {
+                            const statusColor = (l.status === 'success' || l.status === 'passed') ? '#10b981' : (l.status === 'flagged' ? '#f59e0b' : '#f43f5e');
+                            const statusLabel = l.status ? l.status.toUpperCase() : 'VERIFIED';
+                            const userLabel = l.username || l.userId || 'Unknown Member';
+                            return `<div style="padding: 10px 14px; border-radius: 10px; background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 0.82rem;">
+                                <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: ${statusColor}; flex-shrink: 0;"></span>
+                                    <div style="min-width: 0;">
+                                        <div style="font-weight: 700; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(userLabel)}</div>
+                                        <div style="font-size: 0.72rem; color: var(--muted);">${escapeHtml(l.method || 'In-Site Gatekeeper')} • ${new Date(l.createdAt || Date.now()).toLocaleTimeString()}</div>
+                                    </div>
+                                </div>
+                                <span style="font-size: 0.7rem; font-weight: 700; color: ${statusColor}; background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.08);">${statusLabel}</span>
+                            </div>`;
+                        }).join('');
+                    }
+                }
+            } catch (err) {
+                console.warn('[Fetch In-Site Logs Fault]:', err.message);
+            }
+        }
+        window.fetchInsiteLogs = fetchInsiteLogs;
+    </script>
+
 </head>
 <body class="nora-theme">
     <div class="custom-cursor cursor-hidden" id="custom-cursor">
@@ -6465,13 +6609,13 @@
                                     <span style="font-size: 0.72rem; color: var(--muted);">User Sovereignty Directive</span>
                                 </div>
                                 <h4 style="font-size: 0.98rem; color: #fff; margin: 0 0 4px 0; font-weight: 700; display: flex; align-items: center; gap: 8px;">
-                                    <i class="fas fa-shield-halved" style="color: #ef4444;"></i> Data Sovereignty & Inspector
+                                    <i class="fas fa-shield-halved" style="color: #ef4444;"></i> My Data
                                 </h4>
                                 <p style="color: rgba(255,255,255,0.7); font-size: 0.78rem; margin: 0; line-height: 1.45;">View ABSOLUTE EVERYTHING tracked by Nora across every server and node. Live filter, inspect, and selectively or completely wipe your data on your terms.</p>
                             </div>
                             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                 <button type="button" class="btn-primary" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: #fff; border: none; font-size: 0.82rem; font-weight: 700; padding: 9px 18px; border-radius: 9px; cursor: pointer; display: inline-flex; align-items: center; gap: 7px; box-shadow: 0 4px 16px rgba(239,68,68,0.3);" onclick="openDataSovereigntyModal()">
-                                    <i class="fas fa-user-shield"></i> Open Data Sovereignty Hub
+                                    <i class="fas fa-user-shield"></i> My Data
                                 </button>
                             </div>
                         </div>
@@ -6611,7 +6755,7 @@
                         <p style="color: rgba(255, 255, 255, 0.78); font-size: 0.9rem; font-weight: 400; line-height: 1.5; margin: 0; text-align: left;">View recent announcements, moderation alerts, and updates for your servers.</p>
                     </div>
                     <div style="display: flex; gap: 10px; align-items: center; flex-shrink: 0; flex-wrap: wrap;">
-                        <button type="button" onclick="window.testSiteAnnouncement()" class="nora-sleek-header-btn accent"><i class="fas fa-bullhorn"></i> <span>Preview Announcement</span></button>
+                        <button type="button" onclick="window.showRecentSiteAnnouncement()" class="nora-sleek-header-btn accent"><i class="fas fa-bullhorn"></i> <span>Replay Announcement</span></button>
                         <button type="button" onclick="markAllRead()" class="nora-sleek-header-btn"><i class="fas fa-check-double"></i> <span>Mark All as Read</span></button>
                     </div>
                 </div>
@@ -6629,7 +6773,7 @@
                                     <button class="notif-filter-btn" data-type="error" onclick="filterNotifs('error', this)">Errors</button>
                                 </div>
                                 <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                    <button class="btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.78rem; border-radius: 8px; border-color: rgba(139, 92, 246, 0.45); color: #c4b5fd; background: rgba(139, 92, 246, 0.12);" onclick="window.testSiteAnnouncement()"><i class="fas fa-bullhorn" style="margin-right: 5px;"></i> Test Announcement</button>
+                                    <button type="button" class="btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.78rem; border-radius: 8px; border-color: rgba(139, 92, 246, 0.45); color: #c4b5fd; background: rgba(139, 92, 246, 0.12);" onclick="window.showRecentSiteAnnouncement()"><i class="fas fa-bullhorn" style="margin-right: 5px;"></i> Replay Announcement</button>
                                     <button class="btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.78rem; border-radius: 8px;" onclick="markAllRead()">Mark All Read</button>
                                     <button class="btn-outline" style="width: auto; padding: 6px 14px; font-size: 0.78rem; border-radius: 8px; border-color: rgba(255,85,85,0.2); color: #ff5555;" onclick="clearNotifications()">Clear All</button>
                                 </div>
@@ -21071,13 +21215,22 @@
             }
 
             if (tierEl) {
+                tierEl.textContent = '';
+                const span = document.createElement('span');
                 if (!isEnabled) {
-                    tierEl.innerHTML = `<span style="color: var(--muted); font-weight: 700;">Disabled</span>`;
+                    span.style.color = 'var(--muted)';
+                    span.style.fontWeight = '700';
+                    span.textContent = 'Disabled';
                 } else if (maxSlowmode > 0) {
-                    tierEl.innerHTML = `<span style="color: #60a5fa; font-weight: 800;">Active (${maxSlowmode}s Slowmode)</span>`;
+                    span.style.color = '#60a5fa';
+                    span.style.fontWeight = '800';
+                    span.textContent = 'Active (' + maxSlowmode + 's Slowmode)';
                 } else {
-                    tierEl.innerHTML = `<span style="color: #34d399; font-weight: 700;">Inactive (0s)</span>`;
+                    span.style.color = '#34d399';
+                    span.style.fontWeight = '700';
+                    span.textContent = 'Inactive (0s)';
                 }
+                tierEl.appendChild(span);
             }
 
             if (dotEl) {
@@ -21123,8 +21276,34 @@
             const dotEl = document.getElementById('velocity-status-dot');
             const currentDuration = document.getElementById('setting-adaptiveSlowmodeLargeSec')?.value || '6';
 
-            if (velEl) velEl.innerHTML = `<span style="color: #ef4444; font-weight: 800;">14.8 msg/s</span> <span style="font-size: 0.72rem; color: #ef4444; font-weight: 700;">(SPIKE!)</span>`;
-            if (tierEl) tierEl.innerHTML = `<span style="color: #22d3ee; font-weight: 800;">Tier 2 (${escapeHtml(currentDuration)}s Slowmode Active)</span>`;
+            function renderVelocityTag(mainText, subText, color) {
+                if (!velEl) return;
+                velEl.textContent = '';
+                const s1 = document.createElement('span');
+                s1.style.color = color;
+                s1.style.fontWeight = '800';
+                s1.textContent = mainText + ' ';
+                const s2 = document.createElement('span');
+                s2.style.fontSize = '0.72rem';
+                s2.style.color = color;
+                s2.style.fontWeight = color === '#34d399' ? '400' : '700';
+                s2.textContent = subText;
+                velEl.appendChild(s1);
+                velEl.appendChild(s2);
+            }
+
+            function renderTierTag(text, color) {
+                if (!tierEl) return;
+                tierEl.textContent = '';
+                const span = document.createElement('span');
+                span.style.color = color || 'inherit';
+                span.style.fontWeight = '800';
+                span.textContent = text;
+                tierEl.appendChild(span);
+            }
+
+            renderVelocityTag('14.8 msg/s', '(SPIKE!)', '#ef4444');
+            renderTierTag('Tier 2 (' + currentDuration + 's Slowmode Active)', '#22d3ee');
             if (dotEl) {
                 dotEl.style.background = '#ef4444';
                 dotEl.style.boxShadow = '0 0 12px #ef4444';
@@ -21138,19 +21317,19 @@
             simBurstInterval = setInterval(() => {
                 step++;
                 if (step === 1 && velEl) {
-                    velEl.innerHTML = `<span style="color: #f59e0b; font-weight: 800;">7.2 msg/s</span> <span style="font-size: 0.72rem; color: #f59e0b;">(Mitigating)</span>`;
+                    renderVelocityTag('7.2 msg/s', '(Mitigating)', '#f59e0b');
                     if (dotEl) {
                         dotEl.style.background = '#f59e0b';
                         dotEl.style.boxShadow = '0 0 10px #f59e0b';
                     }
                 } else if (step === 2 && velEl) {
-                    velEl.innerHTML = `<span style="color: #34d399; font-weight: 800;">2.1 msg/s</span> <span style="font-size: 0.72rem; color: #34d399;">(Decaying)</span>`;
-                    if (tierEl) tierEl.innerHTML = `Tier 1 (Decaying...)`;
+                    renderVelocityTag('2.1 msg/s', '(Decaying)', '#34d399');
+                    renderTierTag('Tier 1 (Decaying...)', '#34d399');
                 } else if (step >= 3) {
                     clearInterval(simBurstInterval);
                     simBurstInterval = null;
-                    if (velEl) velEl.innerHTML = `0.0 msg/s <span style="font-size: 0.72rem; color: #34d399; font-weight: 400;">(NOMINAL)</span>`;
-                    if (tierEl) tierEl.innerHTML = `Tier 0 (Nominal)`;
+                    renderVelocityTag('0.0 msg/s', '(NOMINAL)', '#34d399');
+                    renderTierTag('Tier 0 (Nominal)', '#34d399');
                     if (dotEl) {
                         dotEl.style.background = '#34d399';
                         dotEl.style.boxShadow = '0 0 8px #34d399';
@@ -21323,6 +21502,33 @@
             `;
         }
 
+        
+        function renderSvgIntoContainer(container, svgString) {
+            if (!container) return;
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(svgString, 'image/svg+xml');
+                const svgEl = doc.documentElement;
+                container.textContent = '';
+                container.appendChild(document.importNode(svgEl, true));
+            } catch (_) {
+                container.textContent = '';
+            }
+        }
+        function renderHtmlIntoContainer(container, htmlString) {
+            if (!container) return;
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlString, 'text/html');
+                container.textContent = '';
+                while (doc.body.firstChild) {
+                    container.appendChild(doc.body.firstChild);
+                }
+            } catch (_) {
+                container.textContent = '';
+            }
+        }
+
         function generateGreetingEmbedHtml({ isExit, customMessage, customAccent, guildName, memberCount }) {
             const accent = customAccent || (isExit ? '#f43f5e' : '#5865F2');
             const totalMembers = memberCount || (isExit ? 141 : 142);
@@ -21398,7 +21604,7 @@
             if (welcomerEnabled === false) {
                 cardContainer.innerHTML = '';
             } else if (format === 'image') {
-                cardContainer.innerHTML = generateGreetingCardSvg({
+                renderSvgIntoContainer(cardContainer, generateGreetingCardSvg({
                     isExit: false,
                     customMessage: rawTemplate.replace(/\{[^{}]+\}/g, '').trim(),
                     customAccent: accent,
@@ -21406,15 +21612,15 @@
                     serverShape: shape,
                     guildName: guildName,
                     memberCount: 142
-                });
+                }));
             } else if (format === 'embed') {
-                cardContainer.innerHTML = generateGreetingEmbedHtml({
+                renderHtmlIntoContainer(cardContainer, generateGreetingEmbedHtml({
                     isExit: false,
                     customMessage: formatted,
                     customAccent: accent,
                     guildName: guildName,
                     memberCount: 142
-                });
+                }));
             } else {
                 cardContainer.innerHTML = '';
             }
@@ -21466,7 +21672,7 @@
             if (goodbyeEnabled === false) {
                 cardContainer.innerHTML = '';
             } else if (format === 'image') {
-                cardContainer.innerHTML = generateGreetingCardSvg({
+                renderSvgIntoContainer(cardContainer, generateGreetingCardSvg({
                     isExit: true,
                     customMessage: rawTemplate.replace(/\{[^{}]+\}/g, '').trim(),
                     customAccent: accent,
@@ -21474,15 +21680,15 @@
                     serverShape: shape,
                     guildName: guildName,
                     memberCount: 141
-                });
+                }));
             } else if (format === 'embed') {
-                cardContainer.innerHTML = generateGreetingEmbedHtml({
+                renderHtmlIntoContainer(cardContainer, generateGreetingEmbedHtml({
                     isExit: true,
                     customMessage: formatted,
                     customAccent: accent,
                     guildName: guildName,
                     memberCount: 141
-                });
+                }));
             } else {
                 cardContainer.innerHTML = '';
             }
@@ -35588,7 +35794,7 @@ try {
                     <span style="font-size: 0.72rem; color: var(--muted);">Encrypted & Non-Persistent</span>
                 </div>
                 <h3 style="font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0; display: flex; align-items: center; gap: 10px;">
-                    <i class="fas fa-shield-halved" style="color: #ef4444;"></i> Data Sovereignty Inspector
+                    <i class="fas fa-shield-halved" style="color: #ef4444;"></i> My Data
                 </h3>
                 <p style="font-size: 0.8rem; color: var(--muted); margin: 3px 0 0 0;">Inspect ABSOLUTE EVERYTHING tracked by Nora. Live filter, download, or purge per server or globally.</p>
             </div>
@@ -35770,6 +35976,7 @@ window.filterDataSovereigntyRecords = function() {
     renderDataSovereigntyRecords();
 };
 
+
 window.renderDataSovereigntyRecords = function() {
     const data = window.sovereigntyActiveData;
     const container = document.getElementById('sovereignty-records-scroll-container');
@@ -35780,17 +35987,47 @@ window.renderDataSovereigntyRecords = function() {
 
     let html = '';
 
+    // 0. User Profile & Identity Summary
+    if (cat === 'all') {
+        const u = data.user || {};
+        const p = data.preferences || {};
+        html += `
+            <div class="panel" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.09); border-radius: 14px; padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; margin-bottom: 12px;">
+                <div style="display: flex; align-items: center; gap: 14px;">
+                    <img src="${u.avatar ? ('https://cdn.discordapp.com/avatars/' + u.id + '/' + u.avatar + '.png?size=80') : '/nora.png'}" style="width: 48px; height: 48px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(88,101,242,0.4);" onerror="this.src='/nora.png'">
+                    <div>
+                        <div style="font-size: 1.05rem; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                            <span>${escapeHtml(u.globalName || u.username || 'Discord User')}</span>
+                            <span style="font-size: 0.72rem; color: var(--muted); font-weight: 500;">@${escapeHtml(u.username || '')}</span>
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--muted); margin-top: 3px; font-family: monospace;">
+                            Discord Snowflake ID: ${escapeHtml(u.id || '')}
+                        </div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <span style="font-size: 0.74rem; font-weight: 700; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.3); color: #34d399; padding: 4px 10px; border-radius: 8px;">
+                        ${u.isPremium ? '💎 Nora Premium (Studio Plus / Early Adopter)' : 'Standard Free Tier'}
+                    </span>
+                    <span style="font-size: 0.74rem; font-weight: 700; background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.3); color: #818cf8; padding: 4px 10px; border-radius: 8px;">
+                        Sessions: ${data.sessionsCount || 1}
+                    </span>
+                </div>
+            </div>
+        `;
+    }
+
     // 1. Per-Server Records
     if (cat === 'all' || cat === 'servers') {
         const servers = data.servers || [];
         const matchingServers = servers.filter(s => {
             if (!query) return true;
-            return s.guildName.toLowerCase().includes(query) || s.guildId.includes(query);
+            return (s.guildName || '').toLowerCase().includes(query) || (s.guildId || '').includes(query);
         });
 
         if (matchingServers.length > 0) {
             html += `
-                <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between;">
+                <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                     <span>Per-Server Records (${matchingServers.length} Servers)</span>
                     <span style="font-size: 0.7rem; color: var(--muted); font-weight: 400;">Leveling XP, Warnings, Cases, Tickets</span>
                 </div>
@@ -35803,17 +36040,17 @@ window.renderDataSovereigntyRecords = function() {
                 const ticketCount = s.tickets ? s.tickets.length : 0;
 
                 html += `
-                    <div class="panel" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px;">
+                    <div class="panel" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 8px;">
                         <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;">
                             <div style="display: flex; align-items: center; gap: 12px;">
-                                ${s.guildIcon ? `<img src="${s.guildIcon}" style="width: 38px; height: 38px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);">` : `<div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(99,102,241,0.15); color: #818cf8; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem;">${s.guildName.charAt(0)}</div>`}
+                                ${s.guildIcon ? `<img src="${s.guildIcon}" style="width: 38px; height: 38px; border-radius: 10px; object-fit: cover; border: 1px solid rgba(255,255,255,0.1);"` : `<div style="width: 38px; height: 38px; border-radius: 10px; background: rgba(99,102,241,0.15); color: #818cf8; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem;">${(s.guildName || 'S').charAt(0)}</div>`}
                                 <div>
-                                    <div style="font-weight: 700; font-size: 0.95rem; color: #fff;">${s.guildName}</div>
-                                    <div style="font-size: 0.72rem; color: var(--muted); font-family: monospace;">Guild ID: ${s.guildId}</div>
+                                    <div style="font-weight: 700; font-size: 0.95rem; color: #fff;">${escapeHtml(s.guildName || 'Server')}</div>
+                                    <div style="font-size: 0.72rem; color: var(--muted); font-family: monospace;">Guild ID: ${escapeHtml(s.guildId)}</div>
                                 </div>
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px;">
-                                <button type="button" class="btn-outline" onclick="purgeServerData('${s.guildId}', '${s.guildName.replace(/'/g, "\\'")}')" style="padding: 5px 12px; font-size: 0.74rem; color: #ef4444; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.06); border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
+                                <button type="button" class="btn-outline" onclick="purgeServerData('${s.guildId}', '${(s.guildName || '').replace(/'/g, "\\'")}')" style="padding: 5px 12px; font-size: 0.74rem; color: #ef4444; border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.06); border-radius: 7px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px;">
                                     <i class="fas fa-trash-can"></i> Erase Server Data
                                 </button>
                             </div>
@@ -35825,7 +36062,7 @@ window.renderDataSovereigntyRecords = function() {
                             ${warnCount > 0 ? `<span style="font-size: 0.72rem; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); color: #fbbf24; padding: 2px 8px; border-radius: 6px;">${warnCount} Warnings</span>` : ''}
                             ${caseCount > 0 ? `<span style="font-size: 0.72rem; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.25); color: #f87171; padding: 2px 8px; border-radius: 6px;">${caseCount} Cases</span>` : ''}
                             ${ticketCount > 0 ? `<span style="font-size: 0.72rem; background: rgba(56,189,248,0.1); border: 1px solid rgba(56,189,248,0.25); color: #38bdf8; padding: 2px 8px; border-radius: 6px;">${ticketCount} Tickets</span>` : ''}
-                            ${!hasLeveling && warnCount === 0 && caseCount === 0 && ticketCount === 0 ? '<span style="font-size: 0.72rem; color: var(--muted);">No recorded active infractions or stats</span>' : ''}
+                            ${!hasLeveling && warnCount === 0 && caseCount === 0 && ticketCount === 0 ? '<span style="font-size: 0.72rem; color: var(--muted);">No infractions or stats on record</span>' : ''}
                         </div>
                     </div>
                 `;
@@ -35838,19 +36075,21 @@ window.renderDataSovereigntyRecords = function() {
         const robloxList = data.robloxAccounts || [];
         if (robloxList.length > 0) {
             html += `
-                <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+                <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; margin: 12px 0 8px 0;">
                     <span>Linked Roblox Accounts (${robloxList.length})</span>
                     <button type="button" class="btn-outline" onclick="purgeCategoryData('roblox')" style="padding: 3px 10px; font-size: 0.7rem; color: #ef4444; border-color: rgba(239,68,68,0.3); border-radius: 6px; cursor: pointer;">Erase All Roblox Data</button>
                 </div>
             `;
             robloxList.forEach(r => {
+                const usernameDisplay = r.robloxUsername || ('Roblox User ' + r.robloxId);
+                const isVerified = Boolean(r.isVerified || r.status === 'VERIFIED');
                 html += `
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
                         <div>
-                            <div style="font-weight: 700; color: #fff; font-size: 0.88rem;">@${r.robloxUsername} <span style="font-size: 0.72rem; color: var(--muted); font-family: monospace;">(ID: ${r.robloxId})</span></div>
-                            <div style="font-size: 0.72rem; color: ${r.isVerified ? '#34d399' : '#fbbf24'};">${r.isVerified ? '✓ Verified Identity' : 'Pending Verification'} ${r.isActive ? '• Primary Account' : ''}</div>
+                            <div style="font-weight: 700; color: #fff; font-size: 0.88rem;">@${escapeHtml(usernameDisplay)} <span style="font-size: 0.72rem; color: var(--muted); font-family: monospace;">(ID: ${escapeHtml(r.robloxId || 'N/A')})</span></div>
+                            <div style="font-size: 0.72rem; color: ${isVerified ? '#34d399' : '#fbbf24'};">${isVerified ? '✓ Verified Identity' : 'Pending Verification'} ${r.isActive ? '• Primary Account' : ''}</div>
                         </div>
-                        <button type="button" class="btn-outline" onclick="unlinkRobloxSpecific('${r.robloxId}', '${r.robloxUsername}'); setTimeout(openDataSovereigntyModal, 800);" style="padding: 4px 10px; font-size: 0.72rem; color: #ef4444; border-color: rgba(239,68,68,0.25); border-radius: 6px; cursor: pointer;">Unlink</button>
+                        <button type="button" class="btn-outline" onclick="unlinkRobloxSpecific('${r.robloxId}', '${escapeHtml(usernameDisplay)}'); setTimeout(openDataSovereigntyModal, 800);" style="padding: 4px 10px; font-size: 0.72rem; color: #ef4444; border-color: rgba(239,68,68,0.25); border-radius: 6px; cursor: pointer;">Unlink</button>
                     </div>
                 `;
             });
@@ -35859,17 +36098,18 @@ window.renderDataSovereigntyRecords = function() {
 
     // 3. User Preferences & Rank Cards
     if (cat === 'all' || cat === 'preferences') {
-        const p = data.preferences;
+        const p = data.preferences || {};
         html += `
-            <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+            <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; margin: 12px 0 8px 0;">
                 <span>Global Preferences & Visual Customizations</span>
                 <button type="button" class="btn-outline" onclick="purgeCategoryData('preferences')" style="padding: 3px 10px; font-size: 0.7rem; color: #ef4444; border-color: rgba(239,68,68,0.3); border-radius: 6px; cursor: pointer;">Reset Preferences</button>
             </div>
-            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 14px; font-size: 0.78rem; color: rgba(255,255,255,0.8); display: flex; flex-direction: column; gap: 6px;">
-                <div><strong>Theme Mode:</strong> ${p?.themeMode || 'Obsidian Dark (Default)'}</div>
-                <div><strong>System Language:</strong> ${p?.language || localStorage.getItem('nora_language') || 'en'}</div>
-                <div><strong>Custom Dashboard Background:</strong> ${p?.dashboardBgImage ? 'Active (Saved in Node)' : 'None'}</div>
-                <div><strong>Rank Card Background:</strong> ${p?.rankCardBgUrl ? 'Custom Image Bound' : 'Server Default'}</div>
+            <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 14px; font-size: 0.78rem; color: rgba(255,255,255,0.8); display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
+                <div><strong>Theme Mode:</strong> ${p.customTheme || p.themeMode || 'Obsidian Dark (Default)'}</div>
+                <div><strong>System Language:</strong> ${p.language || localStorage.getItem('nora_language') || 'en'}</div>
+                <div><strong>User Bio:</strong> ${escapeHtml(p.bio || 'None provided')}</div>
+                <div><strong>Custom Dashboard Background:</strong> ${p.dashboardBgImage ? 'Active (Saved in Node)' : 'None'}</div>
+                <div><strong>Rank Card Background:</strong> ${p.rankCardBgUrl ? 'Custom Image Bound' : 'Server Default'}</div>
             </div>
         `;
     }
@@ -35879,16 +36119,18 @@ window.renderDataSovereigntyRecords = function() {
         const memories = data.memories || [];
         if (memories.length > 0) {
             html += `
-                <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; margin-top: 10px;">
+                <div style="font-size: 0.78rem; font-weight: 700; color: #818cf8; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; margin: 12px 0 8px 0;">
                     <span>AI Conversational Memories (${memories.length})</span>
                     <button type="button" class="btn-outline" onclick="purgeCategoryData('memory')" style="padding: 3px 10px; font-size: 0.7rem; color: #ef4444; border-color: rgba(239,68,68,0.3); border-radius: 6px; cursor: pointer;">Clear AI Memory</button>
                 </div>
             `;
             memories.forEach(m => {
+                const label = m.memoryKey || m.category || 'Aura Insight';
+                const text = m.content || m.value || 'Recorded Trait';
                 html += `
-                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem;">
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.07); border-radius: 10px; padding: 10px 14px; display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; margin-bottom: 6px;">
                         <div>
-                            <span style="color: #818cf8; font-weight: 600;">${m.memoryKey}:</span> <span style="color: rgba(255,255,255,0.85);">${m.content}</span>
+                            <span style="color: #818cf8; font-weight: 600;">${escapeHtml(label)}:</span> <span style="color: rgba(255,255,255,0.85);">${escapeHtml(text)}</span>
                         </div>
                         <button type="button" onclick="purgeSingleItem('memory', '${m.id}')" style="background: none; border: none; color: var(--muted); cursor: pointer;"><i class="fas fa-trash-alt"></i></button>
                     </div>

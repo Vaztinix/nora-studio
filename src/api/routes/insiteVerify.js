@@ -139,13 +139,19 @@ async function getIpIntelligence(ip) {
         };
     }
 
+    const net = require('net');
+    if (!ip || !net.isIP(ip)) {
+        return null;
+    }
+
     const cached = ipIntelCache.get(ip);
     if (cached && (Date.now() - cached.timestamp < INTEL_CACHE_TTL)) {
         return cached.data;
     }
 
     try {
-        const res = await axios.get(`http://ip-api.com/json/${ip}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,asname,mobile,proxy,hosting,query`, {
+        const cleanIp = encodeURIComponent(ip);
+        const res = await axios.get(`http://ip-api.com/json/${cleanIp}?fields=status,message,country,countryCode,region,regionName,city,zip,lat,lon,timezone,isp,org,as,asname,mobile,proxy,hosting,query`, {
             timeout: 3500
         });
         if (res.data && res.data.status === 'success') {
@@ -153,7 +159,7 @@ async function getIpIntelligence(ip) {
             return res.data;
         }
     } catch (err) {
-        console.warn(`[InSite Verify] Live IP lookup error for ${ip}:`, err.message);
+        console.warn('[InSite Verify] Live IP lookup error:', String(err.message));
     }
     return null;
 }

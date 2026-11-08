@@ -39,8 +39,18 @@ For servers requiring maximum community protection (such as Milo's World and Nor
 - 🧬 **28-Signal Composite Device Telemetry**: Mathematical anti-aliasing variations, WebGL caps, AudioContext waveform hashes, CPU/RAM hardware tiers, display geometry, system font variations, and regional keyboard maps.
 - ⚡ **Automated Alt Correlation & Immediate Ban**: When an account attempts verification, its composite device signature is automatically cross-referenced against server ban records. If an alt belongs to a user banned in the guild, **the alt is automatically and immediately banned**.
 - 🔒 **Zero-Trust Ephemeral Tickets**: Verification passes are valid for exactly 15 minutes, uniquely tied to the originating Discord session to prevent link sharing.
-- 🎨 **Full Dashboard Customization**: Customize embed titles, welcome descriptions, primary button labels, button emojis, and toggle the secondary "Why In-Site?" help button with 1 click.
+- 🎨 **Full Dashboard Customization**: Dedicated In-Site Gatekeeper dashboard suite to customize embed titles, descriptions, button labels, emojis, and toggle help explanations with unified redirects for all communities.
 - 👤 **Human Non-Inspection Architecture**: Developers and staff possess zero tools to view private personal files or raw biometrics. All attributes are processed purely as mathematical cryptographic checksums in volatile RAM.
+
+---
+
+## 🟢 Privileged Presence Intent: Fully Approved & Active
+
+Nora has officially received approval for the Discord **Guild Presences Intent** (`GatewayIntentBits.GuildPresences`). All presence-dependent features are now fully functional across all servers:
+
+- 🌟 **Promoter Custom Status Detection**: Automatically detect community members sporting vanity invite URLs or server hashtags in their Discord custom status, instantly granting designated promoter roles.
+- 🎮 **Dynamic Activity & Gaming Voice Routing**: Intelligent voice channel sorting and routing based on members' live games and rich presence activities.
+- 📊 **Real-Time Guild Statistics**: Live count of online, idle, and in-game members displayed in the Nora Studio dashboard and bot status commands.
 
 ---
 
@@ -52,7 +62,7 @@ Nora operates strictly under a verified **Zero-Access Privacy Architecture**:
 
 - 🔒 **Zero Permanent Message Storage**: Messages processed for AutoMod, prefixes, and collaborative games are parsed entirely in volatile RAM and immediately discarded. Nora never dumps chat logs or user text to disk.
 - 🚫 **Zero IP Address or Location Surveillance**: Nora strips all IP and geolocation tracking, rejects third-party GeoIP lookups, and never records your physical network location.
-- 👤 **Total User Sovereignty**: Any user can execute `/mycard` or open the Dashboard **Data Sovereignty** desk to inspect every record across servers and execute a 1-click irreversible data purge (`Purge My Global Data`).
+- 👤 **"My Data" Total User Sovereignty**: Any user can execute `/mycard` or open the Dashboard **My Data** desk to inspect every single record across servers and execute a 1-click irreversible data purge (`Purge Everything Globally`).
 - 🚫 **Zero Developer Backdoors**: Developers have no administrative backdoors to inspect private channels, read guild logs, or harvest server member data.
 - 🔐 **End-to-End Credential Encryption**: Sensitive tokens, webhook URLs, and external credentials are cryptographically protected with **AES-256-GCM** encryption before reaching SQLite storage.
 - 💻 **100% Data Custody via Self-Hosting**: When you self-host Nora, you own your database entirely. Zero telemetry is sent home.
@@ -81,12 +91,13 @@ Behind Nora is **Nora Studio**, a passionate collective of developers, community
 
 | Module | Version | Highlights & Capabilities |
 | :--- | :---: | :--- |
-| **In-Site Security Pass & Zero-Trust Verification** | `v4.1` | Advanced high-security gatekeeper evaluating 28 composite hardware, software & network signals. Automatically rejects VPNs/proxies, correlates alts against server ban registries to automatically ban evaders, and provides fully customizable Embeds V2 panels. |
+| **In-Site Security Pass & Zero-Trust Verification** | `v4.2` | Advanced high-security gatekeeper evaluating 28 composite hardware, software & network signals. Automatically rejects VPNs/proxies, correlates alts against server ban registries to automatically ban evaders, and provides fully customizable Embeds V2 presets with unified community redirects. |
 | **Crystal Liquid Glass Design System** | `v4.0` | Ultra-modern frosted glass aesthetic with specular rim reflections, dynamic ambient aurora refractions, and fluid micro-animations across the Dashboard, Nora Sentinel, Roblox Verification, and Profile. |
 | **Server Icon Ambient Palette Extraction** | `v4.0` | Dynamically samples each server icon's dominant color palette via an offscreen HTML canvas, casting authentic 3-color ambient glow halos behind server cards without arbitrary color hashing. |
 | **Automatic Background Readability Engine** | `v4.0` | Real-time luminance and contrast sampling calculating optimal background opacity (25%–35%) and blur (10px–16px) with instant slider retention and local cache persistence. |
 | **Per-Server Rank Card Studio** | `v4.0` | Choose whether your custom rank card applies across all servers or select specific servers to design individual themes, with live interactive coordinate preview. |
-| **Zero-Access Data Sovereignty Portal** | `v4.0` | Complete removal of all IP address & location surveillance (`ip-api.com`), purged historical tracking, and added an interactive modal allowing users to inspect and erase records per-server or globally. |
+| **My Data — Zero-Access Sovereignty & Personal Inspector** | `v4.2` | Completely overhauled user sovereignty modal ("My Data") allowing members to inspect 100% of tracked data with zero `undefined` values, export full JSON data packs, or execute 1-click global data purges. |
+| **Early Adopter Lifetime Nora Premium** | `v4.2` | Permanently granted Nora Premium to the first 100 registered users and first 50 joined servers. |
 | **High-Speed Roblox Verification Portal** | `v4.0` | Parallel concurrent fetching (`Promise.allSettled`), instant cache hydration (0ms render), and Roblox Open Cloud OAuth2 group rank synchronization. |
 | **Nora Overdrive Arcade Roguelite (Discord Activity)** | `v4.0` | Full Discord Activity integration with Activity Entry Point command support, 110+ procedural power-ups across 8 rarities, automatic persistent high scores, multi-device touch/gamepad/keyboard handling, and growing boss encounters. |
 | **Adaptive Slowmode & Raid Defense** | `v3.1` | Heuristic real-time chat velocity monitoring that automatically clamps slowmode (3s–10s) during floods/raids with smooth decay. Supports channel monitoring filters and exempt role whitelists. |

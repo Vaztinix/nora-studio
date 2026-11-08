@@ -333,10 +333,10 @@ router.post('/', settingsRateLimiter, async (req, res) => {
             payload.insiteVerificationEnabled = (payload.insiteVerificationEnabled === true || payload.insiteVerificationEnabled === 1 || payload.insiteVerificationEnabled === '1' || payload.insiteVerificationEnabled === 'true');
         }
         if (payload.verifyInsiteHelpDesc) {
-            payload.verifyInsiteHelpDesc = String(payload.verifyInsiteHelpDesc).replace(/\s*\(such as UTTP\)/gi, '').replace(/UTTP/gi, 'malicious raid networks');
+            payload.verifyInsiteHelpDesc = String(payload.verifyInsiteHelpDesc).replaceAll('(such as UTTP)', '').replaceAll('UTTP', 'malicious raid networks');
         }
         if (payload.verifyEmbedDesc) {
-            payload.verifyEmbedDesc = String(payload.verifyEmbedDesc).replace(/\s*\(such as UTTP\)/gi, '').replace(/UTTP/gi, 'malicious raid networks');
+            payload.verifyEmbedDesc = String(payload.verifyEmbedDesc).replaceAll('(such as UTTP)', '').replaceAll('UTTP', 'malicious raid networks');
         }
 
         await settings.update(payload);

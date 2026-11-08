@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script>
-        if (window.location.hostname.includes('discordsays.com') || (window.location.search && window.location.search.includes('frame_id='))) {
+        if (window.location.hostname === 'discordsays.com' || window.location.hostname.endsWith('.discordsays.com') || (window.location.search && window.location.search.includes('frame_id='))) {
             window.location.replace('/arcade.html' + window.location.search + window.location.hash);
         } else if (window.location.hash && window.location.hash.includes('access_token=')) {
             window.location.replace('/dashboard' + window.location.hash);
@@ -1501,7 +1501,7 @@
                             <span class="stat-label">Active Servers</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value" id="stat-members">14,248+</span>
+                            <span class="stat-value" id="stat-members">14,257+</span>
                             <span class="stat-label">Total Members</span>
                         </div>
                         <div class="stat-item">

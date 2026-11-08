@@ -3921,7 +3921,13 @@
                             myCardEl.style.display = '';
                             const avatarEl = myCardEl.querySelector('.avatar-img');
                             if (avatarEl && (data.card?.image || payload.image)) {
-                                avatarEl.src = sanitizeUrl(data.card?.image || payload.image) || 'nora.png';
+                                const rawImg = data.card?.image || payload.image;
+                                const safeImg = sanitizeUrl(rawImg);
+                                if (safeImg && (safeImg.startsWith('https://') || safeImg.startsWith('http://') || safeImg.startsWith('data:image/'))) {
+                                    avatarEl.setAttribute('src', safeImg);
+                                } else {
+                                    avatarEl.setAttribute('src', 'nora.png');
+                                }
                             }
                             const nameEl = myCardEl.querySelector('.member-name');
                             if (nameEl && payload.displayName) {
