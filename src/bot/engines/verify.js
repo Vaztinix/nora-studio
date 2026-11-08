@@ -122,7 +122,6 @@ async function grantVerificationRoles(member, settings, context = {}, method = '
     }
 
     const isSilent = context?.silent === true || options?.silent === true;
-    const guild = member.guild;
     const isPremium = settings?.isPremium === true || settings?.isManualPremium === true;
     const maxVerifiedRoles = isPremium ? 5 : 3;
     const { parseRoleIds } = require('../../utils/roleUtils');
