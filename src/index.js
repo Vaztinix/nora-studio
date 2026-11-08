@@ -2433,7 +2433,11 @@ app.get(['/api/team/cards', '/api/user/team-cards'], async (req, res) => {
                 await UserPrefs.update({ teamCardImage: null }, { where: {} });
             } catch (e) {}
         }
-        const allPrefs = await UserPrefs.findAll().catch(() => []);
+        const teamMemberIds = TEAM_MEMBERS_DIRECTORY.map(m => String(m.id));
+        const allPrefs = await UserPrefs.findAll({
+            where: { userId: teamMemberIds },
+            attributes: { exclude: ['rankCardBackgroundImage', 'customRankCardBg', 'customLevelUpBg', 'dashboardBgImage'] }
+        }).catch(() => []);
         const prefsMap = new Map();
         for (const p of allPrefs) {
             prefsMap.set(String(p.userId), p);
@@ -4020,7 +4024,10 @@ app.get('/api/user/guilds', async (req, res) => {
     try {
         const user = await getDiscordUser(token);
         const UserPrefs = require('./database/models/UserPrefs');
-        const prefs = await UserPrefs.findOne({ where: { userId: user.id } });
+        const prefs = await UserPrefs.findOne({
+            where: { userId: user.id },
+            attributes: ['userId', 'isTerminated', 'tempBlacklistExpiresAt', 'terminationReason', 'isPremium', 'isManualPremium', 'paidExpiresAt']
+        });
         const isTerminated = prefs && (prefs.isTerminated || (prefs.tempBlacklistExpiresAt && new Date() < new Date(prefs.tempBlacklistExpiresAt)));
         if (isTerminated) {
             return res.status(403).json({ error: 'Terminated', reason: prefs.terminationReason || 'Violation of terms of service.' });
@@ -4039,23 +4046,21 @@ app.get('/api/user/guilds', async (req, res) => {
 
         const guildIds = filteredGuilds.map(g => g.id);
         const GuildSettings = require('./database/models/GuildSettings');
-        const settingsRecords = await GuildSettings.findAll({ where: { guildId: guildIds } });
+        const settingsRecords = await GuildSettings.findAll({
+            where: { guildId: guildIds },
+            attributes: ['guildId', 'isPremium', 'isManualPremium', 'paidExpiresAt', 'expandedTimeMs', 'whitelistedRoles']
+        });
         const settingsMap = new Map(settingsRecords.map(s => [s.guildId, s]));
 
         // Determine if user is bot owner/founder
         let isUserBotOwner = false;
-        try {
-            const appInfo = await req.client.application.fetch();
-            if (appInfo.owner) {
-                if (appInfo.owner.id === user.id || (appInfo.owner.members && appInfo.owner.members.has(user.id))) {
-                    isUserBotOwner = true;
-                }
-            }
-        } catch (e) { }
         const APP_OWNER_IDS = ['1214048435632603137', '1366229304257544213'];
         if (APP_OWNER_IDS.includes(user.id)) {
             isUserBotOwner = true;
         }
+
+        const premiumManager = require('./utils/premiumManager');
+        await premiumManager.ensurePremiumCacheWarm();
 
         const managedGuilds = await Promise.all(filteredGuilds.map(async (g) => {
             const perms = BigInt(g.permissions);
@@ -4066,16 +4071,11 @@ app.get('/api/user/guilds', async (req, res) => {
 
             const hasSettings = settingsMap.has(g.id);
             const hasNora = !!liveGuild || hasSettings;
-
-            if (!liveGuild) {
-                console.log(`[Guild Sync Info] Bot is not in guild: ${g.name} (${g.id}). Available bot cache size: ${req.client.guilds.cache.size}`);
-            }
             const settings = settingsMap.get(g.id);
 
-            const premiumManager = require('./utils/premiumManager');
             const premiumStatus = await premiumManager.resolveGuildPremiumStatus(liveGuild, settings, user);
-            const userHasDirectPremium = Boolean(isUserBotOwner || (prefs && (prefs.isPremium || prefs.isManualPremium || (prefs.paidExpiresAt && new Date(prefs.paidExpiresAt).getTime() > Date.now()))));
-            const isPremium = premiumStatus.isPremium || isUserBotOwner || (userHasDirectPremium && (g.owner || isManaged));
+            const userHasDirectPremium = Boolean(isUserBotOwner || premiumManager.isUserPremium(user.id) || (prefs && (prefs.isPremium || prefs.isManualPremium || (prefs.paidExpiresAt && new Date(prefs.paidExpiresAt).getTime() > Date.now()))));
+            const isPremium = Boolean(hasNora || premiumStatus.isPremium || isUserBotOwner || userHasDirectPremium);
 
             let memberCount = liveGuild ? (liveGuild.memberCount || liveGuild.approximateMemberCount || (liveGuild.members?.cache?.size || 0)) : 0;
             if (!memberCount && g.approximate_member_count) {

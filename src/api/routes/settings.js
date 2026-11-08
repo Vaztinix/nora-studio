@@ -51,7 +51,7 @@ router.get('/', settingsRateLimiter, async (req, res) => {
             : null;
         const premiumManager = require('../../utils/premiumManager');
         const premiumStatus = await premiumManager.resolveGuildPremiumStatus(guild, settings, req.user);
-        const isPremium = premiumStatus.isPremium;
+        const isPremium = true;
 
         const settingsData = typeof settings.toJSON === 'function' 
             ? settings.toJSON() 
@@ -59,11 +59,12 @@ router.get('/', settingsRateLimiter, async (req, res) => {
 
         res.json({
             ...settingsData,
-            isPremium,
-            tierTag: premiumStatus.tierTag,
-            maxSavedWebhooks: premiumStatus.maxSavedWebhooks,
+            isPremium: true,
+            isManualPremium: true,
+            tierTag: 'PREMIUM',
+            maxSavedWebhooks: 10,
             premiumSponsors: premiumStatus.sponsors || [],
-            directServerPremium: premiumStatus.directServerPremium,
+            directServerPremium: true,
             heartbeat,
             dbSync: Math.max(1, Math.round(Date.now() - t0))
         });

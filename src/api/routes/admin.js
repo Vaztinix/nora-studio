@@ -106,7 +106,8 @@ router.get('/premium', requireOwner, async (req, res) => {
                     { isPremium: true },
                     { isManualPremium: true }
                 ]
-            }
+            },
+            attributes: ['userId', 'displayName', 'isPremium', 'isManualPremium']
         });
 
         const userLevelList = await UserLevel.findAll({
@@ -115,17 +116,20 @@ router.get('/premium', requireOwner, async (req, res) => {
                     { isPremium: true },
                     { isManualPremium: true }
                 ]
-            }
+            },
+            attributes: ['userId', 'isPremium', 'isManualPremium']
         });
 
         const premiumUserIds = new Set();
         const manualPremiumMap = new Map();
         const autoPremiumMap = new Map();
+        const displayNameMap = new Map();
 
         usersPrefsList.forEach(up => {
             premiumUserIds.add(up.userId);
             manualPremiumMap.set(up.userId, up.isManualPremium || manualPremiumMap.get(up.userId));
             autoPremiumMap.set(up.userId, up.isPremium || autoPremiumMap.get(up.userId));
+            if (up.displayName) displayNameMap.set(up.userId, up.displayName);
         });
 
         userLevelList.forEach(ul => {
@@ -136,18 +140,17 @@ router.get('/premium', requireOwner, async (req, res) => {
 
         const usersList = [];
         for (const userId of premiumUserIds) {
-            let userObj = req.client.users.cache.get(userId);
-            if (!userObj) {
-                try {
-                    userObj = await req.client.users.fetch(userId);
-                } catch (e) {}
-            }
+            const userObj = req.client?.users?.cache?.get(userId) || null;
+            let defaultAv = 'https://cdn.discordapp.com/embed/avatars/0.png';
+            try {
+                defaultAv = `https://cdn.discordapp.com/embed/avatars/${(BigInt(userId) % 5n) + 1n}.png`;
+            } catch (_) {}
             usersList.push({
                 userId,
-                username: userObj ? userObj.username : 'Unknown User',
+                username: userObj ? userObj.username : (displayNameMap.get(userId) || `User_${String(userId).slice(-4)}`),
                 avatar: userObj && userObj.avatar 
                     ? `https://cdn.discordapp.com/avatars/${userId}/${userObj.avatar}.png?size=128` 
-                    : `https://cdn.discordapp.com/embed/avatars/${(BigInt(userId) % 5n) + 1n}.png`,
+                    : defaultAv,
                 isManualPremium: !!manualPremiumMap.get(userId),
                 isPremium: !!autoPremiumMap.get(userId)
             });
@@ -405,7 +408,8 @@ router.get('/terminated', requireOwner, async (req, res) => {
                     { isTerminated: true },
                     { tempBlacklistExpiresAt: { [Op.gt]: new Date() } }
                 ]
-            }
+            },
+            attributes: ['userId', 'displayName', 'terminationReason', 'isTerminated', 'tempBlacklistExpiresAt']
         });
         const client = req.client || require('../../index').client;
         const list = [];
@@ -585,7 +589,9 @@ router.get('/all-servers', requireOwner, async (req, res) => {
 router.get('/all-users', requireOwner, async (req, res) => {
     try {
         const client = req.client || require('../../index').client;
-        const allPrefs = await UserPrefs.findAll();
+        const allPrefs = await UserPrefs.findAll({
+            attributes: { exclude: ['rankCardBackgroundImage', 'customRankCardBg', 'customLevelUpBg', 'dashboardBgImage', 'teamCardImage', 'teamCardBanner'] }
+        });
 
         const list = allPrefs.map(prefs => {
             const uid = String(prefs.userId || '');
@@ -1108,7 +1114,8 @@ router.get('/entitlement-bindings', requireOwner, async (req, res) => {
         const boundPrefs = await UserPrefs.findAll({
             where: {
                 boundGuildId: { [Op.ne]: null }
-            }
+            },
+            attributes: ['userId', 'displayName', 'boundGuildId', 'boundGuildName', 'isPremium', 'isManualPremium', 'paidExpiresAt']
         });
 
         const list = await Promise.all(boundPrefs.map(async p => {

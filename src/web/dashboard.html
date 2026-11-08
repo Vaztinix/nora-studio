@@ -16294,7 +16294,7 @@
                 const mode = d.prefs?.rankCardThemeMode || (d.prefs?.rankCardBackgroundImage ? 'image' : (d.prefs?.rankCardCustomColor ? 'custom' : 'preset'));
                 const radio = document.querySelector(`input[name="userRankCardThemeMode"][value="${mode}"]`);
                 if (radio) radio.checked = true;
-                if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI();
+                if (typeof toggleUserRankCardThemeModeUI === 'function') toggleUserRankCardThemeModeUI(false);
 
                 const deviceLang = localStorage.getItem('nora_language') || d.prefs?.language || d.prefs?.customTheme || 'en';
                 if (prefLangBox) prefLangBox.value = deviceLang;
@@ -19031,6 +19031,8 @@
                         if (Array.isArray(cached)) {
                             cached = cached.map(g => ({
                                 ...g,
+                                isPremium: true,
+                                tierTag: 'PREMIUM',
                                 icon: (g.icon && typeof g.icon === 'string' && g.icon.startsWith('http'))
                                     ? g.icon
                                     : (g.icon ? `https://cdn.discordapp.com/icons/${g.id}/${g.icon}.png?size=128` : 'https://cdn.discordapp.com/embed/avatars/0.png')
@@ -19119,6 +19121,8 @@
                                     hasNora: hasNora,
                                     memberCount: g.approximate_member_count || g.memberCount || 0,
                                     onlineCount: g.approximate_presence_count || 0,
+                                    isPremium: true,
+                                    tierTag: 'PREMIUM',
                                     isManaged: true
                                 };
                             });
@@ -19145,6 +19149,23 @@
                     if (inactiveEl) inactiveEl.textContent = `${inactiveCount} Not Configured`;
 
                     renderAllGuilds(guilds);
+                    if (currentServerId) {
+                        const activeG = guilds.find(x => String(x.id) === String(currentServerId));
+                        if (activeG) {
+                            window.currentGuild = activeG;
+                            currentServerIsPremium = true;
+                            window.currentServerIsPremium = true;
+                            window.currentServerTierTag = 'PREMIUM';
+                            if (Array.isArray(activeG.premiumSponsors)) {
+                                window.currentServerPremiumSponsors = activeG.premiumSponsors;
+                            }
+                            const cfgMemberNumEl = document.getElementById('cfg-member-num');
+                            if (cfgMemberNumEl && activeG.memberCount) cfgMemberNumEl.textContent = Number(activeG.memberCount).toLocaleString();
+                            const cfgOnlineNumEl = document.getElementById('cfg-online-num');
+                            if (cfgOnlineNumEl && activeG.onlineCount !== undefined) cfgOnlineNumEl.textContent = Number(activeG.onlineCount).toLocaleString();
+                            if (typeof window.renderServerTierAndSponsorBadges === 'function') window.renderServerTierAndSponsorBadges();
+                        }
+                    }
                     if (typeof window.populateRankCardServerDropdown === 'function') {
                         window.populateRankCardServerDropdown();
                     }
@@ -23498,9 +23519,10 @@
             if (typeof updateWhitelistedTabs === 'function') updateWhitelistedTabs(g.id); 
             window.currentGuild = g;
             currentServerName = g.name;
-            currentServerIsPremium = !!g.isPremium;
-            window.currentServerIsPremium = !!g.isPremium;
-            window.currentServerTierTag = g.tierTag || (g.isPremium ? 'PREMIUM' : 'FREE');
+            window.hasUnsavedChanges = false;
+            currentServerIsPremium = true;
+            window.currentServerIsPremium = true;
+            window.currentServerTierTag = 'PREMIUM';
             window.currentServerPremiumSponsors = Array.isArray(g.premiumSponsors) ? g.premiumSponsors : [];
             if (typeof window.renderServerTierAndSponsorBadges === 'function') window.renderServerTierAndSponsorBadges();
             const guildIconUrl = (g.icon && (g.icon.startsWith('http://') || g.icon.startsWith('https://') || g.icon.startsWith('data:')))
@@ -23539,7 +23561,7 @@
                 toggleLoading(true);
             }
             try {
-                await refreshAllDashboardData(false);
+                await refreshAllDashboardData(true);
             } catch (err) {
                 console.error('[Open Config Error]:', err);
             } finally {
@@ -30701,7 +30723,10 @@
 
             if (hasStaleCache) {
                 // Render stale data immediately (no spinner)
-                _applySettings(s, true);
+                window.currentSettings = s;
+                window.previousSettings = s;
+                await fetchGuildChannelsAndRoles(currentServerId, s);
+                await _applySettings(s, true);
                 fetchApplications();
                 // Background revalidation if stale
                 const entry = window.dashboardCache.settings.get(cacheKey);
@@ -30742,15 +30767,18 @@
                 toggleLoading(false);
                 return;
             }
-            // Fetch server channels and roles for dropdowns
-            fetchGuildChannelsAndRoles(currentServerId);
-            _applySettings(s);
+            // Fetch server channels and roles for dropdowns BEFORE applying settings so <select> options exist!
+            window.currentSettings = s;
+            window.previousSettings = s;
+            await fetchGuildChannelsAndRoles(currentServerId, s);
+            await _applySettings(s, true);
             fetchApplications();
             toggleLoading(false);
         }
 
-        async function fetchGuildChannelsAndRoles(guildId) {
+        async function fetchGuildChannelsAndRoles(guildId, sParam = null) {
             if (!guildId) return;
+            const s = sParam || window.currentSettings || window.previousSettings || {};
             const t = sessionStorage.getItem('discord_token');
             const headers = { 'Authorization': `Bearer ${t}` };
             const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : '';
@@ -30797,7 +30825,8 @@
 
                 targetChannelSelects.forEach(select => {
                     if (select) {
-                        const currentVal = select.value;
+                        const settingKey = select.id ? select.id.replace(/^setting-/, '') : '';
+                        const currentVal = (s && settingKey && s[settingKey]) ? String(s[settingKey]) : select.value;
                         let opts = '<option value="">Select channel...</option>';
                         chRes.forEach(ch => {
                             opts += `<option value="${ch.id}" ${ch.id === currentVal ? 'selected' : ''}>#${ch.name}</option>`;
@@ -30907,7 +30936,8 @@
                 ];
                 singleRoleSelects.forEach(select => {
                     if (select) {
-                        const currentVal = select.value;
+                        const settingKey = select.id ? select.id.replace(/^setting-/, '') : '';
+                        const currentVal = (s && settingKey && s[settingKey]) ? String(s[settingKey]) : select.value;
                         let opts = '<option value="">No role selected</option>';
                         rlRes.forEach(r => {
                             const colorStyle = r.color ? ` style="color: ${r.color};"` : '';
@@ -30946,6 +30976,16 @@
             }
             if (!s) return;
             try {
+                window.currentSettings = s;
+                currentServerIsPremium = true;
+                window.currentServerIsPremium = true;
+                window.currentServerTierTag = 'PREMIUM';
+                if (Array.isArray(s.premiumSponsors)) {
+                    window.currentServerPremiumSponsors = s.premiumSponsors;
+                }
+                if (typeof applyPremiumLocking === 'function') applyPremiumLocking();
+                if (typeof checkAndHidePremiumCTAs === 'function') checkAndHidePremiumCTAs(true);
+                if (typeof window.renderServerTierAndSponsorBadges === 'function') window.renderServerTierAndSponsorBadges();
 
                 if (s.heartbeat !== undefined) {
                     const hbEl = document.getElementById('system-heartbeat');
@@ -31574,11 +31614,11 @@
         }
 
         function isUserEditing() {
-
+            if (!window.hasUnsavedChanges) return false;
             const active = document.activeElement;
             if (!active) return false;
             const tag = active.tagName.toLowerCase();
-            return tag === 'input' || tag === 'textarea' || tag === 'select' || active.isContentEditable || !!window.hasUnsavedChanges;
+            return tag === 'input' || tag === 'textarea' || tag === 'select' || active.isContentEditable;
         }
 
         async function manualReloadConfig() {

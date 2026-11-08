@@ -523,7 +523,9 @@ router.get('/members', async (req, res) => {
 
         
 
-        const prefsList = await UserPrefs.findAll();
+        const prefsList = await UserPrefs.findAll({
+            attributes: { exclude: ['rankCardBackgroundImage', 'customRankCardBg', 'customLevelUpBg', 'dashboardBgImage', 'teamCardImage', 'teamCardBanner'] }
+        });
 
         const prefsMap = new Map(prefsList.map(p => [p.userId, p]));
 
