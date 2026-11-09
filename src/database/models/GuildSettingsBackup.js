@@ -46,3 +46,4 @@ const GuildSettingsBackup = sequelize.define('GuildSettingsBackup', {
 });
 
 module.exports = GuildSettingsBackup;
+

@@ -332,7 +332,44 @@ module.exports = {
 };
 
 // 🛡️ Global Protection for Discord Components V2 Message Updates & Edits
-const { MessageComponentInteraction, ModalSubmitInteraction, Message } = require('discord.js');
+const { MessageComponentInteraction, ModalSubmitInteraction, Message, MessagePayload } = require('discord.js');
+
+if (MessagePayload && MessagePayload.prototype && !MessagePayload.prototype._v2BodyPatched) {
+    MessagePayload.prototype._v2BodyPatched = true;
+    const origResolveBody = MessagePayload.prototype.resolveBody;
+    MessagePayload.prototype.resolveBody = function() {
+        const res = origResolveBody.call(this);
+        try {
+            const targetMsg = this.target?.message || (this.isMessage ? this.target : null);
+            const hasV2Flag = Boolean(
+                ((this.body?.flags || 0) & 32768) !== 0 ||
+                targetMsg?.flags?.has?.(32768) ||
+                ((targetMsg?.flags?.bitfield || 0) & 32768) !== 0
+            );
+            if (hasV2Flag && this.body) {
+                if (Array.isArray(this.body.embeds) && this.body.embeds.length > 0) {
+                    const v2 = module.exports.buildEmbedV2Container(
+                        this.body.embeds[0],
+                        this.body.components || [],
+                        this.body.content || ''
+                    );
+                    this.body.components = v2.components;
+                    this.body.flags = (this.body.flags || 0) | 32768;
+                } else if (this.body.content && String(this.body.content).trim().length > 0 && (!this.body.components || this.body.components.length === 0)) {
+                    const v2 = module.exports.buildEmbedV2Container(
+                        { description: String(this.body.content) },
+                        []
+                    );
+                    this.body.components = v2.components;
+                    this.body.flags = (this.body.flags || 0) | 32768;
+                }
+                delete this.body.embeds;
+                delete this.body.content;
+            }
+        } catch (_) {}
+        return res;
+    };
+}
 
 if (MessageComponentInteraction && MessageComponentInteraction.prototype && !MessageComponentInteraction.prototype._v2Patched) {
     MessageComponentInteraction.prototype._v2Patched = true;

@@ -8,8 +8,10 @@
     <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/liquid-glass.css?v=4.6">
     <script src="/translate.js"></script>
     <script src="/nora-sentinel.js?v=2.2" defer></script>
+    <script src="/liquid-glass.js?v=4.6" defer></script>
     <script>
         window.__KNOWN_NORA_GUILDS__ = ["1380094048882266112","1471582546151346359","1502569432785092618","1408523665573810296","1487342521133830174","1493517644815536180","1542284395891920896","1331685485759955016","1492598604643434570","1516656405904363530","1492594051713863710","1505315717921112154","1495210302894116894","1497716213973782588","1528497353680621588","1501092925516546173","1371510828712464565","1351304498185900184","1311022958843658351","1515800329889779954","1514002757110206505","1518640702161027263","1493022018055176387","1484683779137208420","1457481176112431347","1492601244374794543","1311634850607927306","1452453746859577481","1492600701530935407","1392140968551252010","1368269183011393637","1456729601551106125","1520426496991166655","1324215030366867456","1492598096167964722","1492599093992751135","1216119597976256522","1506147817427828809","1469895571413270740","1492593551291187290","1412901825174048800","939395110519603220","1520149842163269672","1460360514730201276","1406717813913030757","1492593292410355812","1492592049147609298","1492983186496425984","1265014058290122783","1484256847727952114","1444403869097656412","1428110154121084968","1231664152615981238","1506664856227418163","1492600447683526778","1492602875044565134","1492598348916723822","1525511322849120428","1148276609762205709","1246976150874624050","1425663262166614030","1429166136695590924","1492601497563955330","1391954867215667200","1492600988799074434"];
 
@@ -37308,8 +37310,11 @@ window.fetchRobloxStatus = async function(t) {
                 <button type="button" onclick="closeSettingsBackupsModal()" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: #fff; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; font-size: 0.95rem;"><i class="fas fa-times"></i></button>
             </div>
 
-            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 10px 12px; border-radius: 12px;">
-                <input type="text" id="manual-backup-note-input" placeholder="Optional snapshot label (e.g. Before event setup)..." maxlength="140" style="flex: 1; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.82rem;">
+            <div style="display: flex; gap: 8px; align-items: center; margin-bottom: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); padding: 10px 12px; border-radius: 12px; flex-wrap: wrap;">
+                <input type="text" id="manual-backup-note-input" placeholder="Optional snapshot label (e.g. Before event setup)..." maxlength="140" style="flex: 1; min-width: 180px; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); color: #fff; padding: 8px 12px; border-radius: 8px; font-size: 0.82rem;">
+                <button type="button" id="run-guild-self-repair-btn" onclick="runGuildSelfRepair()" style="background: rgba(16, 185, 129, 0.16); border: 1px solid rgba(16, 185, 129, 0.45); color: #34d399; font-weight: 700; font-size: 0.8rem; padding: 9px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap;">
+                    <i class="fas fa-shield-virus" style="margin-right: 5px;"></i> Auto-Repair & Verify
+                </button>
                 <button type="button" id="create-manual-backup-btn" onclick="createManualSettingsBackup()" style="background: linear-gradient(135deg, #a855f7, #6366f1); border: none; color: #fff; font-weight: 700; font-size: 0.8rem; padding: 9px 14px; border-radius: 8px; cursor: pointer; white-space: nowrap;">
                     <i class="fas fa-camera" style="margin-right: 5px;"></i> Create Snapshot Now
                 </button>
@@ -37473,6 +37478,38 @@ window.fetchRobloxStatus = async function(t) {
             if (typeof showNotification === 'function') {
                 showNotification('Restore error: ' + err.message, 'error');
             }
+        }
+    }
+
+    async function runGuildSelfRepair() {
+        const guildId = typeof currentGuildId !== 'undefined' && currentGuildId ? currentGuildId : window.currentGuildId;
+        if (!guildId) return;
+        const btn = document.getElementById('run-guild-self-repair-btn');
+        if (btn) btn.disabled = true;
+        try {
+            const token = sessionStorage.getItem('discord_token') || localStorage.getItem('discord_token_v52') || '';
+            const res = await fetch(`/api/guilds/${guildId}/settings/self-repair`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Self-repair verification failed');
+            if (typeof showNotification === 'function') {
+                showNotification(data.message || 'Configuration verified & snapshot saved!', 'success');
+            }
+            await loadSettingsBackupsList();
+            if (typeof fetchSettings === 'function') {
+                await fetchSettings(guildId, true);
+            }
+        } catch (err) {
+            if (typeof showNotification === 'function') {
+                showNotification('Self-Repair error: ' + err.message, 'error');
+            }
+        } finally {
+            if (btn) btn.disabled = false;
         }
     }
     </script>

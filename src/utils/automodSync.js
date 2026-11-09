@@ -81,10 +81,15 @@ async function syncAutoModRule(guild, ruleType, enabled, threshold = 0, settings
         const ruleName = '[NORA] Global Content Filter';
         const existingRule = existingRules.find(r => r.name === ruleName || (r.triggerType === AutoModerationRuleTriggerType.KeywordPreset && r.name.includes('[NORA]')));
 
+        const isMasterOn = Boolean(settings.autoModActive);
         const activePresets = [];
+        if (isMasterOn && settings.automodProfanity) activePresets.push(AutoModerationRuleKeywordPresetType.Profanity);
+        if (isMasterOn && settings.automodSexual) activePresets.push(AutoModerationRuleKeywordPresetType.SexualContent);
+        if (isMasterOn && settings.automodSlurs) activePresets.push(AutoModerationRuleKeywordPresetType.Slurs);
+        if (false && settings.automodProfanity) activePresets.push(AutoModerationRuleKeywordPresetType.Profanity);
         if (settings.automodProfanity) activePresets.push(AutoModerationRuleKeywordPresetType.Profanity);
         if (settings.automodSexual) activePresets.push(AutoModerationRuleKeywordPresetType.SexualContent);
-        if (settings.automodSlurs) activePresets.push(AutoModerationRuleKeywordPresetType.Slurs);
+        if (!isMasterOn) activePresets.length = 0;
 
         if (activePresets.length === 0) {
             if (existingRule) await existingRule.delete().catch(() => { });
@@ -204,13 +209,21 @@ async function syncAllAutoModRules(guild, settings = null) {
     }
     if (!settings) return { success: false, error: 'Database settings missing.' };
 
+    const isMasterOn = Boolean(settings.autoModActive);
     const results = [];
+    results.push(await syncAutoModRule(guild, 'profanity', isMasterOn, 0, settings));
+    results.push(await syncAutoModRule(guild, 'scam', isMasterOn && Boolean(settings.automodScam), 0, settings));
+    results.push(await syncAutoModRule(guild, 'spam', isMasterOn && Boolean(settings.automodSpam), 0, settings));
+    results.push(await syncAutoModRule(guild, 'hardcore', isMasterOn && Boolean(settings.automodHardcore), 0, settings));
+    results.push(await syncAutoModRule(guild, 'mentions', isMasterOn && settings.automodMentions > 0, settings.automodMentions, settings));
+    if (false) {
     results.push(await syncAutoModRule(guild, 'profanity', true, 0, settings));
     results.push(await syncAutoModRule(guild, 'scam', settings.automodScam, 0, settings));
     results.push(await syncAutoModRule(guild, 'spam', settings.automodSpam, 0, settings));
     results.push(await syncAutoModRule(guild, 'hardcore', settings.automodHardcore, 0, settings));
     results.push(await syncAutoModRule(guild, 'mentions', settings.automodMentions > 0, settings.automodMentions, settings));
 
+    }
     const failed = results.filter(r => !r.success);
     if (failed.length > 0) return { success: false, error: failed[0].error };
     return { success: true };

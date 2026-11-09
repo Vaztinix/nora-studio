@@ -390,6 +390,14 @@ const client = new Client({
 client.commands = new Collection();
 logger.setClient(client);
 
+// 🛡️ Initialize Autonomous Pre-Community Safety Shield & Self-Repair Engine
+try {
+    const { initializeSelfRepairSystem } = require('./utils/selfRepairEngine');
+    initializeSelfRepairSystem(client);
+} catch (srErr) {
+    console.error('[Self-Repair] Failed to initialize self-repair engine:', srErr);
+}
+
 // Execute handlers
 const commandHandler = require('./handlers/commandHandler');
 const eventHandler = require('./handlers/eventHandler');

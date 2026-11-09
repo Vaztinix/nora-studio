@@ -1664,4 +1664,31 @@ router.post('/settings-backups/restore', requireOwner, async (req, res) => {
     }
 });
 
+// 🛡️ AUTONOMOUS SELF-REPAIR & PRE-COMMUNITY SAFETY SHIELD (OWNER OPERATIONS)
+router.get('/self-repair/status', requireOwner, async (req, res) => {
+    try {
+        const { getSelfRepairStatus } = require('../../utils/selfRepairEngine');
+        const status = getSelfRepairStatus();
+        res.json({ success: true, ...status });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+router.post('/self-repair/run', requireOwner, async (req, res) => {
+    try {
+        const { runSelfRepairCycle, getSelfRepairStatus } = require('../../utils/selfRepairEngine');
+        const report = await runSelfRepairCycle('MANUAL_OWNER_TRIGGER', req.client);
+        const status = getSelfRepairStatus();
+        res.json({
+            success: true,
+            message: `Self-repair scan complete (${report?.repairsInThisCycle || 0} repairs applied in this cycle; ${status?.totalIssuesRepaired || 0} total).`,
+            report,
+            status
+        });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 module.exports = router;

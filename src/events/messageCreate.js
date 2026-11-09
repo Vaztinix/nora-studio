@@ -597,9 +597,8 @@ module.exports = {
                 let notifyChannel = null;
                 if (announceMode === 'current') {
                     notifyChannel = message.channel;
-                } else if (announceMode === 'channel') {
-                    const notifyChannelId = settings?.levelUpChannelId || message.channel.id;
-                    notifyChannel = message.guild.channels.cache.get(notifyChannelId) || message.channel;
+                } else if (announceMode === 'channel' && settings?.levelUpChannelId) {
+                    notifyChannel = message.guild.channels.cache.get(settings.levelUpChannelId) || null;
                 }
 
                 const template = settings?.levelUpMessage;

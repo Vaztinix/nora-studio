@@ -5,9 +5,40 @@ const { execSync } = require('child_process');
 
 const PID_FILE = path.join(__dirname, '../../.nora.pid');
 const LOCK_PORT = parseInt(process.env.NORA_LOCK_PORT || '48291', 10);
+const INSTANCE_START_TIME = Date.now();
 
 let lockServer = null;
 let watchdogTimer = null;
+
+function parsePidFile() {
+    try {
+        if (!fs.existsSync(PID_FILE)) return null;
+        const raw = fs.readFileSync(PID_FILE, 'utf8').trim();
+        if (!raw) return null;
+        if (raw.startsWith('{')) {
+            const parsed = JSON.parse(raw);
+            return {
+                pid: parseInt(parsed.pid, 10),
+                startedAt: parseInt(parsed.startedAt || '0', 10)
+            };
+        }
+        return {
+            pid: parseInt(raw, 10),
+            startedAt: 0
+        };
+    } catch (_) {
+        return null;
+    }
+}
+
+function writePidFile() {
+    try {
+        fs.writeFileSync(PID_FILE, JSON.stringify({
+            pid: process.pid,
+            startedAt: INSTANCE_START_TIME
+        }));
+    } catch (_) {}
+}
 
 /**
  * Checks whether a given PID is currently active on the OS.
@@ -36,7 +67,7 @@ function killPid(pid, reason = 'Duplicate instance termination') {
 
         if (process.platform === 'win32') {
             try {
-                execSync(`taskkill /F /PID ${pid} 2>nul`, { stdio: 'ignore' });
+                execSync(`taskkill /F /PID ${pid} 2>nul`, { stdio: 'ignore', timeout: 3000 });
             } catch (_) {}
         }
     } catch (err) {
@@ -57,7 +88,7 @@ function findDuplicateProcessPids() {
             const output = execSync(`powershell -NoProfile -NonInteractive -Command "${psScript}"`, {
                 encoding: 'utf8',
                 stdio: ['ignore', 'pipe', 'ignore'],
-                timeout: 3000
+                timeout: 4500
             }).trim();
 
             if (output) {
@@ -124,29 +155,31 @@ function findPidByPort(port) {
  * Sweeps and shuts down any other duplicate instances.
  */
 function sweepDuplicateInstances() {
-    // 1. Check PID file
-    try {
-        if (fs.existsSync(PID_FILE)) {
-            const oldPidStr = fs.readFileSync(PID_FILE, 'utf8').trim();
-            const oldPid = parseInt(oldPidStr, 10);
-            if (!isNaN(oldPid) && oldPid > 0 && oldPid !== process.pid) {
-                if (isPidAlive(oldPid)) {
-                    killPid(oldPid, `Terminating stale PID from .nora.pid (${oldPid})`);
-                }
-            }
-        }
-    } catch (_) {}
+    // 1. Write our own PID & start timestamp immediately so any older instance's watchdog yields to us
+    const existing = parsePidFile();
+    writePidFile();
 
-    // 2. Scan OS process table for duplicate node instances running src/index.js
+    if (existing && !isNaN(existing.pid) && existing.pid > 0 && existing.pid !== process.pid) {
+        if (isPidAlive(existing.pid)) {
+            killPid(existing.pid, `Terminating previous PID from .nora.pid (${existing.pid})`);
+        }
+    }
+
+    // 2. Also check port 3000 & LOCK_PORT owners
+    for (const p of [LOCK_PORT, 3000]) {
+        const portOwner = findPidByPort(p);
+        if (portOwner && portOwner !== process.pid) {
+            killPid(portOwner, `Terminating stale process occupying port ${p} (${portOwner})`);
+        }
+    }
+
+    // 3. Scan OS process table for duplicate node instances running src/index.js
     const duplicatePids = findDuplicateProcessPids();
     for (const dupPid of duplicatePids) {
         killPid(dupPid, `Terminating detected duplicate Nora bot instance (${dupPid})`);
     }
 
-    // 3. Update PID file with current process PID
-    try {
-        fs.writeFileSync(PID_FILE, process.pid.toString());
-    } catch (_) {}
+    writePidFile();
 }
 
 /**
@@ -160,7 +193,7 @@ function bindLockSocket() {
             try {
                 const msg = JSON.parse(data.toString().trim());
                 if (msg && msg.type === 'PING') {
-                    socket.write(JSON.stringify({ type: 'PONG', pid: process.pid }) + '\n');
+                    socket.write(JSON.stringify({ type: 'PONG', pid: process.pid, startedAt: INSTANCE_START_TIME }) + '\n');
                 } else if (msg && msg.type === 'SHUTDOWN_DUPLICATE') {
                     console.log(`[Instance Lock] Received shutdown request from newer instance (PID ${msg.pid}). Exiting cleanly...`);
                     process.exit(0);
@@ -171,7 +204,6 @@ function bindLockSocket() {
 
     lockServer.on('error', (err) => {
         if (err.code === 'EADDRINUSE') {
-            console.warn(`[Instance Lock] Port ${LOCK_PORT} is in use. Resolving conflicting instance...`);
             const conflictingPid = findPidByPort(LOCK_PORT);
             if (conflictingPid && conflictingPid !== process.pid) {
                 killPid(conflictingPid, `Terminating process occupying lock port ${LOCK_PORT} (${conflictingPid})`);
@@ -186,38 +218,29 @@ function bindLockSocket() {
     });
 
     try {
-        lockServer.listen(LOCK_PORT, '127.0.0.1', () => {
-            // Socket listening
-        });
-        lockServer.unref(); // Don't prevent process from exiting normally
+        lockServer.listen(LOCK_PORT, '127.0.0.1');
+        lockServer.unref();
     } catch (_) {}
 }
 
 /**
  * Initializes continuous double-instance detection watchdog.
- * Runs every 8 seconds to ensure no duplicate instances start later.
+ * Ensures an older process always yields to a newer process, preventing startup race kills.
  */
 function startDoubleInstanceWatchdog() {
     if (watchdogTimer) clearInterval(watchdogTimer);
 
     watchdogTimer = setInterval(() => {
         try {
-            // Check if another process overwrote the PID file
-            if (fs.existsSync(PID_FILE)) {
-                const currentFilePid = parseInt(fs.readFileSync(PID_FILE, 'utf8').trim(), 10);
-                if (!isNaN(currentFilePid) && currentFilePid !== process.pid && isPidAlive(currentFilePid)) {
-                    console.warn(`[Instance Watchdog] Duplicate instance detected via PID file (${currentFilePid}). Shutting down duplicate instance.`);
-                    killPid(currentFilePid, `Watchdog terminating rogue duplicate instance (${currentFilePid})`);
-                    fs.writeFileSync(PID_FILE, process.pid.toString());
-                }
-            }
-
-            // Quick process sweep
-            const duplicates = findDuplicateProcessPids();
-            if (duplicates.length > 0) {
-                console.warn(`[Instance Watchdog] Detected ${duplicates.length} duplicate Nora process(es): ${duplicates.join(', ')}. Shutting them down.`);
-                for (const dupPid of duplicates) {
-                    killPid(dupPid, `Watchdog terminating duplicate process (${dupPid})`);
+            const fileInfo = parsePidFile();
+            if (fileInfo && !isNaN(fileInfo.pid) && fileInfo.pid !== process.pid && isPidAlive(fileInfo.pid)) {
+                if (fileInfo.startedAt >= INSTANCE_START_TIME) {
+                    // A newer instance took over! Yield gracefully instead of killing the newer instance.
+                    console.log(`[Instance Watchdog] Newer Nora instance detected (PID ${fileInfo.pid}). Yielding and exiting cleanly...`);
+                    process.exit(0);
+                } else {
+                    killPid(fileInfo.pid, `Watchdog terminating older duplicate instance (${fileInfo.pid})`);
+                    writePidFile();
                 }
             }
         } catch (_) {}
@@ -231,26 +254,17 @@ function startDoubleInstanceWatchdog() {
  */
 function ensureSingleInstance() {
     console.log(`[System Lock] Initializing single instance protection for PID ${process.pid}...`);
-
-    // 1. Terminate any existing/duplicate instances on startup
     sweepDuplicateInstances();
-
-    // 2. Bind mutex socket
     bindLockSocket();
-
-    // 3. Arm continuous runtime watchdog
     startDoubleInstanceWatchdog();
 
-    // 4. Register graceful exit cleanups
     const cleanup = () => {
         try {
             if (watchdogTimer) clearInterval(watchdogTimer);
             if (lockServer) lockServer.close();
-            if (fs.existsSync(PID_FILE)) {
-                const currentPid = parseInt(fs.readFileSync(PID_FILE, 'utf8').trim(), 10);
-                if (currentPid === process.pid) {
-                    fs.unlinkSync(PID_FILE);
-                }
+            const current = parsePidFile();
+            if (current && current.pid === process.pid) {
+                fs.unlinkSync(PID_FILE);
             }
         } catch (_) {}
     };

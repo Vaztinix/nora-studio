@@ -581,4 +581,39 @@ router.post('/backups/:backupId/restore', settingsRateLimiter, async (req, res) 
     }
 });
 
+/**
+ * POST /api/guilds/:guildId/settings/self-repair
+ * Runs an instant configuration integrity & safety verification pass for this server.
+ */
+router.post('/self-repair', settingsRateLimiter, async (req, res) => {
+    try {
+        const { guildId } = req.params;
+        const { runSelfRepairCycle } = require('../../utils/selfRepairEngine');
+        const { createGuildBackup } = require('../../utils/settingsBackupManager');
+        const GuildSettings = require('../../database/models/GuildSettings');
+
+        const report = await runSelfRepairCycle(`GUILD_${guildId}_MANUAL`, req.client);
+        const settings = await GuildSettings.findOne({ where: { guildId } });
+        settingsCache.invalidate(guildId);
+
+        await createGuildBackup(guildId, {
+            triggerSource: 'SELF_REPAIR_VERIFIED',
+            actorId: req.user?.id || null,
+            actorName: req.user?.username || 'Server Admin',
+            note: 'Post-auto-repair verified configuration snapshot',
+            force: true
+        }).catch(() => {});
+
+        res.json({
+            success: true,
+            message: `Configuration verified & repaired (${report?.repairsInThisCycle || 0} fixes applied). Snapshot saved.`,
+            report,
+            settings
+        });
+    } catch (error) {
+        console.error('Error running guild self-repair for %s:', req.params.guildId, error);
+        res.status(500).json({ error: 'Failed to run configuration self-repair.' });
+    }
+});
+
 module.exports = router;
