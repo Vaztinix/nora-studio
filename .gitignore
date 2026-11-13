@@ -83,3 +83,7 @@ src/api/routes/roku.js
 
 
 
+
+*.cmd
+*.exe
+scripts/fix_dashboard_all.js

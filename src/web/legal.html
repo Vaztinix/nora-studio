@@ -12,8 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/liquid-glass.css?v=4.6"><script src="/nora-sentinel.js?v=2.2" defer></script><script src="/liquid-glass.js?v=4.6" defer></script>
-    
+<script src="/nora-sentinel.js?v=2.2" defer></script>    
     <style>
         :root {
             --bg-base: #08090E;
@@ -757,6 +756,7 @@
             .footer-bottom { flex-direction: column; text-align: center; }
         }
     </style>
+    <script src="/nora-lockout.js?v=nora-hiatus-2027" defer></script>
 </head>
 <body>
     <!-- Mobile Navigation Drawer Backdrop -->
@@ -1038,7 +1038,7 @@
             <div class="legal-tab-pane active" id="pane-terms">
                 <h2>Terms of Service</h2>
                 <div class="legal-meta-bar">
-                    <span><i class="far fa-calendar-alt"></i> Last Updated: November 3, 2026</span>
+                    <span><i class="far fa-calendar-alt"></i> Last Updated: November 13, 2026</span>
                 </div>
                 
                 <p>Welcome to <strong>Nora Studio</strong>. These Terms of Service ("Terms") govern your use of the Nora Discord bot, our dashboard at <code>vaztinix.dev</code>, and all associated software, APIs, and community tools engineered by Vaztinix and the Nora Studio Team.</p>
@@ -1153,8 +1153,18 @@
                     <li><strong>Multi-Factor Separation:</strong> Shard separation and rebalancing are dynamically evaluated across four real-time telemetry vectors: (1) Server count per shard, (2) Shard resource utilization (V8 Heap %, RSS memory ceiling, and CPU load %), (3) Gateway WebSocket ping and Node.js event loop lag (ms), and (4) Total member density &amp; active voice sessions. Live shard health scores and Safe Zone capacities are publicly verifiable at <a href="https://vaztinix.dev/status" target="_blank" rel="noopener" style="color: var(--cyan);">vaztinix.dev/status</a>.</li>
                 </ul>
 
-                <h3>9. Service Availability, Disclaimers & Limitation of Liability</h3>
+                <h3>9. Service Availability, Temporary Hiatus & Disclaimers</h3>
                 <p>Nora and all related services are provided on an <strong>"as is"</strong> and <strong>"as available"</strong> basis without warranties of any kind. While we maintain resilient hosting infrastructure, Nora Studio shall not be held liable for server downtime, Discord API interruptions, data loss resulting from server misconfigurations, or actions taken by server moderators.</p>
+
+                <div class="notice-box info" style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.28); border-radius: 14px; padding: 18px 22px; margin: 18px 0; display: flex; gap: 16px; align-items: flex-start;">
+                    <i class="fas fa-pause-circle" style="color: var(--blurple); font-size: 1.5rem; margin-top: 2px;"></i>
+                    <div>
+                        <strong style="color: #ffffff; font-size: 1.05rem; display: block; margin-bottom: 6px;">Temporary System Hiatus & Preservation Guarantee</strong>
+                        <p style="margin: 0; color: #d1d5db; font-size: 0.92rem; line-height: 1.65;">
+                            Our systems, bots, and services are <strong>not gone forever</strong>. All Nora operations are temporarily disabled to allow our development team dedicated time to fix core stability issues, conduct complete V3 code rewrites, and launch <strong>Nora Studio Dashboard 5.0.0</strong> alongside our new <strong>Flux UI System</strong> and automated 2-shard high-performance infrastructure. All server settings, user preferences, and Zero-Access security profiles remain securely preserved. Nora will return on <strong>January 5, 2027</strong> with a brand new YouTube Channel, X, and our own dedicated support domain.
+                        </p>
+                    </div>
+                </div>
 
                 <h3>10. Modifications to Terms</h3>
                 <p>We may periodically update these Terms to reflect new features, security protocols, or legal requirements. Material updates will be highlighted in our Discord community and reflected in the "Last Updated" timestamp. Continued use of Nora constitutes agreement to revised terms.</p>

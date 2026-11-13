@@ -1432,6 +1432,16 @@ app.get('/nora-sentinel.js', (req, res) => {
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.sendFile(path.join(__dirname, 'web/nora-sentinel.js'));
 });
+app.get('/nora-lockout.js', (req, res) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    const p = path.join(__dirname, 'web/nora-lockout.js');
+    if (fs.existsSync(p)) {
+        res.sendFile(p);
+    } else {
+        res.sendFile(path.join(__dirname, '../dist/nora-lockout.js'));
+    }
+});
 app.get('/manifest.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.sendFile(path.join(__dirname, 'web/manifest.json'));
@@ -5550,14 +5560,46 @@ function startCloudflareTunnel() {
             } catch (e) { }
         }
 
-        const configPath = path.join(process.env.USERPROFILE || 'C:\\Users\\dxa73', '.cloudflared', 'config.yml');
+        const cfDir = path.join(process.env.USERPROFILE || 'C:\\Users\\dxa73', '.cloudflared');
+        const configPath = path.join(cfDir, 'config.yml');
+        const credPath = path.join(cfDir, '72332848-a868-4cfc-83f8-2fda33d9f865.json');
         const token = "eyJhIjoiNTk0Nzk4OWE0OTlmODZjNDZhY2ZhNTRjMmRmODFkZjYiLCJ0IjoiNzIzMzI4NDgtYTg2OC00Y2ZjLTgzZjgtMmZkYTMzZDlmODY1IiwicyI6IjNZNzkrRnhMcU5GRmsrdUcvRVhiM1hWT1luUTBWR00zWm5FRldjK1dYcmc9In0=";
+
+        if (!fs.existsSync(configPath)) {
+            try {
+                fs.mkdirSync(cfDir, { recursive: true });
+                const decoded = JSON.parse(Buffer.from(token, 'base64').toString('utf8'));
+                if (!fs.existsSync(credPath)) {
+                    fs.writeFileSync(credPath, JSON.stringify({
+                        AccountTag: decoded.a,
+                        TunnelSecret: decoded.s,
+                        TunnelID: decoded.t
+                    }, null, 2));
+                }
+                const yamlContent = [
+                    `tunnel: ${decoded.t}`,
+                    `credentials-file: ${credPath}`,
+                    '',
+                    'ingress:',
+                    '  - hostname: api.vaztinix.dev',
+                    `    service: http://localhost:${PORT}`,
+                    '  - hostname: vaztinix.dev',
+                    `    service: http://localhost:${PORT}`,
+                    `  - service: http://localhost:${PORT}`,
+                    ''
+                ].join('\n');
+                fs.writeFileSync(configPath, yamlContent);
+            } catch (e) { }
+        }
+
+        const localCloudflared = path.join(__dirname, '../cloudflared.exe');
+        const cloudflaredBin = fs.existsSync(localCloudflared) ? localCloudflared : 'cloudflared';
         const args = fs.existsSync(configPath)
             ? ['tunnel', '--config', configPath, 'run']
-            : ['tunnel', 'run', '--token', token];
+            : ['tunnel', 'run', '--url', `http://localhost:${PORT}`, '--token', token];
 
         console.log(`[Cloudflare Tunnel] Executing cloudflared tunnel with ${fs.existsSync(configPath) ? 'local config: ' + configPath : 'remote token'}...`);
-        cloudflareTunnelProcess = spawn('cloudflared', args, { windowsHide: true });
+        cloudflareTunnelProcess = spawn(cloudflaredBin, args, { windowsHide: true });
 
         if (cloudflareTunnelProcess.pid) {
             try {

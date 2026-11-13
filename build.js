@@ -13,8 +13,9 @@ fs.cpSync(srcWeb, distDir, { recursive: true });
 
 console.log(`Build files copied to: ${distDir}`);
 
+const nodeBin = process.execPath || 'node';
 try {
-    execSync('node scripts/safety_filter.js', { stdio: 'inherit' });
+    execSync(`"${nodeBin}" scripts/safety_filter.js`, { stdio: 'inherit' });
     console.log(`Build complete: ${distDir}`);
 } catch (e) {
     console.error("Build failed validation.");

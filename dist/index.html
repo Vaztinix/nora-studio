@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,16 +12,19 @@
         }
     </script>
     <title>Nora Studio | Privacy-First, All-in-One Discord Automation Bot</title>
-    <meta name="description" content="Nora Studio is the ultimate privacy-first Discord bot for community operations. Features real-time Roblox group rank sync, Starboard v3.0, sandboxed math counting game, 4-way verification, native AutoMod threat shield, and full web telemetry.">
+    <meta name="description"
+        content="Nora Studio is the ultimate privacy-first Discord bot for community operations. Features real-time Roblox group rank sync, Starboard v3.0, sandboxed math counting game, 4-way verification, native AutoMod threat shield, and full web telemetry.">
     <link rel="icon" type="image/png" href="/nora.png">
-    
+
     <!-- Modern Typography & Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="/liquid-glass.css?v=4.6"><script src="/nora-sentinel.js?v=2.2" defer></script><script src="/liquid-glass.js?v=4.6" defer></script>
-    
+    <script src="/nora-sentinel.js?v=2.2" defer></script>
+
     <style>
         :root {
             --bg-base: #07080C;
@@ -29,30 +33,30 @@
             --border-subtle: rgba(255, 255, 255, 0.08);
             --border-hover: rgba(255, 255, 255, 0.18);
             --border-glow: rgba(88, 101, 242, 0.4);
-            
+
             --text-main: #F3F4F6;
             --text-muted: #9CA3AF;
             --text-dim: #6B7280;
-            
+
             --blurple: #5865F2;
             --blurple-hover: #4752C4;
             --blurple-glow: rgba(88, 101, 242, 0.35);
-            
+
             --purple: #8B5CF6;
             --cyan: #06B6D4;
             --emerald: #10B981;
             --amber: #F59E0B;
             --rose: #F43F5E;
-            
+
             --discord-bg: #313338;
             --discord-dark: #2B2D31;
             --discord-input: #383A40;
-            
+
             --radius-sm: 8px;
             --radius-md: 14px;
             --radius-lg: 22px;
             --radius-full: 9999px;
-            
+
             --transition-smooth: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
@@ -63,6 +67,7 @@
             animation-play-state: paused !important;
             transition: none !important;
         }
+
         body.low-resource-mode * {
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
@@ -88,7 +93,7 @@
             overflow-x: hidden;
             display: flex;
             flex-direction: column;
-            background-image: 
+            background-image:
                 radial-gradient(ellipse 80% 50% at 50% -10%, rgba(88, 101, 242, 0.16) 0%, transparent 65%),
                 radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
             background-size: 100% 100%, 28px 28px;
@@ -119,6 +124,7 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
             transition: var(--transition-smooth);
         }
+
         .glass-panel:hover {
             border-color: var(--border-hover);
         }
@@ -128,11 +134,16 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            background: rgba(7, 8, 12, 0.85);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            background: rgba(7, 8, 14, 0.96);
             border-bottom: 1px solid var(--border-subtle);
             transition: var(--transition-smooth);
+        }
+
+        section[id],
+        div[id].section-target {
+            scroll-margin-top: 80px;
         }
 
         .nav-container {
@@ -152,6 +163,7 @@
             text-decoration: none;
             letter-spacing: -0.02em;
         }
+
         .brand img {
             width: 36px;
             height: 36px;
@@ -166,7 +178,8 @@
             list-style: none;
         }
 
-        .nav-item-link, .nav-dropdown-trigger {
+        .nav-item-link,
+        .nav-dropdown-trigger {
             font-size: 0.92rem;
             font-weight: 600;
             color: var(--text-muted);
@@ -180,8 +193,11 @@
             cursor: pointer;
             user-select: none;
         }
-        .nav-item-link:hover, .nav-dropdown-trigger:hover,
-        .nav-item-link.active, .nav-dropdown-trigger.active {
+
+        .nav-item-link:hover,
+        .nav-dropdown-trigger:hover,
+        .nav-item-link.active,
+        .nav-dropdown-trigger.active {
             color: #FFFFFF;
             background: rgba(255, 255, 255, 0.05);
         }
@@ -244,10 +260,12 @@
             color: #E2E8F0;
             transition: all 0.2s ease;
         }
+
         .dropdown-item:hover {
             background: rgba(88, 101, 242, 0.12);
             transform: translateX(3px);
         }
+
         .dropdown-item i {
             width: 20px;
             text-align: center;
@@ -255,16 +273,19 @@
             color: #818CF8;
             flex-shrink: 0;
         }
+
         .dropdown-item-text {
             display: flex;
             flex-direction: column;
             gap: 2px;
         }
+
         .dropdown-title {
             font-size: 0.88rem;
             font-weight: 700;
             color: #FFFFFF;
         }
+
         .dropdown-desc {
             font-size: 0.76rem;
             color: #94A3B8;
@@ -291,6 +312,7 @@
             align-items: center;
             gap: 8px;
         }
+
         .btn-nav-dashboard:hover {
             border-color: var(--border-hover);
             background: rgba(255, 255, 255, 0.08);
@@ -312,6 +334,7 @@
             align-items: center;
             gap: 8px;
         }
+
         .btn-nav-invite:hover {
             background: linear-gradient(180deg, #6470f5 0%, #4e59cf 100%);
             border-color: rgba(255, 255, 255, 0.25);
@@ -353,6 +376,7 @@
             color: #D2D8FC;
             width: fit-content;
         }
+
         .hero-announcement-pill i {
             color: #5865F2;
             font-size: 0.95rem;
@@ -365,6 +389,7 @@
             letter-spacing: -0.035em;
             color: #FFFFFF;
         }
+
         .hero-highlight {
             color: #5865F2;
             background: linear-gradient(135deg, #7983F5 0%, #5865F2 100%);
@@ -381,6 +406,7 @@
             max-width: 680px;
             margin: 0 auto;
         }
+
         .hero-description strong {
             color: var(--text-main);
         }
@@ -409,6 +435,7 @@
             gap: 10px;
             text-decoration: none;
         }
+
         .btn-cta-primary:hover {
             background: linear-gradient(180deg, #6470f5 0%, #4e59cf 100%) !important;
             border-color: rgba(255, 255, 255, 0.25) !important;
@@ -433,6 +460,7 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
         }
+
         .btn-cta-secondary:hover {
             background: rgba(255, 255, 255, 0.08);
             border-color: var(--border-hover);
@@ -455,18 +483,21 @@
             backdrop-filter: blur(20px) saturate(180%);
             -webkit-backdrop-filter: blur(20px) saturate(180%);
         }
+
         .stat-item {
             text-align: center;
             display: flex;
             flex-direction: column;
             gap: 4px;
         }
+
         .stat-value {
             font-size: 1.75rem;
             font-weight: 800;
             color: #FFFFFF;
             letter-spacing: -0.02em;
         }
+
         .stat-label {
             font-size: 0.8rem;
             font-weight: 600;
@@ -480,6 +511,7 @@
             padding: 100px 0;
             position: relative;
         }
+
         .section-header {
             text-align: center;
             max-width: 760px;
@@ -488,6 +520,7 @@
             flex-direction: column;
             gap: 16px;
         }
+
         .section-tag {
             font-size: 0.82rem;
             font-weight: 800;
@@ -499,6 +532,7 @@
             justify-content: center;
             gap: 8px;
         }
+
         .section-title {
             font-size: clamp(2rem, 3.4vw, 3rem);
             font-weight: 800;
@@ -506,6 +540,7 @@
             line-height: 1.15;
             color: #FFFFFF;
         }
+
         .section-subtitle {
             font-size: 1.05rem;
             color: var(--text-muted);
@@ -526,9 +561,11 @@
             position: relative;
             overflow: hidden;
         }
+
         .bento-card.col-span-2 {
             grid-column: span 2;
         }
+
         .bento-card.col-span-3 {
             grid-column: span 3;
         }
@@ -543,13 +580,41 @@
             font-size: 1.4rem;
             margin-bottom: 24px;
         }
-        .bento-icon.blurple { background: rgba(88, 101, 242, 0.15); color: #818CF8; }
-        .bento-icon.emerald { background: rgba(16, 185, 129, 0.15); color: #10B981; }
-        .bento-icon.amber { background: rgba(245, 158, 11, 0.15); color: #F59E0B; }
-        .bento-icon.cyan { background: rgba(6, 182, 212, 0.15); color: #06B6D4; }
-        .bento-icon.purple { background: rgba(139, 92, 246, 0.15); color: #A78BFA; }
-        .bento-icon.rose { background: rgba(244, 63, 94, 0.15); color: #FB7185; }
-        .bento-icon.pink { background: rgba(255, 51, 102, 0.15); color: #FF3366; }
+
+        .bento-icon.blurple {
+            background: rgba(88, 101, 242, 0.15);
+            color: #818CF8;
+        }
+
+        .bento-icon.emerald {
+            background: rgba(16, 185, 129, 0.15);
+            color: #10B981;
+        }
+
+        .bento-icon.amber {
+            background: rgba(245, 158, 11, 0.15);
+            color: #F59E0B;
+        }
+
+        .bento-icon.cyan {
+            background: rgba(6, 182, 212, 0.15);
+            color: #06B6D4;
+        }
+
+        .bento-icon.purple {
+            background: rgba(139, 92, 246, 0.15);
+            color: #A78BFA;
+        }
+
+        .bento-icon.rose {
+            background: rgba(244, 63, 94, 0.15);
+            color: #FB7185;
+        }
+
+        .bento-icon.pink {
+            background: rgba(255, 51, 102, 0.15);
+            color: #FF3366;
+        }
 
         .bento-body h3 {
             font-size: 1.35rem;
@@ -558,6 +623,7 @@
             margin-bottom: 12px;
             letter-spacing: -0.01em;
         }
+
         .bento-body p {
             color: var(--text-muted);
             font-size: 0.94rem;
@@ -570,6 +636,7 @@
             margin-top: 20px;
             flex-wrap: wrap;
         }
+
         .bento-chip {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.08);
@@ -585,6 +652,7 @@
             padding: 90px 0;
             border-top: 1px solid var(--border-subtle);
         }
+
         .command-filter-bar {
             display: flex;
             justify-content: center;
@@ -592,6 +660,7 @@
             margin-bottom: 36px;
             flex-wrap: wrap;
         }
+
         .filter-btn {
             background: var(--bg-surface);
             border: 1px solid var(--border-subtle);
@@ -603,10 +672,12 @@
             cursor: pointer;
             transition: var(--transition-smooth);
         }
+
         .filter-btn:hover {
             color: #FFFFFF;
             border-color: var(--border-hover);
         }
+
         .filter-btn.active {
             background: var(--blurple);
             color: #FFFFFF;
@@ -619,6 +690,7 @@
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 20px;
         }
+
         .command-item-card {
             background: var(--bg-surface);
             border: 1px solid var(--border-subtle);
@@ -627,11 +699,13 @@
             transition: var(--transition-smooth);
             cursor: pointer;
         }
+
         .command-item-card:hover {
             border-color: var(--border-hover);
             transform: translateY(-3px);
             background: var(--bg-surface-elevated);
         }
+
         .command-name {
             font-family: monospace;
             font-size: 1.05rem;
@@ -642,6 +716,7 @@
             align-items: center;
             justify-content: space-between;
         }
+
         .command-desc {
             font-size: 0.88rem;
             color: var(--text-muted);
@@ -653,6 +728,7 @@
             padding: 100px 0;
             border-top: 1px solid var(--border-subtle);
         }
+
         .pricing-cards-container {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
@@ -660,6 +736,7 @@
             max-width: 900px;
             margin: 0 auto 60px auto;
         }
+
         .pricing-tier-card {
             padding: 40px;
             display: flex;
@@ -667,10 +744,12 @@
             justify-content: space-between;
             position: relative;
         }
+
         .pricing-tier-card.featured {
             border-color: rgba(139, 92, 246, 0.4);
             box-shadow: 0 0 50px rgba(139, 92, 246, 0.2);
         }
+
         .featured-badge {
             position: absolute;
             top: -14px;
@@ -686,23 +765,27 @@
             text-transform: uppercase;
             letter-spacing: 0.08em;
         }
+
         .tier-name {
             font-size: 1.5rem;
             font-weight: 800;
             color: #FFFFFF;
             margin-bottom: 8px;
         }
+
         .tier-price {
             font-size: 2.5rem;
             font-weight: 800;
             color: #FFFFFF;
             margin: 16px 0;
         }
+
         .tier-price span {
             font-size: 1rem;
             font-weight: 600;
             color: var(--text-dim);
         }
+
         .tier-features-list {
             list-style: none;
             display: flex;
@@ -710,6 +793,7 @@
             gap: 14px;
             margin: 24px 0 32px 0;
         }
+
         .tier-features-list li {
             display: flex;
             align-items: center;
@@ -717,6 +801,7 @@
             font-size: 0.94rem;
             color: var(--text-muted);
         }
+
         .tier-features-list li i {
             color: #10B981;
             font-size: 0.9rem;
@@ -727,6 +812,7 @@
             padding: 90px 0;
             border-top: 1px solid var(--border-subtle);
         }
+
         .faq-container {
             max-width: 800px;
             margin: 0 auto;
@@ -734,6 +820,7 @@
             flex-direction: column;
             gap: 16px;
         }
+
         .faq-item {
             background: var(--bg-surface);
             border: 1px solid var(--border-subtle);
@@ -741,6 +828,7 @@
             overflow: hidden;
             transition: var(--transition-smooth);
         }
+
         .faq-question {
             padding: 20px 26px;
             display: flex;
@@ -752,14 +840,17 @@
             cursor: pointer;
             user-select: none;
         }
+
         .faq-question i {
             transition: var(--transition-smooth);
             color: var(--text-dim);
         }
+
         .faq-item.active .faq-question i {
             transform: rotate(180deg);
             color: var(--blurple);
         }
+
         .faq-answer {
             padding: 0 26px 22px 26px;
             color: var(--text-muted);
@@ -767,6 +858,7 @@
             line-height: 1.6;
             display: none;
         }
+
         .faq-item.active .faq-answer {
             display: block;
         }
@@ -775,6 +867,7 @@
         .cta-banner-section {
             padding: 60px 0 100px 0;
         }
+
         .cta-box {
             padding: 60px 40px;
             text-align: center;
@@ -784,6 +877,7 @@
             position: relative;
             overflow: hidden;
         }
+
         .cta-box h2 {
             font-size: clamp(2rem, 3.5vw, 2.8rem);
             font-weight: 800;
@@ -791,6 +885,7 @@
             letter-spacing: -0.03em;
             margin-bottom: 16px;
         }
+
         .cta-box p {
             font-size: 1.1rem;
             color: var(--text-muted);
@@ -804,23 +899,27 @@
             background: rgba(5, 6, 9, 0.9);
             padding: 70px 0 35px 0;
         }
+
         .footer-grid {
             display: grid;
             grid-template-columns: 2fr repeat(3, 1fr);
             gap: 50px;
             margin-bottom: 50px;
         }
+
         .footer-brand {
             display: flex;
             flex-direction: column;
             gap: 16px;
         }
+
         .footer-brand p {
             color: var(--text-muted);
             font-size: 0.9rem;
             line-height: 1.6;
             max-width: 340px;
         }
+
         .footer-col h5 {
             color: #FFFFFF;
             font-size: 0.95rem;
@@ -829,22 +928,26 @@
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
+
         .footer-col ul {
             list-style: none;
             display: flex;
             flex-direction: column;
             gap: 12px;
         }
+
         .footer-col ul a {
             color: var(--text-muted);
             text-decoration: none;
             font-size: 0.9rem;
             transition: var(--transition-smooth);
         }
+
         .footer-col ul a:hover {
             color: #FFFFFF;
             padding-left: 4px;
         }
+
         .footer-bottom {
             display: flex;
             align-items: center;
@@ -872,6 +975,7 @@
             cursor: pointer;
             transition: var(--transition-smooth);
         }
+
         .mobile-menu-btn:hover {
             background: rgba(255, 255, 255, 0.1);
             border-color: var(--border-hover);
@@ -898,9 +1002,11 @@
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
+
         .mobile-drawer.open {
             right: 0;
         }
+
         .mobile-drawer-backdrop {
             position: fixed;
             top: 0;
@@ -915,10 +1021,12 @@
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
+
         .mobile-drawer-backdrop.open {
             opacity: 1;
             pointer-events: auto;
         }
+
         .mobile-drawer-header {
             display: flex;
             align-items: center;
@@ -926,6 +1034,7 @@
             padding-bottom: 14px;
             border-bottom: 1px solid var(--border-subtle);
         }
+
         .mobile-drawer-close {
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid var(--border-subtle);
@@ -938,11 +1047,13 @@
             justify-content: center;
             cursor: pointer;
         }
+
         .mobile-drawer-nav {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
+
         .mobile-nav-link {
             display: flex;
             align-items: center;
@@ -957,7 +1068,9 @@
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid transparent;
         }
-        .mobile-nav-link:hover, .mobile-nav-link.active {
+
+        .mobile-nav-link:hover,
+        .mobile-nav-link.active {
             color: #fff;
             background: rgba(255, 255, 255, 0.06);
             border-color: rgba(255, 255, 255, 0.1);
@@ -970,6 +1083,7 @@
             overflow: hidden;
             transition: all 0.2s ease;
         }
+
         .mobile-accordion-header {
             display: flex;
             align-items: center;
@@ -981,29 +1095,35 @@
             cursor: pointer;
             user-select: none;
         }
+
         .mobile-accordion-header div {
             display: flex;
             align-items: center;
             gap: 12px;
         }
+
         .mobile-accordion-header .acc-arrow {
             font-size: 0.75rem;
             color: var(--text-muted);
             transition: transform 0.25s ease;
         }
+
         .mobile-accordion.open .mobile-accordion-header .acc-arrow {
             transform: rotate(180deg);
             color: var(--blurple);
         }
+
         .mobile-accordion-body {
             display: none;
             flex-direction: column;
             gap: 4px;
             padding: 4px 12px 10px 36px;
         }
+
         .mobile-accordion.open .mobile-accordion-body {
             display: flex;
         }
+
         .mobile-sublink {
             padding: 7px 10px;
             color: var(--text-muted);
@@ -1016,6 +1136,7 @@
             align-items: center;
             gap: 8px;
         }
+
         .mobile-sublink:hover {
             color: #ffffff;
             background: rgba(255, 255, 255, 0.05);
@@ -1029,6 +1150,7 @@
             padding-top: 16px;
             border-top: 1px solid var(--border-subtle);
         }
+
         .mobile-drawer-actions a {
             width: 100%;
             text-align: center;
@@ -1039,65 +1161,88 @@
             font-weight: 700;
         }
 
+        @media (min-width: 769px) {
+            .mobile-drawer,
+            .mobile-drawer-backdrop,
+            .mobile-menu-btn {
+                display: none !important;
+            }
+        }
+
         /* ===== RESPONSIVE MEDIA QUERIES ===== */
         @media (max-width: 992px) {
             .hero-section {
                 padding: 50px 0 40px 0;
             }
+
             .hero-heading {
                 font-size: 2.25rem !important;
                 line-height: 1.2 !important;
             }
+
             .bento-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+
             .bento-card.col-span-2 {
                 grid-column: span 2;
             }
+
             .pricing-cards-container {
                 grid-template-columns: 1fr;
             }
+
             .footer-grid {
                 grid-template-columns: 1fr 1fr;
                 gap: 30px;
             }
         }
+
         @media (max-width: 768px) {
             .nav-links {
                 display: none !important;
             }
+
             .mobile-menu-btn {
                 display: flex !important;
             }
+
             .btn-nav-invite {
                 display: none !important;
             }
+
             .btn-nav-dashboard {
                 padding: 7px 14px !important;
                 font-size: 0.82rem !important;
             }
+
             .hero-section {
                 padding: 36px 0 30px 0;
             }
+
             .hero-heading {
                 font-size: 1.85rem !important;
                 letter-spacing: -0.02em !important;
             }
+
             .hero-description {
                 font-size: 0.95rem !important;
                 line-height: 1.55 !important;
             }
+
             .hero-cta-group {
                 flex-direction: column;
                 width: 100%;
                 gap: 12px;
             }
+
             .hero-cta-group a {
                 width: 100%;
                 justify-content: center;
                 min-height: 48px;
                 box-sizing: border-box;
             }
+
             .hero-stats-bar {
                 grid-template-columns: repeat(2, 1fr) !important;
                 gap: 12px !important;
@@ -1105,41 +1250,52 @@
                 box-sizing: border-box !important;
                 padding: 16px 12px !important;
             }
+
             .stat-value {
                 font-size: 1.4rem !important;
             }
+
             .stat-label {
                 font-size: 0.75rem !important;
             }
+
             .bento-grid {
                 grid-template-columns: 1fr !important;
             }
+
             .bento-card.col-span-2 {
                 grid-column: span 1 !important;
             }
+
             .bento-card {
                 padding: 22px 18px !important;
             }
+
             .command-explorer-container {
                 padding: 18px 14px !important;
             }
+
             .command-filter-bar {
                 overflow-x: auto !important;
                 -webkit-overflow-scrolling: touch !important;
                 flex-wrap: nowrap !important;
                 padding-bottom: 8px !important;
             }
+
             .filter-btn {
                 flex-shrink: 0 !important;
                 white-space: nowrap !important;
             }
+
             .command-grid {
                 grid-template-columns: 1fr !important;
             }
+
             .footer-grid {
                 grid-template-columns: 1fr !important;
                 gap: 24px !important;
             }
+
             .footer-bottom {
                 flex-direction: column;
                 text-align: center;
@@ -1187,7 +1343,9 @@
     }
     </script>
 
+    <script src="/nora-lockout.js?v=nora-hiatus-2027" defer></script>
 </head>
+
 <body>
     <!-- Mobile Navigation Drawer Backdrop -->
     <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop" onclick="toggleMobileMenu()"></div>
@@ -1211,11 +1369,16 @@
                     <i class="fas fa-chevron-down acc-arrow"></i>
                 </div>
                 <div class="mobile-accordion-body">
-                    <a href="/#hero" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-sparkles"></i> Overview</a>
-                    <a href="/#features" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-layer-group"></i> Features & Architecture</a>
-                    <a href="/#commands" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-terminal"></i> Commands Explorer</a>
-                    <a href="/#pricing" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-crown"></i> Pricing Tiers</a>
-                    <a href="/#faq" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-question-circle"></i> FAQ</a>
+                    <a href="/#hero" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-sparkles"></i>
+                        Overview</a>
+                    <a href="/#features" class="mobile-sublink" onclick="toggleMobileMenu()"><i
+                            class="fas fa-layer-group"></i> Features & Architecture</a>
+                    <a href="/#commands" class="mobile-sublink" onclick="toggleMobileMenu()"><i
+                            class="fas fa-terminal"></i> Commands Explorer</a>
+                    <a href="/#pricing" class="mobile-sublink" onclick="toggleMobileMenu()"><i class="fas fa-crown"></i>
+                        Pricing Tiers</a>
+                    <a href="/#faq" class="mobile-sublink" onclick="toggleMobileMenu()"><i
+                            class="fas fa-question-circle"></i> FAQ</a>
                 </div>
             </div>
 
@@ -1228,11 +1391,13 @@
                 <div class="mobile-accordion-body">
                     <a href="/docs" class="mobile-sublink"><i class="fas fa-book-open"></i> Docs Overview</a>
                     <a href="/docs#quickstart" class="mobile-sublink"><i class="fas fa-rocket"></i> Quickstart Guide</a>
-                    <a href="/docs#topgg" class="mobile-sublink"><i class="fas fa-chart-line"></i> Top.gg Multi-Bot Tracker</a>
+                    <a href="/docs#topgg" class="mobile-sublink"><i class="fas fa-chart-line"></i> Top.gg Multi-Bot
+                        Tracker</a>
                     <a href="/docs#roblox" class="mobile-sublink"><i class="fas fa-cubes"></i> Roblox Group Sync</a>
                     <a href="/docs#leveling" class="mobile-sublink"><i class="fas fa-trophy"></i> Leveling & XP</a>
                     <a href="/docs#safety" class="mobile-sublink"><i class="fas fa-shield-virus"></i> AutoMod Shield</a>
-                    <a href="/docs#commands" class="mobile-sublink"><i class="fas fa-terminal"></i> Full Command Catalog</a>
+                    <a href="/docs#commands" class="mobile-sublink"><i class="fas fa-terminal"></i> Full Command
+                        Catalog</a>
                 </div>
             </div>
 
@@ -1245,14 +1410,17 @@
                 <div class="mobile-accordion-body">
                     <a href="/legal" class="mobile-sublink"><i class="fas fa-file-contract"></i> Legal Center</a>
                     <a href="/legal#terms" class="mobile-sublink"><i class="fas fa-file-alt"></i> Terms of Service</a>
-                    <a href="/legal#privacy" class="mobile-sublink"><i class="fas fa-user-shield"></i> Privacy Policy</a>
+                    <a href="/legal#privacy" class="mobile-sublink"><i class="fas fa-user-shield"></i> Privacy
+                        Policy</a>
                     <a href="/legal#roblox" class="mobile-sublink"><i class="fas fa-lock"></i> Roblox Compliance</a>
                     <a href="/legal#deletion" class="mobile-sublink"><i class="fas fa-trash-alt"></i> Data Deletion</a>
                 </div>
             </div>
-            <a href="/status" class="mobile-nav-link"><i class="fas fa-chart-line" style="color: #10B981;"></i> Live Systems Status</a>
-            <a href="/team" class="mobile-nav-link"><i class="fas fa-users" style="color: #a78bfa;"></i> Meet Team & Staff</a>
-            
+            <a href="/status" class="mobile-nav-link"><i class="fas fa-chart-line" style="color: #10B981;"></i> Live
+                Systems Status</a>
+            <a href="/team" class="mobile-nav-link"><i class="fas fa-users" style="color: #a78bfa;"></i> Meet Team &
+                Staff</a>
+
             <!-- Support Accordion -->
             <div class="mobile-accordion">
                 <div class="mobile-accordion-header" onclick="toggleMobileAccordion(this)">
@@ -1262,7 +1430,8 @@
                 <div class="mobile-accordion-body">
                     <a href="/support" class="mobile-sublink"><i class="fas fa-life-ring"></i> Support Hub</a>
                     <a href="/billing-faq" class="mobile-sublink"><i class="fas fa-credit-card"></i> Billing FAQ</a>
-                    <a href="https://discord.gg/m9WPYV287q" target="_blank" rel="noopener" class="mobile-sublink"><i class="fab fa-discord"></i> Official Discord</a>
+                    <a href="https://discord.gg/m9WPYV287q" target="_blank" rel="noopener" class="mobile-sublink"><i
+                            class="fab fa-discord"></i> Official Discord</a>
                 </div>
             </div>
         </nav>
@@ -1279,7 +1448,7 @@
                 <img src="/nora.png" alt="">
                 <span>Nora Studio</span>
             </a>
-            
+
             <nav class="nav-links">
                 <!-- Home Dropdown -->
                 <div class="nav-dropdown-wrapper">
@@ -1461,8 +1630,10 @@
 
             <div class="nav-actions">
                 <a href="/dashboard" class="btn-nav-dashboard" id="btn-header-dash">Dashboard</a>
-                <a href="/install" class="btn-nav-invite" id="btn-header-invite"><i class="fab fa-discord"></i> Invite</a>
-                <button class="mobile-menu-btn" id="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle navigation menu">
+                <a href="/install" class="btn-nav-invite" id="btn-header-invite"><i class="fab fa-discord"></i>
+                    Invite</a>
+                <button class="mobile-menu-btn" id="mobile-menu-toggle" onclick="toggleMobileMenu()"
+                    aria-label="Toggle navigation menu">
                     <i class="fas fa-bars"></i>
                 </button>
             </div>
@@ -1474,18 +1645,27 @@
         <section class="hero-section" id="hero">
             <div class="container">
                 <div class="hero-content">
-                    <a href="https://github.com/Vaztinix/nora-studio/releases/tag/v4.5.0" target="_blank" rel="noopener" class="hero-announcement-pill" id="hero-announcement" style="text-decoration: none; cursor: pointer;">
-                        <span class="badge" style="background: rgba(99, 102, 241, 0.25); color: #818cf8; padding: 2px 8px; border-radius: 9999px; font-weight: 700; font-size: 0.72rem; margin-right: 6px; border: 1px solid rgba(99, 102, 241, 0.4);">v4.5.0 RELEASE</span>
+                    <a href="https://github.com/Vaztinix/nora-studio/releases/tag/v4.5.0" target="_blank" rel="noopener"
+                        class="hero-announcement-pill" id="hero-announcement"
+                        style="text-decoration: none; cursor: pointer;">
+                        <span class="badge"
+                            style="background: rgba(99, 102, 241, 0.25); color: #818cf8; padding: 2px 8px; border-radius: 9999px; font-weight: 700; font-size: 0.72rem; margin-right: 6px; border: 1px solid rgba(99, 102, 241, 0.4);">v4.5.0
+                            RELEASE</span>
                         <span>Discord Components V2, In-Site Gatekeeper & Data Sovereignty</span>
                         <i class="fas fa-arrow-right" style="margin-left: 6px; font-size: 0.7rem; opacity: 0.7;"></i>
                     </a>
-                    
+
                     <h1 class="hero-heading">
                         The Complete Discord Bot for <span class="hero-highlight">Your Server</span>
                     </h1>
-                    
+
                     <p class="hero-description">
-                        The <strong>#1 Privacy-First All-In-One Discord Bot</strong>, engineered by <strong>Vaztinix</strong> and the <strong>Nora Studio Team</strong> to protect every community that she encounters. Built upon an uncompromising <strong>Zero-Access RAM Architecture</strong>, next-gen <strong>Gemini AI</strong> multi-key cluster, real-time <strong>Adaptive Slowmode</strong> raid defense, instant <strong>Roblox Group Sync</strong>, and the unified obsidian <strong>Web Dashboard</strong>.
+                        The <strong>#1 Privacy-First All-In-One Discord Bot</strong>, engineered by
+                        <strong>Vaztinix</strong> and the <strong>Nora Studio Team</strong> to protect every community
+                        that she encounters. Built upon an uncompromising <strong>Zero-Access RAM Architecture</strong>,
+                        next-gen <strong>Gemini AI</strong> multi-key cluster, real-time <strong>Adaptive
+                            Slowmode</strong> raid defense, instant <strong>Roblox Group Sync</strong>, and the unified
+                        obsidian <strong>Web Dashboard</strong>.
                     </p>
 
                     <div class="hero-cta-group">
@@ -1499,11 +1679,11 @@
 
                     <div class="hero-stats-bar">
                         <div class="stat-item">
-                            <span class="stat-value" id="stat-servers">101+</span>
+                            <span class="stat-value" id="stat-servers">105+</span>
                             <span class="stat-label">Active Servers</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value" id="stat-members">14,277+</span>
+                            <span class="stat-value" id="stat-members">14,412+</span>
                             <span class="stat-label">Total Members</span>
                         </div>
                         <div class="stat-item">
@@ -1511,7 +1691,7 @@
                             <span class="stat-label">Commands</span>
                         </div>
                         <div class="stat-item">
-                            <span class="stat-value" id="stat-ping">33ms</span>
+                            <span class="stat-value" id="stat-ping">38ms</span>
                             <span class="stat-label">Gateway Ping</span>
                         </div>
                     </div>
@@ -1525,7 +1705,8 @@
                 <div class="section-header">
                     <span class="section-tag"><i class="fas fa-layer-group"></i> Features</span>
                     <h2 class="section-title">Everything Your Community Needs</h2>
-                    <p class="section-subtitle">Keep members active, reward highlights, secure joins, and protect chat with an all-in-one Discord bot.</p>
+                    <p class="section-subtitle">Keep members active, reward highlights, secure joins, and protect chat
+                        with an all-in-one Discord bot.</p>
                 </div>
 
                 <div class="bento-grid">
@@ -1535,7 +1716,10 @@
                             <div class="bento-icon blurple"><i class="fas fa-brain"></i></div>
                             <div class="bento-body">
                                 <h3>Aura Neural Tri-AI Engine</h3>
-                                <p>Intelligent routing dynamically directing between <strong>Gemini 1.5 Flash</strong>, <strong>GPT-4o Mini</strong>, and local <strong>Qwen 1.8B</strong>. Tailor community responses with custom server persona prompts, backed by isolated 30-day cross-channel conversation memory.</p>
+                                <p>Intelligent routing dynamically directing between <strong>Gemini 1.5 Flash</strong>,
+                                    <strong>GPT-4o Mini</strong>, and local <strong>Qwen 1.8B</strong>. Tailor community
+                                    responses with custom server persona prompts, backed by isolated 30-day
+                                    cross-channel conversation memory.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
@@ -1552,7 +1736,9 @@
                             <div class="bento-icon rose"><i class="fas fa-shield-halved"></i></div>
                             <div class="bento-body">
                                 <h3>Sub-4ms AutoMod Threat Defense</h3>
-                                <p>Near-zero latency heuristic threat defense with real-time neural phishing link scanning, adaptive raid velocity dampening, and zero-leak server-scoped SQLite architecture.</p>
+                                <p>Near-zero latency heuristic threat defense with real-time neural phishing link
+                                    scanning, adaptive raid velocity dampening, and zero-leak server-scoped SQLite
+                                    architecture.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
@@ -1568,7 +1754,9 @@
                             <div class="bento-icon blurple"><i class="fas fa-cubes-stacked"></i></div>
                             <div class="bento-body">
                                 <h3>Instant Roblox Group Rank Sync</h3>
-                                <p>Instant Bi-Directional Roblox Group Rank Sync. Connect multiple Roblox groups via Open Cloud API keys, automate rank-to-role binding, and verify community members seamlessly.</p>
+                                <p>Instant Bi-Directional Roblox Group Rank Sync. Connect multiple Roblox groups via
+                                    Open Cloud API keys, automate rank-to-role binding, and verify community members
+                                    seamlessly.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
@@ -1584,7 +1772,9 @@
                             <div class="bento-icon cyan"><i class="fas fa-sliders-h"></i></div>
                             <div class="bento-body">
                                 <h3>Unified /configure Control Hub</h3>
-                                <p>Replaces dozens of cluttered slash commands with a single, elegant <code>/configure</code> control hub featuring nested modal popups, live diagnostic previews, and instant toggle switches.</p>
+                                <p>Replaces dozens of cluttered slash commands with a single, elegant
+                                    <code>/configure</code> control hub featuring nested modal popups, live diagnostic
+                                    previews, and instant toggle switches.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
@@ -1600,7 +1790,9 @@
                             <div class="bento-icon purple"><i class="fas fa-laptop-code"></i></div>
                             <div class="bento-body">
                                 <h3>Server Module Hub & IDTK Studio</h3>
-                                <p>Build and sandbox custom JS modules safely in IDTK Studio (Internal Developer Toolkit). Submissions undergo automated AST validation by the <strong>Gemini AI Safety Scanner</strong>.</p>
+                                <p>Build and sandbox custom JS modules safely in IDTK Studio (Internal Developer
+                                    Toolkit). Submissions undergo automated AST validation by the <strong>Gemini AI
+                                        Safety Scanner</strong>.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
@@ -1616,7 +1808,8 @@
                             <div class="bento-icon amber"><i class="fas fa-star"></i></div>
                             <div class="bento-body">
                                 <h3>Starboard & Hall of Fame</h3>
-                                <p>Dynamic star tiers (⭐ Bronze ➔ 🌟 Gold ➔ ✨ Radiant ➔ 💫 Supernova ➔ 🌠 Mythic) with persistent SQLite tracking, reply context quotes, and author XP rewards.</p>
+                                <p>Dynamic star tiers (⭐ Bronze ➔ 🌟 Gold ➔ ✨ Radiant ➔ 💫 Supernova ➔ 🌠 Mythic) with
+                                    persistent SQLite tracking, reply context quotes, and author XP rewards.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
@@ -1632,7 +1825,9 @@
                             <div class="bento-icon emerald"><i class="fas fa-user-shield"></i></div>
                             <div class="bento-body">
                                 <h3>Support Tickets & 4-Way Verification Gatekeeper</h3>
-                                <p>Deploy 1-click private ticket panels with questionnaire modals and searchable HTML transcripts. Combined with 4 selectable verification engines: 1-Click Button, Image CAPTCHA, Reaction confirmation, and Roblox account binding.</p>
+                                <p>Deploy 1-click private ticket panels with questionnaire modals and searchable HTML
+                                    transcripts. Combined with 4 selectable verification engines: 1-Click Button, Image
+                                    CAPTCHA, Reaction confirmation, and Roblox account binding.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
@@ -1650,7 +1845,10 @@
                             <div class="bento-icon blurple"><i class="fas fa-gamepad"></i></div>
                             <div class="bento-body">
                                 <h3>Activities & Voice (Game VC Locks & Routing)</h3>
-                                <p>Boost server engagement by automatically bringing members who are playing the same game (Valorant, Minecraft, Roblox, Palworld, and 45+ presets) into the same designated voice channel via real-time Discord Rich Presence detection, alongside Custom Status supporter roles.</p>
+                                <p>Boost server engagement by automatically bringing members who are playing the same
+                                    game (Valorant, Minecraft, Roblox, Palworld, and 45+ presets) into the same
+                                    designated voice channel via real-time Discord Rich Presence detection, alongside
+                                    Custom Status supporter roles.</p>
                             </div>
                         </div>
                         <div class="bento-badge-row">
@@ -1660,7 +1858,8 @@
                             <span class="bento-chip">RAM-Only Privacy</span>
                         </div>
                     </div>
-                    <div><div>
+                    <div>
+                        <div>
                         </div>
                     </div>
                 </div>
@@ -1673,7 +1872,8 @@
                 <div class="section-header">
                     <span class="section-tag"><i class="fas fa-terminal"></i> Commands</span>
                     <h2 class="section-title">59 Ready-to-Use Discord Commands</h2>
-                    <p class="section-subtitle">Full support for Discord Slash (<code>/</code>) and classic Prefix (<code>n!</code>) commands with instant autocomplete.</p>
+                    <p class="section-subtitle">Full support for Discord Slash (<code>/</code>) and classic Prefix
+                        (<code>n!</code>) commands with instant autocomplete.</p>
                 </div>
 
                 <div class="command-filter-bar">
@@ -1696,7 +1896,8 @@
                 <div class="section-header">
                     <span class="section-tag"><i class="fas fa-tag"></i> Plans & Pricing</span>
                     <h2 class="section-title">Free Forever. Upgrade for Power.</h2>
-                    <p class="section-subtitle">All core moderation, verification, and engagement features are 100% free forever. Upgrade to Plus for extra capacity.</p>
+                    <p class="section-subtitle">All core moderation, verification, and engagement features are 100% free
+                        forever. Upgrade to Plus for extra capacity.</p>
                 </div>
 
                 <div class="pricing-cards-container">
@@ -1704,9 +1905,10 @@
                     <div class="glass-panel pricing-tier-card">
                         <div>
                             <span class="tier-name">Nora Standard</span>
-                            <p style="color: var(--text-muted); font-size: 0.92rem;">Essential automations, safety, and engagement for growing communities.</p>
+                            <p style="color: var(--text-muted); font-size: 0.92rem;">Essential automations, safety, and
+                                engagement for growing communities.</p>
                             <div class="tier-price">$0 <span>/ forever</span></div>
-                            
+
                             <ul class="tier-features-list">
                                 <li><i class="fas fa-check"></i> Standard Verification (1-Click & Reaction)</li>
                                 <li><i class="fas fa-check"></i> Counting Game with Math Expression Parser</li>
@@ -1716,7 +1918,8 @@
                                 <li><i class="fas fa-check"></i> Full Web Dashboard Access</li>
                             </ul>
                         </div>
-                        <a href="/install" class="btn-cta-secondary" style="width: 100%; justify-content: center;">Invite Free</a>
+                        <a href="/install" class="btn-cta-secondary"
+                            style="width: 100%; justify-content: center;">Invite Free</a>
                     </div>
 
                     <!-- Plus Plan -->
@@ -1724,19 +1927,24 @@
                         <span class="featured-badge">Studio Plus</span>
                         <div>
                             <span class="tier-name">Nora Plus</span>
-                            <p style="color: var(--text-muted); font-size: 0.92rem;">Unlimited power, instant Roblox rank sync, and custom branding.</p>
+                            <p style="color: var(--text-muted); font-size: 0.92rem;">Unlimited power, instant Roblox
+                                rank sync, and custom branding.</p>
                             <div class="tier-price">$1.99 <span>/ month</span></div>
-                            
+
                             <ul class="tier-features-list">
                                 <li><i class="fas fa-check"></i> <strong>Real-Time Roblox Group Rank Sync</strong></li>
-                                <li><i class="fas fa-check"></i> <strong>200 Custom Autoresponder Slots</strong> (40x capacity)</li>
-                                <li><i class="fas fa-check"></i> <strong>Custom GIF Rank Cards & HEX Colors</strong></li>
+                                <li><i class="fas fa-check"></i> <strong>200 Custom Autoresponder Slots</strong> (40x
+                                    capacity)</li>
+                                <li><i class="fas fa-check"></i> <strong>Custom GIF Rank Cards & HEX Colors</strong>
+                                </li>
                                 <li><i class="fas fa-check"></i> <strong>10x Voice & Chat XP Multipliers</strong></li>
                                 <li><i class="fas fa-check"></i> <strong>Multi-Channel Audit Log Routing</strong></li>
-                                <li><i class="fas fa-check"></i> <strong>Dedicated Priority VIP Gateway Route</strong></li>
+                                <li><i class="fas fa-check"></i> <strong>Dedicated Priority VIP Gateway Route</strong>
+                                </li>
                             </ul>
                         </div>
-                        <a href="/dashboard" class="btn-cta-primary" style="width: 100%; justify-content: center; display: inline-flex; align-items: center; gap: 8px;">
+                        <a href="/dashboard" class="btn-cta-primary"
+                            style="width: 100%; justify-content: center; display: inline-flex; align-items: center; gap: 8px;">
                             <i class="fas fa-bolt"></i> Upgrade to Plus
                         </a>
                     </div>
@@ -1759,7 +1967,9 @@
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="faq-answer">
-                            Members link their Roblox account using Nora's secure profile check (putting a unique phrase in their Roblox profile description). Once verified, Nora automatically syncs their server roles to their Roblox group ranks with zero delay.
+                            Members link their Roblox account using Nora's secure profile check (putting a unique phrase
+                            in their Roblox profile description). Once verified, Nora automatically syncs their server
+                            roles to their Roblox group ranks with zero delay.
                         </div>
                     </div>
 
@@ -1769,7 +1979,9 @@
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="faq-answer">
-                            Yes. Nora operates on a strict zero-telemetry architecture. We never store message contents, track user conversations, or sell data. All database records are strictly isolated per guild and encrypted.
+                            Yes. Nora operates on a strict zero-telemetry architecture. We never store message contents,
+                            track user conversations, or sell data. All database records are strictly isolated per guild
+                            and encrypted.
                         </div>
                     </div>
 
@@ -1779,7 +1991,10 @@
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="faq-answer">
-                            You can easily set them up in Discord using <code>/starboard channel &lt;#channel&gt;</code> and <code>/counting channel &lt;#channel&gt;</code>, or open the visual web dashboard at <a href="/dashboard" style="color: #818CF8;">vaztinix.dev/dashboard</a> under the Games tab!
+                            You can easily set them up in Discord using <code>/starboard channel &lt;#channel&gt;</code>
+                            and <code>/counting channel &lt;#channel&gt;</code>, or open the visual web dashboard at <a
+                                href="/dashboard" style="color: #818CF8;">vaztinix.dev/dashboard</a> under the Games
+                            tab!
                         </div>
                     </div>
 
@@ -1789,7 +2004,9 @@
                             <i class="fas fa-chevron-down"></i>
                         </div>
                         <div class="faq-answer">
-                            Yes! Starboard supports custom server emojis, configurable thresholds (1-100), and self-star protection. The Counting game automatically evaluates math expressions such as <code>10*2+5</code>, <code>50/2</code>, and <code>2^4</code> safely.
+                            Yes! Starboard supports custom server emojis, configurable thresholds (1-100), and self-star
+                            protection. The Counting game automatically evaluates math expressions such as
+                            <code>10*2+5</code>, <code>50/2</code>, and <code>2^4</code> safely.
                         </div>
                     </div>
                 </div>
@@ -1801,7 +2018,8 @@
             <div class="container">
                 <div class="glass-panel cta-box text-center">
                     <h2>Ready to Transform Your Discord Server?</h2>
-                    <p>Add Nora Studio in less than 60 seconds. Zero setup required to start protecting and entertaining your community.</p>
+                    <p>Add Nora Studio in less than 60 seconds. Zero setup required to start protecting and entertaining
+                        your community.</p>
                     <div class="hero-cta-group" style="justify-content: center;">
                         <a href="/install" class="btn-cta-primary"><i class="fab fa-discord"></i> Invite Nora Now</a>
                         <a href="/dashboard" class="btn-cta-secondary">Open Control Center</a>
@@ -1820,7 +2038,8 @@
                         <img src="/nora.png" alt="">
                         <span>Nora Studio</span>
                     </a>
-                    <p>The ultimate privacy-first community operations suite for Discord servers. Robust automations, real-time sync, and security.</p>
+                    <p>The ultimate privacy-first community operations suite for Discord servers. Robust automations,
+                        real-time sync, and security.</p>
                 </div>
                 <div class="footer-col">
                     <h5>Navigation</h5>
@@ -1835,7 +2054,8 @@
                 <div class="footer-col">
                     <h5>Resources</h5>
                     <ul>
-                        <li><a href="https://github.com/Vaztinix/nora-studio/releases" target="_blank" rel="noopener">GitHub Releases (v4.5.0)</a></li>
+                        <li><a href="https://github.com/Vaztinix/nora-studio/releases" target="_blank"
+                                rel="noopener">GitHub Releases (v4.5.0)</a></li>
                         <li><a href="/docs">Documentation</a></li>
                         <li><a href="/docs#verification">Roblox Verification</a></li>
                         <li><a href="/docs#starboard">Starboard Engine</a></li>
@@ -1854,7 +2074,8 @@
 
             <div class="footer-bottom">
                 <span>&copy; 2026 Nora Studio. Built for empowering communities.</span>
-                <a href="/status" class="live-status-pill" id="landing-status-pill" style="text-decoration: none; color: inherit;">
+                <a href="/status" class="live-status-pill" id="landing-status-pill"
+                    style="text-decoration: none; color: inherit;">
                     <span class="live-dot" id="landing-status-dot"></span>
                     <span id="landing-status-text">Online</span>
                 </a>
@@ -1929,7 +2150,7 @@
                         cacheValid = true;
                     }
                 }
-            } catch (e) {}
+            } catch (e) { }
 
             // 2. If 30-minute cache expired or absent, fetch fresh snapshot
             if (!cacheValid) {
@@ -1940,7 +2161,7 @@
                     if (res.ok) {
                         freshData = await res.json();
                     }
-                } catch (e) {}
+                } catch (e) { }
 
                 // If API is down or restarting, try static snapshot file
                 if (!freshData) {
@@ -1949,7 +2170,7 @@
                         if (res.ok) {
                             freshData = await res.json();
                         }
-                    } catch (e) {}
+                    } catch (e) { }
                 }
 
                 if (freshData) {
@@ -1966,12 +2187,63 @@
                                 systemStatus: freshData.systemStatus || 'online'
                             }
                         }));
-                    } catch (e) {}
+                    } catch (e) { }
                 }
             }
 
             // Schedule recurring 30-minute refresh
             setInterval(fetch30mTelemetry, THIRTY_MIN_MS);
+
+            // Live Status Pill Sync (always reflects real-time status matching status.html)
+            async function syncLandingStatusPill() {
+                const statusTextEl = document.getElementById('landing-status-text');
+                const statusDotEl = document.getElementById('landing-status-dot');
+                if (!statusTextEl || !statusDotEl) return;
+
+                const endpoints = [
+                    'https://api.vaztinix.dev/api/status/public',
+                    '/api/status/public'
+                ];
+
+                for (const ep of endpoints) {
+                    try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 3000);
+                        const res = await fetch(ep, { cache: 'no-store', signal: controller.signal });
+                        clearTimeout(timeoutId);
+                        if (res.ok) {
+                            const cType = res.headers.get('content-type') || '';
+                            if (!cType.includes('application/json')) continue;
+                            const data = await res.json();
+                            const st = String(data.systemStatus || 'online').toLowerCase();
+                            statusTextEl.innerText = data.statusText || (st === 'offline' || st === 'outage' ? 'Offline' : 'Online');
+                            if (st === 'degraded' || st === 'upstream_issue') {
+                                statusDotEl.style.background = '#f59e0b';
+                                statusDotEl.style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.6)';
+                            } else if (st === 'outage' || st === 'offline') {
+                                statusDotEl.style.background = '#ef4444';
+                                statusDotEl.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
+                            } else if (st === 'maintenance') {
+                                statusDotEl.style.background = '#8b5cf6';
+                                statusDotEl.style.boxShadow = '0 0 8px rgba(139, 92, 246, 0.6)';
+                            } else {
+                                statusDotEl.style.background = '#10b981';
+                                statusDotEl.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.6)';
+                            }
+                            return;
+                        }
+                    } catch (e) { }
+                }
+
+                statusTextEl.innerText = 'Offline';
+                statusDotEl.style.background = '#ef4444';
+                statusDotEl.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
+            }
+
+            syncLandingStatusPill();
+            setInterval(() => {
+                if (!document.hidden) syncLandingStatusPill();
+            }, 15000);
         })();
 
         // FAQ Toggle
@@ -2000,7 +2272,7 @@
         ];
 
         function copyCommand(cmd, el) {
-            navigator.clipboard.writeText(cmd).catch(() => {});
+            navigator.clipboard.writeText(cmd).catch(() => { });
             const badge = el.querySelector('.copy-indicator');
             if (badge) {
                 const oldContent = badge.innerHTML;
@@ -2059,7 +2331,7 @@
         renderCommands('all');
 
         // ⚡ Ultra-Low Resource Engine for Landing Page
-        (function() {
+        (function () {
             const isLowEnd = /CrOS|Chromebook|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
                 || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4)
                 || (navigator.deviceMemory && navigator.deviceMemory <= 4);
@@ -2071,4 +2343,5 @@
         })();
     </script>
 </body>
+
 </html>

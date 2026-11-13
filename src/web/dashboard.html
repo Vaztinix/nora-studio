@@ -8,10 +8,8 @@
     <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css">
-    <link rel="stylesheet" href="/liquid-glass.css?v=4.6">
     <script src="/translate.js"></script>
     <script src="/nora-sentinel.js?v=2.2" defer></script>
-    <script src="/liquid-glass.js?v=4.6" defer></script>
     <script>
         window.__KNOWN_NORA_GUILDS__ = ["1380094048882266112","1471582546151346359","1502569432785092618","1408523665573810296","1487342521133830174","1493517644815536180","1542284395891920896","1331685485759955016","1492598604643434570","1516656405904363530","1492594051713863710","1505315717921112154","1495210302894116894","1497716213973782588","1528497353680621588","1501092925516546173","1371510828712464565","1351304498185900184","1311022958843658351","1515800329889779954","1514002757110206505","1518640702161027263","1493022018055176387","1484683779137208420","1457481176112431347","1492601244374794543","1311634850607927306","1452453746859577481","1492600701530935407","1392140968551252010","1368269183011393637","1456729601551106125","1520426496991166655","1324215030366867456","1492598096167964722","1492599093992751135","1216119597976256522","1506147817427828809","1469895571413270740","1492593551291187290","1412901825174048800","939395110519603220","1520149842163269672","1460360514730201276","1406717813913030757","1492593292410355812","1492592049147609298","1492983186496425984","1265014058290122783","1484256847727952114","1444403869097656412","1428110154121084968","1231664152615981238","1506664856227418163","1492600447683526778","1492602875044565134","1492598348916723822","1525511322849120428","1148276609762205709","1246976150874624050","1425663262166614030","1429166136695590924","1492601497563955330","1391954867215667200","1492600988799074434"];
 
@@ -5846,6 +5844,7 @@
         window.executeRedeemItem = executeRedeemItem;
     </script>
 
+    <script src="/nora-lockout.js?v=nora-hiatus-2027" defer></script>
 </head>
 <body class="nora-theme">
     <div class="custom-cursor cursor-hidden" id="custom-cursor">
@@ -14160,6 +14159,9 @@
 
                 window.isApiOffline = true;
                 consecutiveNetworkErrors = 0;
+                if (typeof window.applyDashboardSystemStatus === 'function') {
+                    window.applyDashboardSystemStatus('offline', 'Offline');
+                }
 
                 if (typeof terminalFeedInterval !== 'undefined' && terminalFeedInterval) {
                     clearInterval(terminalFeedInterval);
@@ -14185,6 +14187,11 @@
         window.triggerApiOnline = function() {
             if (!window.isApiOffline) return;
             window.isApiOffline = false;
+            if (typeof window.syncDashboardSystemStatus === 'function') {
+                window.syncDashboardSystemStatus();
+            } else if (typeof window.applyDashboardSystemStatus === 'function') {
+                window.applyDashboardSystemStatus('online', 'Online');
+            }
 
             const overlay = document.getElementById('api-offline-overlay');
             if (overlay) {
@@ -34884,44 +34891,96 @@ document.addEventListener('keydown', (e) => {
 
 // Live Dynamic System Status Synchronizer
 (function initSystemStatusSync() {
-    async function syncStatus() {
-        try {
-            const res = await fetch('/api/status/public', { cache: 'no-store', signal: AbortSignal.timeout(3500) });
-            if (!res.ok) return;
-            const data = await res.json();
-            const text = data.statusText || 'Online';
-            const status = data.systemStatus || 'online';
+    window.applyDashboardSystemStatus = function(status, text) {
+        const normalizedStatus = String(status || 'online').toLowerCase();
+        const displayText = text || (normalizedStatus === 'offline' || normalizedStatus === 'outage' ? 'Offline' : 'Online');
 
-            const targets = [
-                { textEl: document.getElementById('dashboard-status-text'), dotEl: document.getElementById('dashboard-status-dot'), pillEl: document.getElementById('dashboard-status-pill') },
-                { textEl: document.getElementById('auth-status-text'), dotEl: document.getElementById('auth-status-dot'), pillEl: document.getElementById('auth-status-pill') }
-            ];
+        const targets = [
+            { textEl: document.getElementById('dashboard-status-text'), dotEl: document.getElementById('dashboard-status-dot'), pillEl: document.getElementById('dashboard-status-pill') },
+            { textEl: document.getElementById('auth-status-text'), dotEl: document.getElementById('auth-status-dot'), pillEl: document.getElementById('auth-status-pill') }
+        ];
 
-            targets.forEach(({ textEl, dotEl, pillEl }) => {
-                if (textEl) textEl.textContent = text;
-                if (pillEl) pillEl.title = `System Status: ${text}`;
-                if (dotEl) {
-                    if (status === 'degraded') {
-                        dotEl.style.background = '#f59e0b';
-                        dotEl.style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.6)';
-                    } else if (status === 'outage' || status === 'offline') {
-                        dotEl.style.background = '#ef4444';
-                        dotEl.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
-                    } else if (status === 'maintenance') {
-                        dotEl.style.background = '#8b5cf6';
-                        dotEl.style.boxShadow = '0 0 8px rgba(139, 92, 246, 0.6)';
-                    } else {
-                        dotEl.style.background = '#10b981';
-                        dotEl.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.6)';
-                    }
+        targets.forEach(({ textEl, dotEl, pillEl }) => {
+            if (textEl) textEl.textContent = displayText;
+            if (pillEl) pillEl.title = `System Status: ${displayText}`;
+            if (dotEl) {
+                if (normalizedStatus === 'degraded' || normalizedStatus === 'upstream_issue' || normalizedStatus === 'discord_outage') {
+                    dotEl.style.background = '#f59e0b';
+                    dotEl.style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.6)';
+                } else if (normalizedStatus === 'outage' || normalizedStatus === 'offline') {
+                    dotEl.style.background = '#ef4444';
+                    dotEl.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
+                } else if (normalizedStatus === 'maintenance') {
+                    dotEl.style.background = '#8b5cf6';
+                    dotEl.style.boxShadow = '0 0 8px rgba(139, 92, 246, 0.6)';
+                } else {
+                    dotEl.style.background = '#10b981';
+                    dotEl.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.6)';
                 }
-            });
-        } catch (e) {}
+            }
+        });
+
+        const mobileDot = document.getElementById('mobile-drawer-status-dot');
+        if (mobileDot) {
+            if (normalizedStatus === 'outage' || normalizedStatus === 'offline') {
+                mobileDot.style.background = '#ef4444';
+                mobileDot.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.6)';
+            } else if (normalizedStatus === 'degraded' || normalizedStatus === 'upstream_issue') {
+                mobileDot.style.background = '#f59e0b';
+                mobileDot.style.boxShadow = '0 0 8px rgba(245, 158, 11, 0.6)';
+            } else if (normalizedStatus === 'maintenance') {
+                mobileDot.style.background = '#8b5cf6';
+                mobileDot.style.boxShadow = '0 0 8px rgba(139, 92, 246, 0.6)';
+            } else {
+                mobileDot.style.background = '#10b981';
+                mobileDot.style.boxShadow = '0 0 8px rgba(16, 185, 129, 0.6)';
+            }
+        }
+    };
+
+    async function syncStatus() {
+        const apiBase = typeof window.getApiBaseUrl === 'function' ? window.getApiBaseUrl() : 'https://api.vaztinix.dev';
+        const fetchFn = typeof originalFetch === 'function' ? originalFetch : window.fetch;
+        const endpoints = Array.from(new Set([
+            `${apiBase.replace(/\/$/, '')}/api/status/public`,
+            '/api/status/public',
+            'https://api.vaztinix.dev/api/status/public'
+        ]));
+
+        for (const ep of endpoints) {
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 3000);
+                const res = await fetchFn(ep, { cache: 'no-store', signal: controller.signal });
+                clearTimeout(timeoutId);
+                if (res && res.ok) {
+                    const cType = res.headers.get('content-type') || '';
+                    if (!cType.includes('application/json')) continue;
+                    const data = await res.json();
+                    const status = data.systemStatus || 'online';
+                    const text = data.statusText || (status === 'offline' || status === 'outage' ? 'Offline' : 'Online');
+                    window.applyDashboardSystemStatus(status, text);
+                    return;
+                }
+            } catch (e) {
+                // Try next endpoint
+            }
+        }
+
+        // All live endpoints failed or timed out -> reflect true Offline state matching status.html
+        window.applyDashboardSystemStatus('offline', 'Offline');
     }
+
+    window.syncDashboardSystemStatus = syncStatus;
     syncStatus();
     setInterval(() => {
         if (!document.hidden) syncStatus();
-    }, 60000);
+    }, 10000);
+    document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) syncStatus();
+    });
+    window.addEventListener('online', syncStatus);
+    window.addEventListener('offline', () => window.applyDashboardSystemStatus('offline', 'Offline'));
 
     // Continuous Live Telemetry Pulse for Overview (updates quietly every 10 seconds while viewing Overview)
     setInterval(() => {
